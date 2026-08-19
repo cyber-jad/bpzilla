@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BPZILLA | Nissan Skyline Factory Record Archive</title>
+  <meta name="description" content="BPZILLA is an archive of 543,299 Nissan Skyline factory records read straight from the Nissan FAST microfiche: BNR34, BCNR33, BNR32, ER34, ECR33, HCR32 and more. Chassis lookup, paint and grade breakdowns, and a factory plate decoder.">
+  <!-- Search engines: fully indexable (that's the whole SEO point). AI
+       crawlers: opt out of training use where the crawler respects this —
+       it does not block indexing or search visibility. -->
+  <meta name="robots" content="index, follow, noai, noimageai">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- ====================================================================
+       SITE ADDRESS
+       Once the domain is decided, replace bpzilla.com here, in robots.txt and
+       in sitemap.xml. Those are the only three files that mention it.
+       ==================================================================== -->
+  <link rel="canonical" href="https://bpzilla.com/">
+
+  <!-- Icons -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#1c4f7c">
+
+  <!-- Link previews -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="BPZILLA">
+  <meta property="og:title" content="BPZILLA — Nissan Skyline factory records">
+  <meta property="og:description" content="543,299 Nissan Skyline chassis records read straight from the Nissan FAST microfiche. Chassis lookup, paint and grade breakdowns, and a factory model code decoder for the R32 through R34.">
+  <meta property="og:url" content="https://bpzilla.com/">
+  <meta property="og:image" content="https://bpzilla.com/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="BPZILLA — 543,299 Nissan Skyline factory records, 14 chassis, 1989 to 2002">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BPZILLA — Nissan Skyline factory records">
+  <meta name="twitter:description" content="543,299 chassis records read straight from the Nissan FAST microfiche.">
+  <meta name="twitter:image" content="https://bpzilla.com/og-image.png">
+
+  <!-- Structured data. This site really is a dataset, so schema.org/Dataset is
+       the honest type, and it is what dataset search engines understand. -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://bpzilla.com/#website",
+        "url": "https://bpzilla.com/",
+        "name": "BPZILLA",
+        "description": "BPZILLA — Nissan Skyline factory record archive, read from the Nissan FAST microfiche. Named for the blue firewall plate, and for what the press started calling the R32."
+      },
+      {
+        "@type": "Dataset",
+        "@id": "https://bpzilla.com/#dataset",
+        "name": "Nissan Skyline factory records (FAST microfiche)",
+        "description": "543,299 factory chassis records for the Nissan Skyline, covering 14 chassis codes built between 1989 and 2002. Each record carries the chassis number, build month, factory paint code, interior code and the 20-character factory model code, extracted from Nissan FAST VINDAT and MDLCODE data.",
+        "url": "https://bpzilla.com/",
+        "isAccessibleForFree": true,
+        "creator": { "@type": "Organization", "name": "BPZILLA" },
+        "temporalCoverage": "1989-02/2002-08",
+        "keywords": [
+          "Nissan Skyline", "GT-R", "BNR34", "BCNR33", "BNR32", "ER34", "ECR33",
+          "HCR32", "chassis number", "VIN", "FAST microfiche",
+          "factory model code", "paint code"
+        ],
+        "variableMeasured": [
+          "chassis number", "build month", "factory paint code",
+          "interior trim code", "factory model code", "grade", "series block"
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Site Header -->
+  <header class="site-header">
+    <div class="header-top-bar">
+      <div class="brand-container" id="brand-home-btn">
+        <div class="godzilla-header-avatar" id="godzilla-avatar-btn" title="Godzilla: The Monster from Japan (R32 Legend)" style="position:relative;width:36px;height:36px;border-radius:6px;overflow:hidden;flex-shrink:0;">
+          <img src="assets/godzilla_green_portrait.jpg" alt="Godzilla" class="godzilla-avatar-img" width="36" height="36" style="width:100%;height:100%;object-fit:cover;display:block;">
+        </div>
+        <div class="brand-logo-badge" aria-label="BPZILLA">
+          <span class="brand-dorsal" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="plate-rivet"></span>
+          <span class="plate-emblem">BP</span>
+          <span class="plate-tag">ZILLA</span>
+          <span class="plate-rivet"></span>
+        </div>
+        <div class="brand-text-group">
+          <h1>SKYLINE FACTORY RECORDS</h1>
+        </div>
+      </div>
+
+      <!-- Quick Global Search -->
+      <div class="header-search-wrap">
+        <i data-lucide="search" class="search-icon-pos" style="width: 16px; height: 16px;"></i>
+        <input type="text" id="global-search-input" class="header-search-input" placeholder="Search any chassis number (e.g. BNR34-000055, ECR33-014520, HCR32-004210)...">
+        <span class="search-shortcut-hint">/</span>
+      </div>
+
+    </div>
+
+    <!-- Compact record-count line — trimmed to one real number instead of
+         three, since the chassis-code count and date-span added noise
+         without telling a visitor much (and the span looked broken once
+         export-market records with no decoded date entered the mix). -->
+    <div class="telemetry-ticker-bar">
+      <div class="ticker-inner">
+        <span class="ticker-value highlight-red" id="ticker-total">&mdash;</span>
+        <span class="ticker-sep">&bull;</span>
+        <span class="ticker-value-muted">read from the Nissan FAST microfiche</span>
+      </div>
+    </div>
+
+    <!-- Main Navigation Tab Bar -->
+    <nav class="nav-tab-bar">
+      <div class="nav-tab-container">
+        <button class="nav-tab-btn active" data-tab="database-view">
+          <i data-lucide="database" style="width: 15px; height: 15px;"></i>
+          <span>VIN Database</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="stats-view">
+          <i data-lucide="bar-chart-3" style="width: 15px; height: 15px;"></i>
+          <span>Stats &amp; Rarity</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="fast-decoder-view">
+          <i data-lucide="cpu" style="width: 15px; height: 15px;"></i>
+          <span>Plate Decoder</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="history-view">
+          <i data-lucide="book-open" style="width: 15px; height: 15px;"></i>
+          <span>History</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="tools-view">
+          <i data-lucide="wrench" style="width: 15px; height: 15px;"></i>
+          <span>Tools</span>
+        </button>
+        <button class="nav-tab-btn nav-tab-btn-legends" data-tab="legends-view">
+          <i data-lucide="star" style="width: 15px; height: 15px;"></i>
+          <span>Nissan Legends</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="main-content">
+    
+    <!-- Hero Showcase Banner -->
+    <section class="hero-showcase" id="hero-banner">
+      <div class="hero-layout-grid" style="display:grid;grid-template-columns:1fr 280px;gap:24px;align-items:center;">
+        <div class="hero-content">
+          <div class="hero-tag">
+            <i data-lucide="flame" style="width: 13px; height: 13px;"></i>
+            <span>READ FROM THE FACTORY MICROFICHE</span>
+          </div>
+          <h2 class="hero-title" id="hero-model-title">Nissan Skyline Factory Records</h2>
+          <p class="hero-subtitle" id="hero-model-subtitle">
+            Every chassis number, build month, paint code and factory model code held in the Nissan FAST microfiche for the R32 through R34 Skyline, read straight from the source binaries.
+          </p>
+          <div class="hero-actions-row">
+            <button class="btn-header-action highlight" id="hero-explore-btn">
+              <i data-lucide="table" style="width: 14px; height: 14px;"></i>
+              <span>Browse Full VIN Records</span>
+            </button>
+            <button class="btn-header-action" id="hero-stats-btn">
+              <i data-lucide="pie-chart" style="width: 14px; height: 14px;"></i>
+              <span>View Color & Trim Statistics</span>
+            </button>
+            <button class="btn-header-action" id="hero-calc-btn">
+              <i data-lucide="calculator" style="width: 14px; height: 14px;"></i>
+              <span>Check Spec Rarity</span>
+            </button>
+            <button class="btn-header-action godzilla-btn-accent" id="hero-godzilla-btn">
+              <span style="font-weight:700; color:var(--verified-green); margin-right:4px;">ゴジラ</span>
+              <span>Godzilla Story</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lifelike Green Godzilla Feature Card (on the right) -->
+        <div class="hero-godzilla-card" id="hero-godzilla-card" style="max-width:280px;width:280px;flex-shrink:0;">
+          <div class="godzilla-img-wrap" style="height:130px;max-height:130px;overflow:hidden;position:relative;">
+            <img src="assets/godzilla_green_full.jpg" alt="Godzilla - The Monster from Japan" class="godzilla-feature-img" style="width:100%;height:130px;max-height:130px;object-fit:cover;object-position:center 15%;display:block;">
+            <div class="godzilla-overlay-gradient"></div>
+          </div>
+          <div class="godzilla-card-content" style="padding:10px 14px 12px;">
+            <div class="godzilla-stat-line">
+              <span class="godzilla-stat-val">29 &ndash; 0</span>
+              <span class="godzilla-stat-lbl">JTCC Undefeated Streak</span>
+            </div>
+            <p class="godzilla-card-desc">
+              Dubbed <em>"Godzilla: The Monster from Japan"</em> by Wheels magazine in July 1989, the R32 GT-R dominated Australian Bathurst 1000 & Group A motorsport until regulations were rewritten to ban it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Skyline Model Strip -->
+    <section class="model-strip-outer" id="model-strip">
+      <!-- Populated dynamically by JS -->
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1: VIN / CHASSIS DATABASE EXPLORER                                    -->
+    <!-- ========================================================================= -->
+    <section id="database-view" class="view-section active">
+      <!-- Filter Bar — model + search stay visible; the rest is opt-in -->
+      <div class="filter-panel">
+        <div class="filter-row">
+          <div class="filter-group-left">
+            <select id="filter-model" class="filter-select">
+              <!-- Populated from JDM_DATABASE.models by App.populateModelSelects() -->
+            </select>
+
+            <select id="filter-year" class="filter-select">
+              <option value="ALL">Any Build Year</option>
+            </select>
+
+            <input type="text" id="filter-chassis-search" class="filter-search-input" placeholder="Type ANY VIN (e.g. ER34-012345, BNR34-401880)...">
+          </div>
+
+          <div class="filter-stats-text" id="db-records-count">
+            Showing matching records
+          </div>
+        </div>
+
+        <details class="refine-filters">
+          <summary>Refine by series, trim, color or destination</summary>
+          <div class="filter-row refine-filters-row">
+            <select id="filter-series" class="filter-select">
+              <option value="ALL">All Series / Generations</option>
+            </select>
+
+            <select id="filter-trim" class="filter-select">
+              <option value="ALL">All Trim / Editions</option>
+            </select>
+
+            <select id="filter-color" class="filter-select">
+              <option value="ALL">All Exterior Paint Colors</option>
+            </select>
+
+            <select id="filter-market" class="filter-select">
+              <option value="ALL">All Destinations</option>
+            </select>
+          </div>
+        </details>
+      </div>
+
+      <p class="verified-note">
+        <i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i>
+        Every record below is read directly from the Nissan FAST microfiche &mdash; nothing here is estimated.
+      </p>
+
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="registry-table" id="chassis-data-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="chassis">Chassis / VIN Number</th>
+              <th class="sortable" data-sort="model">Model & Generation</th>
+              <th class="sortable" data-sort="buildDate">Build Date</th>
+              <th class="sortable" data-sort="color">Factory Paint</th>
+              <th>Factory Build Code</th>
+            </tr>
+          </thead>
+          <tbody id="chassis-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-row">
+        <div id="pagination-info">Showing page 1 of 6</div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-page" id="btn-prev-page" disabled>Previous</button>
+          <button class="btn-page" id="btn-next-page">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 1b: NISSAN LEGENDS — Silvia, Stagea & 300ZX, kept separate from the  -->
+    <!-- Skyline-only VIN Database above.                                          -->
+    <!-- ========================================================================= -->
+    <section id="legends-view" class="view-section">
+      <p class="verified-note" style="margin-bottom: 16px;">
+        <i data-lucide="star" style="width: 13px; height: 13px;"></i>
+        Beyond the Skyline: real Nissan FAST factory records for the Silvia, 180SX, Stagea and 300ZX (Z32) families.
+      </p>
+
+      <!-- Legends Model Strip -->
+      <div class="model-strip-outer" id="legends-model-strip" style="margin-bottom: 20px;">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+      <!-- Filter Bar — model + search stay visible; the rest is opt-in -->
+      <div class="filter-panel">
+        <div class="filter-row">
+          <div class="filter-group-left">
+            <select id="legends-filter-model" class="filter-select">
+              <!-- Populated from JDM_DATABASE.models by App.populateModelSelects() -->
+            </select>
+
+            <select id="legends-filter-year" class="filter-select">
+              <option value="ALL">Any Build Year</option>
+            </select>
+
+            <input type="text" id="legends-filter-chassis-search" class="filter-search-input" placeholder="Type ANY VIN (e.g. PS13-012345, WGNC34-401880)...">
+          </div>
+
+          <div class="filter-stats-text" id="legends-db-records-count">
+            Showing matching records
+          </div>
+        </div>
+
+        <details class="refine-filters">
+          <summary>Refine by series, trim, color or destination</summary>
+          <div class="filter-row refine-filters-row">
+            <select id="legends-filter-series" class="filter-select">
+              <option value="ALL">All Series / Generations</option>
+            </select>
+
+            <select id="legends-filter-trim" class="filter-select">
+              <option value="ALL">All Trim / Editions</option>
+            </select>
+
+            <select id="legends-filter-color" class="filter-select">
+              <option value="ALL">All Exterior Paint Colors</option>
+            </select>
+
+            <select id="legends-filter-market" class="filter-select">
+              <option value="ALL">All Destinations</option>
+            </select>
+          </div>
+        </details>
+      </div>
+
+      <p class="verified-note">
+        <i data-lucide="check-circle-2" style="width: 13px; height: 13px;"></i>
+        Every record below is read directly from the Nissan FAST microfiche &mdash; nothing here is estimated.
+      </p>
+
+      <!-- Data Table -->
+      <div class="table-responsive">
+        <table class="registry-table" id="legends-chassis-data-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-sort="chassis">Chassis / VIN Number</th>
+              <th class="sortable" data-sort="model">Model & Generation</th>
+              <th class="sortable" data-sort="buildDate">Build Date</th>
+              <th class="sortable" data-sort="color">Factory Paint</th>
+              <th>Factory Build Code</th>
+            </tr>
+          </thead>
+          <tbody id="legends-chassis-table-body">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-row">
+        <div id="legends-pagination-info">Showing page 1 of 6</div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn-page" id="legends-btn-prev-page" disabled>Previous</button>
+          <button class="btn-page" id="legends-btn-next-page">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 2: PRODUCTION STATISTICS & MATRICES                                  -->
+    <!-- ========================================================================= -->
+    <section id="stats-view" class="view-section">
+      <div class="section-hero">
+        <div class="section-hero-row">
+          <div>
+            <h3 id="stats-header-title">Nissan Skyline Production Statistics</h3>
+            <p>Factory breakdown computed from every FAST record held for this chassis.</p>
+          </div>
+          <select id="stats-model-selector" class="filter-select">
+              <!-- Populated from JDM_DATABASE.models by App.populateModelSelects() -->
+            </select>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="spec-grid" id="stats-metrics-grid">
+        <!-- Populated via JS -->
+      </div>
+
+      <!-- Visual Charts Grid -->
+      <div class="stats-charts-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 28px;">
+        <div class="guide-card">
+          <h4 style="font-size: 0.95rem; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="pie-chart" style="width: 16px; height: 16px; color: var(--nissan-blue);"></i>
+            <span>Exterior Paint Color Distribution</span>
+          </h4>
+          <div style="height: 280px; position: relative;">
+            <canvas id="color-distribution-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="guide-card">
+          <h4 style="font-size: 0.95rem; margin-bottom: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="trending-up" style="width: 16px; height: 16px; color: var(--gtr-red);"></i>
+            <span>Production Timeline by Year</span>
+          </h4>
+          <div style="height: 280px; position: relative;">
+            <canvas id="production-timeline-chart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Color Breakdown Table (collapsed by default — expand to dig in) -->
+      <details class="breakdown-accordion" style="margin-bottom: 16px;">
+        <summary>Factory Paint Code Production Breakdown</summary>
+        <div class="table-responsive">
+          <table class="registry-table">
+            <thead>
+              <tr>
+                <th>Paint Code</th>
+                <th>Color Description</th>
+                <th>Units Produced</th>
+                <th>Percentage of Production</th>
+                <th>Distribution Bar</th>
+                <th>Rarity Status</th>
+              </tr>
+            </thead>
+            <tbody id="stats-color-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- Trim / Edition Breakdown Table (collapsed by default) -->
+      <details class="breakdown-accordion" style="margin-bottom: 28px;">
+        <summary>Trim & Special Edition Production Breakdown</summary>
+        <div class="table-responsive">
+          <table class="registry-table">
+            <thead>
+              <tr>
+                <th>Trim / Edition Name</th>
+                <th>Units Produced</th>
+                <th>Percentage</th>
+                <th>Distribution Bar</th>
+                <th>Collector Rarity Tier</th>
+              </tr>
+            </thead>
+            <tbody id="stats-trim-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- ============================================================= -->
+      <!-- RARITY & "1 OF X" CALCULATOR — merged into this view so the   -->
+      <!-- certificate generator sits next to the stats it's based on,  -->
+      <!-- instead of behind its own tab.                                -->
+      <!-- ============================================================= -->
+      <div class="filter-panel" id="rarity-calculator-block" style="margin-bottom: 20px;">
+        <h3 style="font-size: 1.2rem; color: var(--text-primary); margin-bottom: 6px;">
+          <i data-lucide="sparkles" style="width: 17px; height: 17px; vertical-align: -3px; color: var(--gold-titanium);"></i>
+          Rarity &amp; "1 of X" Calculator
+        </h3>
+        <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5;">
+          Select your Skyline's exact factory options to calculate statistical rarity percentage, survivor ranking, and generate an official printable Certificate of Authenticity.
+        </p>
+      </div>
+
+      <div class="rarity-calc-grid" style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 24px; margin-bottom: 28px;">
+        <!-- Configurator Form -->
+        <div class="guide-card">
+          <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 16px;">Configure Skyline Specification</h4>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Select Skyline Model</label>
+            <select id="calc-model-select" class="form-control">
+              <!-- Populated from JDM_DATABASE.models by App.populateModelSelects() -->
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Factory Trim / Edition</label>
+            <select id="calc-trim-select" class="form-control">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 12px;">
+            <label>Factory Exterior Paint Color</label>
+            <select id="calc-color-select" class="form-control">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label>Chassis Identifier / VIN (Optional for Certificate)</label>
+            <input type="text" id="calc-vin-input" class="form-control mono" placeholder="e.g. ER34-012345, BNR34-000101">
+          </div>
+
+          <div class="form-group" style="margin-bottom: 20px;">
+            <label>Factory Installed Equipment / Options</label>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
+                <input type="checkbox" id="opt-cold-weather" value="cold_weather">
+                <span>Cold Weather Package (High-amp Alternator / Heated Mirrors)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
+                <input type="checkbox" id="opt-carbon" value="carbon_spoiler">
+                <span>Factory Carbon Fiber Aero / Ducted Bonnet / High Wing</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
+                <input type="checkbox" id="opt-leather" value="leather_interior">
+                <span>Factory Leather Upholstery / M-Spec Trim</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
+                <input type="checkbox" id="opt-navi" value="navi_audio">
+                <span>MFD / Triple Center Gauges & Audio Upgrade</span>
+              </label>
+            </div>
+          </div>
+
+          <button class="btn-submit" id="btn-calculate-rarity" style="width: 100%;">
+            <i data-lucide="sparkles" style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; margin-right: 6px;"></i>
+            <span>Calculate Official Rarity</span>
+          </button>
+        </div>
+
+        <!-- Real-time Certificate & Calculation Preview Area -->
+        <div id="calc-result-area">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 3: NISSAN FAST MODEL CODE DECODER                                    -->
+    <!-- ========================================================================= -->
+    <section id="fast-decoder-view" class="view-section">
+      <div class="section-hero">
+        <h3>Factory Model Code Decoder</h3>
+        <p>
+          Every car in the archive carries a factory model code &mdash; the option string Nissan recorded
+          alongside the chassis number. Enter a chassis number to pull up its real code, or start from a code
+          directly. Each character is explained using the archive's own records, not a guess.
+        </p>
+      </div>
+
+      <!-- Step 1: how do you want to start -->
+      <div class="decoder-start-grid">
+        <div class="guide-card">
+          <h4 class="decoder-step"><span class="step-num">1</span> Start from a chassis number</h4>
+          <p class="decoder-hint">The number stamped on the firewall plate, e.g. BNR34-000051.</p>
+          <div class="decoder-input-row">
+            <input type="text" id="decoder-chassis-input" class="form-control mono"
+                   placeholder="BNR34-000051" value="BNR34-000051">
+            <button class="btn-submit" id="btn-decode-chassis">Look up</button>
+          </div>
+          <div id="decoder-chassis-result" class="decoder-lookup-result"></div>
+        </div>
+
+        <div class="guide-card">
+          <h4 class="decoder-step"><span class="step-num">2</span> Or pick a code that exists</h4>
+          <p class="decoder-hint">The most common real codes for each chassis, with how many cars carry them.</p>
+          <select id="decoder-model-select" class="form-control" style="margin-bottom: 12px;">
+            <!-- populated from the database -->
+          </select>
+          <div id="decoder-code-chips" class="decoder-chip-row"></div>
+        </div>
+      </div>
+
+      <!-- The code under examination -->
+      <div class="guide-card" id="decoder-code-panel" style="margin-bottom: 20px;">
+        <div class="decoder-code-head">
+          <div>
+            <label class="decoder-label">FACTORY MODEL CODE</label>
+            <input type="text" id="fast-input-string" class="decoder-code-input mono" value="GJPRWYR34ZDAAAK-DR34">
+          </div>
+          <button class="btn-submit" id="btn-run-fast-decode">Decode</button>
+        </div>
+        <div id="decoder-layout-note" class="decoder-layout-note"></div>
+      </div>
+
+      <!-- What the car actually is -->
+      <div id="decoder-build-summary"></div>
+
+      <!-- Results -->
+      <div id="fast-decoded-output-area"></div>
+
+      <!-- Character key -->
+      <div class="guide-card" style="margin-top: 20px;">
+        <div class="decoder-key-head">
+          <div>
+            <h4 class="decoder-step">Character key</h4>
+            <p class="decoder-hint" style="margin-bottom:0;">
+              What each letter means at each position, worked out from the records themselves.
+              A meaning is only listed when it holds for at least 90% of the cars carrying that
+              character and beats the generation's own base rate by 25 points, on 25 cars or more.
+              Each generation is keyed separately &mdash; they do not share a layout.
+            </p>
+          </div>
+          <select id="decoder-key-gen" class="filter-select"></select>
+        </div>
+        <div id="decoder-key-body"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW: HISTORY & INFO — curated general knowledge, not FAST-derived data.  -->
+    <!-- Every figure here was checked against public sources before writing;      -->
+    <!-- approximate counts are worded as approximate rather than stated as exact. -->
+    <!-- ========================================================================= -->
+    <section id="history-view" class="view-section">
+      <div class="section-hero">
+        <h3>Skyline GT-R History</h3>
+        <p>
+          Forty-three years of Skyline before this archive's first record, the Nismo Omori Factory special editions, and the tuner shops that shaped how the world sees the car.
+        </p>
+      </div>
+
+      <p class="editorial-note">
+        <i data-lucide="info" style="width: 13px; height: 13px;"></i>
+        Unlike the rest of the archive, this section is curated general history, not derived from the FAST records. Approximate figures are worded as approximate, and every claim here was checked against public sources before writing.
+      </p>
+
+      <!-- ---- The full lineage, 1964 to the R35 handoff ------------------------ -->
+      <div class="guide-card" style="margin-bottom: 16px;">
+        <h4 style="font-size: 0.95rem; color: var(--text-primary);">The Lineage</h4>
+        <p style="color: var(--text-secondary); font-size: 0.82rem;">Six decades of Skyline, condensed to the moments that actually shaped the badge.</p>
+      </div>
+
+      <div class="gtr-timeline">
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">May 1964</div>
+          <h4 class="gtr-timeline-title">Before The Badge: A Skyline Chases a Porsche</h4>
+          <div class="gtr-timeline-body">
+            <p>There was no "GT-R" yet &mdash; just the Prince Skyline, built by Prince Motor Company before its 1966 merger into Nissan. To homologate a race version for the 2nd Japan Grand Prix, Prince's engineers stretched a Skyline 1500's nose by 200mm and shoehorned in the straight-six "G7" engine from the larger Gloria, hand-building the run in the two days before the race.</p>
+            <p>It worked well enough that driver Yoshikazu Sunako briefly passed the race's favourite, a factory Porsche 904 Carrera GTS, before the German car reclaimed the lead and the win. Second place wasn't a victory, but a Japanese sedan running with a purpose-built European sports car was enough to make the country pay attention &mdash; the moment every Skyline GT-R since has traced itself back to.</p>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1969&ndash;1972</div>
+          <h4 class="gtr-timeline-title">The Hakosuka (PGC10 / KPGC10)</h4>
+          <div class="gtr-timeline-body">
+            <p>The GT-R badge itself began in February 1969, on the four-door PGC10, joined a year later by a lighter two-door version, the KPGC10 &mdash; nicknamed <strong>Hakosuka</strong> ("boxy Skyline") by fans ever since. Both carried the S20: a 160 PS DOHC 24-valve straight-six directly related to the GR8 racing engine out of Prince's own R380 prototype, in a chassis that otherwise had no business hosting a race motor.</p>
+            <p>It worked. The Hakosuka went on a 50-race winning streak in Japanese touring car racing between 1969 and 1972 &mdash; the result that actually built the GT-R legend, years before anyone outside Japan had heard the name.</p>
+            <div class="godzilla-stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="godzilla-metric-pill"><span class="stat-num">50&ndash;0</span><span class="stat-desc">Race win streak</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">160 PS</span><span class="stat-desc">S20 straight-six</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">1969</span><span class="stat-desc">First GT-R badge</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1973</div>
+          <h4 class="gtr-timeline-title">The Kenmeri (KPGC110)</h4>
+          <div class="gtr-timeline-body">
+            <p>The second-generation GT-R arrived in January 1973 on the C110 Skyline, nicknamed <strong>Kenmeri</strong> after an ad campaign built around a couple named Ken and Mary &mdash; a softer, more road-going take on the formula than the racing-bred Hakosuka. It never got the chance to prove itself: the 1973 oil crisis and Japan's newly tightened emissions rules made the high-strung S20 impossible to keep selling, and Nissan cancelled the car within the year.</p>
+            <p>Only 197 were built before the badge disappeared entirely. The Kenmeri predates every chassis this archive holds real FAST VIN records for &mdash; it isn't part of the VIN Database, so this figure is public production history, not something pulled from this site's own records.</p>
+            <div class="godzilla-stat-grid" style="grid-template-columns: repeat(2, 1fr);">
+              <div class="godzilla-metric-pill"><span class="stat-num">197</span><span class="stat-desc">Units built, total</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">&lt;12 mo</span><span class="stat-desc">Production window</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1973&ndash;1989</div>
+          <h4 class="gtr-timeline-title">Sixteen Years Without a GT-R</h4>
+          <div class="gtr-timeline-body">
+            <p>No Skyline wore the GT-R badge for the next sixteen years. It's not that Nissan stopped building fast Skylines &mdash; the R30 generation's DR30 ("Tekkamen," the Iron Mask, for its blacked-out grille) ran a turbocharged FJ20ET four-cylinder and was homologated into Group A racing in the early '80s, and the R31's HR31 GTS-R that followed in late 1987 built 823 homologation cars around a reworked, bigger-turbo RB20DET specifically to win Group A touring car racing. Both were genuinely quick factory Nissans. Neither got to call itself a GT-R.</p>
+            <p>Both of those chassis exist in the same Nissan FAST source this archive reads from &mdash; the DR30 and HR31 files hold over 220,000 combined factory records &mdash; but they're deliberately left out of this build, since the site draws its line at the GT-R badge itself.</p>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1989&ndash;1994</div>
+          <h4 class="gtr-timeline-title">R32: Godzilla Returns</h4>
+          <div class="gtr-timeline-body">
+            <img src="assets/godzilla_banner.jpg" alt="Nissan Skyline GT-R R32, the car the press nicknamed Godzilla" class="gtr-timeline-image">
+            <p>The badge returned in 1989 on the BNR32, and this time it came with technology no one else in touring car racing had answered yet: the RB26DETT twin-turbo straight-six and ATTESA E-TS computer-controlled all-wheel drive. The result went undefeated through the JTCC and dominated Australian and Japanese Group A racing so completely that regulators eventually rewrote the rules just to stop it &mdash; the run that earned it the "Godzilla" nickname from <em>Wheels</em> magazine in 1989.</p>
+          </div>
+          <button class="btn-page" id="btn-history-open-godzilla" style="margin-top: 8px;">Read the full Godzilla story</button>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1995&ndash;1998</div>
+          <h4 class="gtr-timeline-title">R33: The Nürburgring Record</h4>
+          <div class="gtr-timeline-body">
+            <p>The BCNR33 kept the RB26DETT and widened what ATTESA E-TS Pro could do, and in 1995 became the first production car to lap the Nürburgring Nordschleife in under 8 minutes &mdash; 7:59.887, a record this archive's own BCNR33 entry still carries. Nismo followed it with two of the rarest road-going GT-Rs ever built: the 400R (a 2.8-litre stroker RB-X GT2 rated at 400 PS, only 44 built of a planned 100) and the LM Limited (188 cars in Champion Blue, marking Nismo's 1995&ndash;96 Le Mans GT class entry).</p>
+            <div class="godzilla-stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="godzilla-metric-pill"><span class="stat-num">7:59.887</span><span class="stat-desc">N&uuml;rburgring lap</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">44</span><span class="stat-desc">Nismo 400R built</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">188</span><span class="stat-desc">LM Limited built</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">1999&ndash;2002</div>
+          <h4 class="gtr-timeline-title">R34: The Last of the Inline-Six GT-Rs</h4>
+          <div class="gtr-timeline-body">
+            <img src="assets/gtr_r34_hero.jpg" alt="Nissan Skyline GT-R R34" class="gtr-timeline-image">
+            <p>The BNR34 was the final Skyline GT-R built around the RB26DETT, in a shorter, stiffer body with a Getrag 6-speed and the industry's first factory colour multi-function LCD display, tracking boost and oil temperature in the centre stack. Nissan split it into four real trims over the run &mdash; base, V-Spec (active LSD, carbon bonnet, upgraded turbos), V-Spec II (2000, stiffer again, NACA-duct bonnet, ball-bearing turbos) and M-Spec (2001, leather and a Bose stereo over outright stiffness) &mdash; before closing the RB26 era out with the Nür in 2002: 1,003 final-run cars (718 V-Spec II Nür, 285 M-Spec Nür) built around N1 racing-spec internals.</p>
+            <p>It's also the only generation Nismo chose for its most extreme factory tuning programmes &mdash; see Omori Factory Special Editions below &mdash; and, through 2 Fast 2 Furious and Gran Turismo, the generation that introduced the GT-R to an entire generation of enthusiasts who'd never see one drive past in person.</p>
+            <div class="godzilla-stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+              <div class="godzilla-metric-pill"><span class="stat-num">1,003</span><span class="stat-desc">N&uuml;r units, total</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">4</span><span class="stat-desc">Real factory trims</span></div>
+              <div class="godzilla-metric-pill"><span class="stat-num">2002</span><span class="stat-desc">Last RB26 built</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gtr-timeline-item">
+          <div class="gtr-timeline-year">2007</div>
+          <h4 class="gtr-timeline-title">R35: A New Name</h4>
+          <div class="gtr-timeline-body">
+            <p>When the GT-R returned in 2007, Nissan dropped "Skyline" from the name and gave it a new VR38DETT twin-turbo V6 on a purpose-built platform &mdash; a clean break from the RB26 lineage this archive documents, not an evolution of it. It's a different car built for a different era, which is why it isn't part of this archive.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ---- Nismo Omori Factory special editions ------------------------------ -->
+      <div class="guide-card" style="margin: 28px 0 16px;">
+        <h4 style="font-size: 0.95rem; color: var(--text-primary);">Omori Factory Special Editions</h4>
+        <p style="color: var(--text-secondary); font-size: 0.82rem;">Nismo's own three-tier factory tuning programme for the RB26DETT &mdash; S, R and Z, in ascending order of how far Nismo was willing to go. All three grew out of Nismo's Omori facility, the same shop that still runs Nissan's official heritage restoration work today.</p>
+      </div>
+
+      <div class="era-card-grid">
+        <div class="era-card">
+          <div class="era-card-accent tier-s"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">S-tune</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">"Street" &mdash; the road-biased tier</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>~14</strong>cars converted</div>
+              <div class="era-card-stat"><strong>1.1 bar</strong>peak boost</div>
+            </div>
+            <p class="era-card-text">Nismo's most road-focused build: an aggressive camshaft and a metal head gasket, with boost raised to roughly 1.1 bar &mdash; aimed at everyday drivability and throttle response rather than a lap time. The least extreme of the three tiers, and the rarest to find offered today.</p>
+          </div>
+        </div>
+
+        <div class="era-card">
+          <div class="era-card-accent tier-r"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">R-tune</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">The race-leaning tier</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>~75&ndash;80</strong>cars built</div>
+              <div class="era-card-stat"><strong>443 PS</strong>R1 engine spec</div>
+            </div>
+            <p class="era-card-text">A genuinely deeper build: N1-spec internals (block, pistons, crank), a thinner head gasket for higher compression, boost up to 1.2 bar, and the R1 engine package on top of an upgraded turbo, camshaft, intercooler, radiator, oil cooler and twin-plate clutch. Offered across the BNR33, BCNR33 and BNR34 &mdash; the only tier that spanned two generations.</p>
+          </div>
+        </div>
+
+        <div class="era-card">
+          <div class="era-card-accent tier-z"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">Z-tune</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">The ultimate tier &mdash; R34 only</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>19&ndash;20</strong>ever completed</div>
+              <div class="era-card-stat"><strong>500 PS</strong>catalog rating</div>
+            </div>
+            <p class="era-card-text">The most extreme of the three, and R34-exclusive. Nismo bought back low-mileage V-Spec GT-Rs, stripped them to the bare chassis, reinforced the shell with carbon fibre, and rebuilt the RB26 as a 2.8-litre stroker (RB-X GT2) &mdash; real output is generally put well above its 500 PS catalog rating. Built to mark Nismo's 20th anniversary after a 2003 N&uuml;rburgring test programme, it remains the single most valuable R34 GT-R variant, trading today well into seven figures.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ---- Famous tuner builds ------------------------------------------------ -->
+      <div class="guide-card" style="margin: 28px 0 16px;">
+        <h4 style="font-size: 0.95rem; color: var(--text-primary);">Famous Tuner Builds</h4>
+        <p style="color: var(--text-secondary); font-size: 0.82rem;">The independent Japanese shops that built their own reputations on the GT-R, working alongside &mdash; not for &mdash; Nissan's own factory programmes.</p>
+      </div>
+
+      <div class="era-card-grid">
+        <div class="era-card">
+          <div class="era-card-accent tier-z"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">Top Secret</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">Kazuhiko "Smokey" Nagata &mdash; Chiba, founded 1991</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>1991</strong>own shop opened</div>
+              <div class="era-card-stat"><strong>197 mph</strong>UK public-road run</div>
+            </div>
+            <p class="era-card-text">Nagata's tuning work traces back to 1978, working discreetly out of Trust; "Top Secret" became its own name, then its own shop in Chiba, in 1991. It built GT-Rs across every generation from the R32 on, but became a household name for chasing outright top speed &mdash; most famously a gold BNR34 that Nagata drove to a reported 197 mph (317 km/h) on a UK motorway in 2000, a run that made headlines worldwide and briefly landed him in a UK jail cell. The shop later ran a VQ-swapped R34 demo car at the 2003 Tokyo Auto Salon, showing it was never precious about the RB26 either.</p>
+          </div>
+        </div>
+
+        <div class="era-card">
+          <div class="era-card-accent tier-r"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">Mine's</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">Michizo Niikura &mdash; Yokosuka, founded 1985</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>1988</strong>first ECU tune</div>
+              <div class="era-card-stat"><strong>57.746s</strong>Tsukuba lap</div>
+            </div>
+            <p class="era-card-text">Founded in 1985 in Yokosuka, Mine's built its early reputation on ECU work, launching the VX-ROM reprogrammed ECU for the R31 GT-R in 1988 &mdash; among the first aftermarket ECU tunes sold for any Japanese sports car. Its later N1-based BNR34 build became one of the fastest street-legal Skylines ever put on a stopwatch, lapping Tsukuba Circuit in 57.746 seconds &mdash; a refined, road-registered car rather than a stripped-out time-attack special.</p>
+          </div>
+        </div>
+
+        <div class="era-card">
+          <div class="era-card-accent tier-s"></div>
+          <div class="era-card-body">
+            <h5 class="era-card-title">TommyKaira</h5>
+            <p style="color: var(--text-muted); font-size: 0.74rem; margin-top: -6px; margin-bottom: 10px;">Yoshikazu Tomita &amp; Kikuo Kaira &mdash; Kyoto, founded 1986</p>
+            <div class="era-card-stats">
+              <div class="era-card-stat"><strong>1986</strong>company founded</div>
+              <div class="era-card-stat"><strong>R31&ndash;R34</strong>generations tuned</div>
+            </div>
+            <p class="era-card-text">Founded in 1986 &mdash; the name is a portmanteau of its two founders &mdash; TommyKaira built its first Skyline tune on the R31 GTS-R in 1988, then followed the GT-R through the R32, R33 and R34, offering Look, Basic and Full Spec R packages depending on how far a customer wanted to go. Its R32-based flagship was simply named "R," and its Full Spec R33s and R34s are still traded today specifically for the TommyKaira badge.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW 6: TOOLS — Paint Index, Spotter's Guide, Compare, one tab, sub-nav'd -->
+    <!-- ========================================================================= -->
+    <section id="tools-view" class="view-section">
+      <div class="section-hero">
+        <h3>Reference Tools</h3>
+        <p style="margin-bottom: 14px;">Model configuration, paint codes, authenticity checks, and side-by-side comparison.</p>
+        <div class="tool-subtab-row">
+          <button class="tool-subtab-btn active" data-toolview="paint-index-view">
+            <i data-lucide="palette" style="width: 14px; height: 14px;"></i>
+            <span>Colors &amp; Configuration</span>
+          </button>
+          <button class="tool-subtab-btn" data-toolview="spotter-view">
+            <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i>
+            <span>Authenticity &amp; Spotter's Guide</span>
+          </button>
+          <button class="tool-subtab-btn" data-toolview="compare-view">
+            <i data-lucide="columns-2" style="width: 14px; height: 14px;"></i>
+            <span>Chassis Compare</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="paint-index-view" class="tool-subview active">
+        <!-- Model configuration guide — engine, drivetrain, transmission and
+             grade notes per chassis, grouped by generation. Pulled live from
+             the same model data the rest of the site uses, so this can never
+             drift out of sync with the database. -->
+        <div class="guide-card" style="margin-bottom: 20px;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 4px; color: var(--text-primary);">Model Configuration Guide</h4>
+          <p style="color: var(--text-secondary); font-size: 0.82rem;">
+            What each chassis code actually is &mdash; engine, drivetrain and gearbox &mdash; grouped by generation.
+            For exact grade/trim production counts, see Stats &amp; Rarity.
+          </p>
+        </div>
+        <div id="config-guide-groups">
+          <!-- Populated via JS: one <details> accordion per generation -->
+        </div>
+
+        <div class="guide-card" style="margin: 24px 0 16px;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 4px; color: var(--text-primary);">Hero Factory Colors</h4>
+          <p style="color: var(--text-secondary); font-size: 0.82rem;">The well-documented, most-requested paint codes.</p>
+        </div>
+        <div class="paint-grid" id="paint-cards-grid">
+          <!-- Populated via JS -->
+        </div>
+
+        <!-- Complete factory paint code table, every code actually found in the
+             543,299 FAST records, each broken down by which chassis carry it.
+             Collapsed by default — it's long, and most visits just want the
+             hero colors above. -->
+        <details class="breakdown-accordion" style="margin-top: 20px;">
+          <summary>Every Factory Paint Code In The Archive</summary>
+          <div style="padding: 0 16px 4px;">
+            <p style="color: var(--text-secondary); font-size: 0.82rem; margin-bottom: 16px;">
+              The cards above are the well-documented hero colors. This table is every paint code that actually
+              appears in the FAST data, expand a row to see exactly which chassis it was built on.
+            </p>
+            <input type="text" id="paint-all-search" class="filter-search-input" style="margin-bottom: 14px; max-width: 320px;"
+                   placeholder="Search by code or color name...">
+          </div>
+          <div class="table-responsive">
+            <table class="registry-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Color</th>
+                  <th>Records</th>
+                  <th>% of Archive</th>
+                  <th>Chassis</th>
+                </tr>
+              </thead>
+              <tbody id="paint-all-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+
+      <div id="spotter-view" class="tool-subview">
+        <div class="guide-card">
+          <h3 style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 8px;">Skyline Authenticity & Identification Guide</h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
+            Spotting genuine models, verifying firewall stamped chassis numbers, and identifying fake GT-R conversions from ER34 GT-T or ECR33 donors.
+          </p>
+
+          <div class="guide-step-grid">
+            <div class="guide-step-item">
+              <div class="guide-step-num">01</div>
+              <div class="guide-step-title">Blue Model Identification Plate</div>
+              <p class="guide-step-text">
+                Located on the passenger side firewall. The plate is made of blue anodized stamped aluminum attached with two round factory blind rivets. Ensure the font is embossed from behind, with no signs of rivet tampering or laser etching.
+              </p>
+            </div>
+
+            <div class="guide-step-item">
+              <div class="guide-step-num">02</div>
+              <div class="guide-step-title">Firewall Stamped Chassis Number</div>
+              <p class="guide-step-text">
+                Directly stamped into the metal firewall above the brake booster (e.g. <code>BNR34-001234</code> or <code>ER34-024890</code>). Factory stamps feature distinct serif font styles and uniform stamping depth with undisturbed factory paint.
+              </p>
+            </div>
+
+            <div class="guide-step-item">
+              <div class="guide-step-num">03</div>
+              <div class="guide-step-title">Spotting GT-T to GT-R Conversions</div>
+              <p class="guide-step-text">
+                Key indicators: Genuine GT-Rs feature factory widened rear steel quarters (no body filler seams), wide aluminum front fenders with GT-R badges, 4WD front driveshaft tunnel clearance, factory ATTESA pump in the trunk, and genuine MFD wiring loom.
+              </p>
+            </div>
+
+            <div class="guide-step-item">
+              <div class="guide-step-num">04</div>
+              <div class="guide-step-title">Engine Block Casting Numbers</div>
+              <p class="guide-step-text">
+                Standard RB26DETT features casting mark <strong>05U</strong> on the intake side. N1 homologation and Nür models feature the reinforced thick-wall <strong>24U</strong> casting. RB25DET NEO features <strong>NEO</strong> stamped on the cam covers and high-compression solid lifters.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="compare-view" class="tool-subview">
+        <div class="compare-select-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+          <div class="guide-card">
+            <label style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">SELECT SKYLINE A</label>
+            <select id="compare-select-a" class="form-control" style="margin-top: 6px;">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+          <div class="guide-card">
+            <label style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">SELECT SKYLINE B</label>
+            <select id="compare-select-b" class="form-control" style="margin-top: 6px;">
+              <!-- Populated via JS -->
+            </select>
+          </div>
+        </div>
+
+        <div id="compare-result-area">
+          <!-- Populated via JS -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: CHASSIS DETAIL SHEET & CERTIFICATE MODAL                         -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay" id="chassis-detail-modal">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="gtr-emblem" style="font-size: 1.1rem;">SKYLINE</span>
+          <span style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">OFFICIAL VEHICLE SPECIFICATION SHEET</span>
+        </div>
+        <button class="modal-close-btn" id="modal-detail-close">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-detail-body">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: GODZILLA HERITAGE & ORIGIN STORY MODAL                             -->
+  <!-- ========================================================================= -->
+  <div class="modal-overlay" id="godzilla-lore-modal">
+    <div class="modal-container" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <span class="godzilla-kanji-tag">ゴジラ</span>
+          <span style="font-family: var(--font-display); font-size: 1.05rem; color: var(--text-primary);">GODZILLA: THE MONSTER FROM JAPAN</span>
+        </div>
+        <button class="modal-close-btn" id="modal-godzilla-close">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 24px;">
+        <div class="godzilla-modal-hero" style="position:relative;height:180px;max-height:180px;overflow:hidden;">
+          <img src="assets/godzilla_green_full.jpg" alt="Godzilla" class="godzilla-modal-img" style="width:100%;height:100%;object-fit:cover;object-position:center 15%;display:block;">
+          <div class="godzilla-modal-overlay"></div>
+          <div class="godzilla-modal-badge">
+            <span class="godzilla-flag">🇯🇵 ➔ 🇦🇺</span>
+            <span>BATHURST 1000 & JTCC LEGEND</span>
+          </div>
+        </div>
+
+        <div class="godzilla-story-text">
+          <h3 style="font-size: 1.25rem; color: var(--text-primary); margin-bottom: 10px;">
+            Why is the Nissan Skyline GT-R called "Godzilla"?
+          </h3>
+          <p style="color: var(--text-secondary); font-size: 0.9rem; line-height: 1.65; margin-bottom: 14px;">
+            In <strong>July 1989</strong>, Australian motoring magazine <em>Wheels</em> published a cover feature on the revolutionary new BNR32 Skyline GT-R titled <strong>"Godzilla: The Monster from Japan"</strong>.
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.65; margin-bottom: 14px;">
+            Equipped with its all-conquering <strong>RB26DETT twin-turbo engine</strong> and computerized <strong>ATTESA E-TS all-wheel drive</strong>, the GT-R dominated Australian Group A touring car racing. Driven by Jim Richards and Mark Skaife for Gibson Motorsport, the R32 won the prestigious <strong>Bathurst 1000 in 1991 and 1992</strong>, and back-to-back Australian Touring Car Championships (ATCC).
+          </p>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.65; margin-bottom: 18px;">
+            In Japan, the BNR32 achieved an astonishing <strong>29 victories out of 29 races (29-0)</strong> in the Japanese Touring Car Championship (JTCC) across four seasons, remaining completely undefeated until the series disbanded. The car was so dominant that Australian racing authorities abolished Group A rules entirely to ban the GT-R from competition.
+          </p>
+
+          <div class="godzilla-stat-grid">
+            <div class="godzilla-metric-pill">
+              <span class="stat-num">29 &ndash; 0</span>
+              <span class="stat-desc">JTCC Race Wins</span>
+            </div>
+            <div class="godzilla-metric-pill">
+              <span class="stat-num">1991 & '92</span>
+              <span class="stat-desc">Bathurst 1000 Champions</span>
+            </div>
+            <div class="godzilla-metric-pill">
+              <span class="stat-num">8:20</span>
+              <span class="stat-desc">Nürburgring Record (1989)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-tribute">
+        <strong>BPZILLA &mdash; NISSAN SKYLINE FACTORY RECORD ARCHIVE</strong><br>
+        543,299 records read directly from the Nissan FAST microfiche. Named twice over: for the blue plate on the firewall where every one of these numbers is stamped, and for what the motoring press started calling the R32 in 1989.
+      </div>
+      <ul class="footer-links">
+        <li><a href="#" class="tab-link" data-tab="database-view">VIN Archive</a></li>
+        <li><a href="#" class="tab-link" data-tab="stats-view">Stats &amp; Rarity</a></li>
+        <li><a href="#" class="tab-link" data-tab="fast-decoder-view">Plate Decoder</a></li>
+        <li><a href="#" class="tab-link" data-tab="history-view">History</a></li>
+        <li><a href="#" class="tab-link" data-tab="legends-view">Nissan Legends</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="js/database.js"></script>
+  <script src="js/modelDecoder.js"></script>
+  <script src="js/rarityCalculator.js"></script>
+  <script src="js/paintIndex.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>

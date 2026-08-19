@@ -1,0 +1,1126 @@
+/* ==========================================================================
+   BPZILLA - CORE DESIGN SYSTEM & STYLESHEET
+   Aesthetics: Light Archive with a kaiju identity. Warm paper and ink keep
+   543,299 rows readable; the brand carries the Godzilla reference through the
+   dorsal wordmark, the atomic-blue accent and the dark hero plate.
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,400;0,600;0,700;1,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  /* --------------------------------------------------------------------
+     LIGHT ARCHIVE PALETTE
+     Warm paper and ink, in the spirit of a factory brochure or an auction
+     catalogue. The GT-R red stays, but as an accent rather than a glow.
+     -------------------------------------------------------------------- */
+
+  /* Surfaces */
+  --bg-primary: #f6f4f0;      /* page — warm paper */
+  --bg-secondary: #ffffff;    /* cards, header, tables */
+  --bg-tertiary: #efebe4;     /* chips, inputs, quiet fills */
+  --bg-card: #ffffff;
+  --bg-hover: #e9e4db;
+  --bg-glass: rgba(255, 255, 255, 0.88);
+  --bg-inverse: #1c1f24;      /* the few panels that stay dark */
+
+  /* Accents — all darkened enough to sit on paper at 4.5:1 or better */
+  --gtr-red: #bd1620;
+  --gtr-red-glow: rgba(189, 22, 32, 0.18);
+  --gtr-red-dark: #8f1018;
+  --gtr-red-soft: rgba(189, 22, 32, 0.08);
+  --nissan-blue: #17568f;
+  --nissan-blue-glow: rgba(23, 86, 143, 0.18);
+  /* House colour — the shade of the firewall plate itself */
+  --plate-blue: #1c4f7c;
+  --plate-blue-deep: #12395c;
+
+  /* Atomic breath. The bright value is for glow and for the dark hero plate,
+     where it clears 6.6:1. On paper it only manages 2.7:1, so anything that
+     has to be READ uses --atomic-ink instead, which clears 4.8:1 on every
+     surface in the light theme. */
+  --atomic: #3fa7d6;
+  --atomic-ink: #176d95;
+  --atomic-soft: rgba(63, 167, 214, 0.14);
+  --nur-jade: #55634e;
+  --gold-titanium: #7d5f13;
+  --silver-spark: #5f6874;
+  --purple-halo: #6320a3;
+  --verified-green: #1f7a34;
+
+  /* Ink & rules */
+  --text-primary: #191c20;
+  --text-secondary: #4c545e;
+  --text-muted: #626a76;
+  --text-on-accent: #ffffff;
+  --text-on-inverse: #f2f0ec;
+  --border-subtle: #e3ddd2;
+  --border-strong: #cec6b8;
+  --border-glow: rgba(189, 22, 32, 0.4);
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Chakra Petch', 'Bebas Neue', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Transitions & Shadows — soft and low, never neon */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --shadow-sm: 0 1px 2px rgba(40, 35, 25, 0.05), 0 1px 3px rgba(40, 35, 25, 0.04);
+  --shadow-md: 0 4px 14px rgba(40, 35, 25, 0.08);
+  --shadow-glow: 0 0 0 3px rgba(189, 22, 32, 0.14);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+/* Reset & Base Setup */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 15px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: 
+    radial-gradient(circle at 50% 0%, rgba(23, 86, 143, 0.05) 0%, transparent 55%),
+    radial-gradient(circle at 100% 100%, rgba(189, 22, 32, 0.04) 0%, transparent 45%),
+    var(--bg-primary);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-tertiary);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gtr-red);
+}
+
+/* Typography Utilities */
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Header & Navigation Bar */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.header-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 10px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.brand-container {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* The wordmark is the firewall plate: a small stamped blue tag with a rivet
+   at each end, which is where every number in this archive comes from. */
+.brand-logo-badge {
+  position: relative;
+  background: linear-gradient(160deg, var(--plate-blue), var(--plate-blue-deep));
+  border: 1px solid var(--plate-blue-deep);
+  padding: 7px 10px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+              inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+              var(--shadow-sm);
+}
+
+/* Dorsal crest. A serrated ridge along the top of the tag — irregular teeth,
+   because an even repeat reads as ornament rather than as a spine. Abstract
+   on purpose: a shape, not anyone's monster. */
+.brand-dorsal {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  top: -11px;
+  height: 13px;
+  background: linear-gradient(180deg, var(--atomic) 0%, var(--plate-blue) 90%);
+  clip-path: polygon(0.0% 100.0%, 5.6% 38.0%, 11.1% 100.0%, 16.7% 12.0%, 22.2% 100.0%, 27.8% 45.0%, 33.3% 100.0%, 38.9% 0.0%, 44.4% 100.0%, 50.0% 30.0%, 55.6% 100.0%, 61.1% 8.0%, 66.7% 100.0%, 72.2% 48.0%, 77.8% 100.0%, 83.3% 22.0%, 88.9% 100.0%, 94.4% 42.0%, 100.0% 100.0%);
+  pointer-events: none;
+}
+.brand-dorsal i { display: none; }
+
+.plate-rivet {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #eef2f6, #8fa3b5 60%, #5d7285);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+
+.plate-emblem {
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.28rem;
+  line-height: 1;
+  letter-spacing: 1.5px;
+}
+
+.plate-tag {
+  color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.28rem;
+  line-height: 1;
+  letter-spacing: 3px;
+}
+
+.brand-text-group h1 {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.brand-text-group .brand-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  letter-spacing: 0.5px;
+}
+
+/* Header Live Quick Search */
+.header-search-wrap {
+  flex: 1;
+  max-width: 460px;
+  margin: 0 24px;
+  position: relative;
+}
+
+.header-search-input {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-strong);
+  border-radius: 20px;
+  padding: 8px 16px 8px 38px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  transition: var(--transition-fast);
+}
+
+.header-search-input:focus {
+  outline: none;
+  border-color: var(--gtr-red);
+  box-shadow: var(--shadow-glow);
+}
+
+.search-icon-pos {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-shortcut-hint {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-header-action {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-fast);
+}
+
+.btn-header-action:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.btn-header-action.highlight {
+  background: linear-gradient(135deg, var(--gtr-red), var(--gtr-red-dark));
+  border-color: var(--gtr-red);
+  color: var(--text-on-accent);
+}
+.btn-header-action.highlight:hover {
+  background: linear-gradient(135deg, var(--gtr-red-dark), var(--gtr-red-dark));
+  box-shadow: var(--shadow-sm);
+}
+
+/* Compact record-count line — a single line, not a 4-box bar */
+.telemetry-ticker-bar {
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 5px 24px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.ticker-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ticker-sep {
+  color: var(--border-strong);
+}
+
+.ticker-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.ticker-value.highlight-red {
+  color: var(--gtr-red);
+}
+.ticker-value.highlight-blue {
+  color: var(--nissan-blue);
+}
+.ticker-value.highlight-gold {
+  color: var(--gold-titanium);
+}
+.ticker-value-muted {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Main Navigation Tab Bar */
+.nav-tab-bar {
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 4px;
+}
+
+.nav-tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: var(--transition-fast);
+}
+
+.nav-tab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.nav-tab-btn.active {
+  color: var(--gtr-red);
+  border-bottom-color: var(--gtr-red);
+  background: var(--gtr-red-soft);
+}
+
+.nav-tab-btn-legends {
+  margin-left: auto;
+  border-left: 1px solid var(--border-subtle);
+  padding-left: 20px;
+}
+
+.nav-tab-btn .tab-badge {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.68rem;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.nav-tab-btn.active .tab-badge {
+  border-color: var(--border-glow);
+  color: var(--gtr-red);
+}
+
+/* Tools sub-nav (Paint Index / Spotter's Guide / Compare, one tab) */
+.tool-subtab-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tool-subtab-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition-fast);
+}
+
+.tool-subtab-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.tool-subtab-btn.active {
+  color: var(--gtr-red);
+  border-color: var(--border-glow);
+  background: var(--gtr-red-soft);
+}
+
+.tool-subview {
+  display: none;
+}
+.tool-subview.active {
+  display: block;
+}
+
+/* Expand/collapse accordions — model generations & stat breakdown tables.
+   Native <details>/<summary>, styled with a +/- marker instead of the
+   default triangle, so nothing takes up screen space until asked for. */
+.model-gen-group,
+.breakdown-accordion {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.model-gen-group > summary,
+.breakdown-accordion > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  transition: var(--transition-fast);
+}
+.model-gen-group > summary::-webkit-details-marker,
+.breakdown-accordion > summary::-webkit-details-marker {
+  display: none;
+}
+
+.model-gen-group > summary:hover,
+.breakdown-accordion > summary:hover {
+  background: var(--bg-hover);
+}
+
+.model-gen-group > summary::before,
+.breakdown-accordion > summary::before {
+  content: '+';
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--gtr-red);
+  width: 18px;
+  flex-shrink: 0;
+}
+.model-gen-group[open] > summary::before,
+.breakdown-accordion[open] > summary::before {
+  content: '\2212'; /* minus sign */
+}
+
+.model-gen-group .model-gen-label {
+  flex: 1;
+}
+.model-gen-group .model-gen-count {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.model-gen-group .model-quick-strip {
+  padding: 4px 16px 16px;
+  margin-bottom: 0;
+}
+.breakdown-accordion > .table-responsive {
+  padding: 0 16px 16px;
+}
+
+/* Model Configuration Guide — one row per chassis, inside a generation
+   accordion (reuses .model-gen-group). */
+.config-guide-list {
+  padding: 4px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.config-guide-row {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.config-guide-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.config-guide-code {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.config-guide-chassis {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.config-guide-name {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.config-guide-specs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+.config-guide-specs strong {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.config-guide-desc {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* Once, not per-row: states the FAST-verified claim a single time. */
+.verified-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--verified-green);
+  font-size: 0.78rem;
+  margin-bottom: 10px;
+}
+
+/* The inverse of .verified-note: flags a section as curated knowledge
+   rather than something read out of the FAST records. */
+.editorial-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  margin-bottom: 16px;
+}
+
+/* History page — a vertical timeline for the lineage narrative, deliberately
+   not another accordion table: this is meant to be read, not scanned. */
+.gtr-timeline {
+  position: relative;
+  padding-left: 26px;
+  margin-bottom: 8px;
+}
+.gtr-timeline::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--border-strong);
+}
+
+.gtr-timeline-item {
+  position: relative;
+  margin-bottom: 32px;
+}
+.gtr-timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 3px solid var(--gtr-red);
+}
+.gtr-timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.gtr-timeline-year {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--gtr-red);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.gtr-timeline-title {
+  font-size: 1.05rem;
+  margin: 2px 0 10px;
+  color: var(--text-primary);
+}
+
+.gtr-timeline-body {
+  font-size: 0.87rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.gtr-timeline-body p {
+  margin-bottom: 12px;
+}
+.gtr-timeline-body p:last-child {
+  margin-bottom: 0;
+}
+
+.gtr-timeline-image {
+  width: 100%;
+  max-width: 420px;
+  border-radius: var(--radius-md);
+  margin-bottom: 14px;
+  display: block;
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+/* Omori tiers & tuner profiles — richer profile cards, not accordion rows */
+.era-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.era-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+}
+
+.era-card-accent {
+  height: 4px;
+  flex-shrink: 0;
+}
+.era-card-accent.tier-s { background: var(--nissan-blue); }
+.era-card-accent.tier-r { background: var(--gold-titanium); }
+.era-card-accent.tier-z { background: var(--gtr-red); }
+
+.era-card-img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  display: block;
+}
+
+.era-card-body {
+  padding: 16px 18px 18px;
+}
+
+.era-card-title {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.era-card-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.era-card-stat {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.era-card-stat strong {
+  font-family: var(--font-mono);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.era-card-text {
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+
+.era-card-photo-credit {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+/* Main Page Container */
+.main-content {
+  flex: 1;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+/* View Sections */
+.view-section {
+  display: none;
+  animation: fadeIn 0.25s ease-out;
+}
+.view-section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section header, dark — the same "one dark band on an otherwise light
+   page" treatment as .hero-showcase below, minus the car photo and action
+   buttons, so every tab opens on the same pleasing dark banner instead of
+   the plain white .filter-panel card the header text used to sit in. */
+.section-hero {
+  position: relative;
+  background: linear-gradient(180deg, rgba(18, 20, 24, 0.94) 0%, rgba(11, 13, 16, 0.97) 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 22px 28px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-md);
+}
+
+.section-hero-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.section-hero h3 {
+  font-size: 1.25rem;
+  color: #ffffff;
+  margin-bottom: 6px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+.section-hero p {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.85rem;
+  line-height: 1.55;
+  max-width: 78ch;
+}
+
+/* Hero Showcase Banner */
+.hero-showcase {
+  position: relative;
+  background:
+    linear-gradient(180deg, rgba(18, 20, 24, 0.86) 0%, rgba(11, 13, 16, 0.94) 100%),
+    url('../assets/gtr_r34_hero.jpg') center/cover no-repeat;
+  border-color: rgba(63, 167, 214, 0.28);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  margin-bottom: 28px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+.hero-showcase::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  height: 100%;
+  background: radial-gradient(circle at 72% 46%, rgba(63, 167, 214, 0.26), transparent 68%);
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(63, 167, 214, 0.16);
+  border: 1px solid rgba(63, 167, 214, 0.5);
+  color: #9fd8f2;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+
+.hero-title {
+  font-size: 2.2rem;
+  line-height: 1.15;
+  color: #ffffff;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+}
+
+/* The hero keeps its dark photographic plate, so its type is the one place
+   in the light theme that stays light. */
+.hero-subtitle {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.hero-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Quick Model Quick-Selector Strip — grouped into per-generation accordions */
+.model-strip-outer {
+  margin-bottom: 28px;
+}
+
+.model-quick-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.model-card-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.model-card-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+}
+
+.model-card-btn.active {
+  border-color: var(--gtr-red);
+  background: var(--gtr-red-soft);
+  box-shadow: var(--shadow-glow);
+}
+
+.model-card-btn .m-code {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+.model-card-btn .m-name {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.model-card-btn .m-count {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* the active card sits on a red wash, which eats a little of the grey */
+.model-card-btn.active .m-count,
+.model-card-btn.active .m-name {
+  color: var(--text-secondary);
+}
+
+/* Footer */
+.site-footer {
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-subtle);
+  padding: 32px 24px;
+  margin-top: auto;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.footer-inner {
+  max-width: 1600px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-tribute {
+  line-height: 1.5;
+}
+.footer-tribute strong {
+  color: var(--text-primary);
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+.footer-links a:hover {
+  color: var(--gtr-red);
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .header-search-wrap {
+    max-width: 280px;
+    margin: 0 12px;
+  }
+  .hero-showcase {
+    padding: 24px;
+  }
+  .hero-title {
+    font-size: 1.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-top-bar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+  .header-search-wrap {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+  .telemetry-ticker-bar {
+    display: none;
+  }
+  .main-content {
+    padding: 16px 12px;
+  }
+  .model-quick-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Nav wraps into legible rows instead of scrolling off-screen with no
+     visible affordance that there's more to find. */
+  .nav-tab-bar {
+    overflow-x: visible;
+  }
+  .nav-tab-container {
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 6px 8px;
+    gap: 2px;
+  }
+  .nav-tab-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 0.78rem;
+  }
+  .nav-tab-btn-legends {
+    margin-left: 0;
+    border-left: none;
+    padding-left: 10px;
+    flex-basis: 100%;
+    border-top: 1px solid var(--border-subtle);
+    margin-top: 4px;
+    padding-top: 10px;
+  }
+
+  .tool-subtab-row {
+    flex-wrap: wrap;
+  }
+  .tool-subtab-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* Brand wordmark: the plate badge alone is a complete mark, so on a phone
+     the "SKYLINE FACTORY RECORDS" line stays to one line instead of wrapping
+     across three, and the long microfiche subtitle drops rather than
+     wrapping across five. */
+  .brand-text-group h1 {
+    font-size: 0.92rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 46vw;
+  }
+  .brand-text-group .brand-sub {
+    display: none;
+  }
+
+  /* Fixed-column layouts set inline in the markup don't respond to a media
+     query on their own — beating them here is the fix, not restyling every
+     inline style="" individually. */
+  .hero-layout-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hero-godzilla-card {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  .stats-charts-grid,
+  .rarity-calc-grid,
+  .compare-select-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .godzilla-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .godzilla-stat-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .chassis-sheet-header {
+    grid-template-columns: 1fr !important;
+  }
+  .chassis-sheet-header > div:last-child {
+    text-align: left !important;
+  }
+}
