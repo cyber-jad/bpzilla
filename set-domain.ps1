@@ -9,6 +9,7 @@ $Domain = $Domain -replace '^https?://', '' -replace '/$', ''
 $files = @('index.html', 'robots.txt', 'sitemap.xml')
 $root = $PSScriptRoot
 if (-not $root) { $root = '.' }
+$root = Join-Path $root 'public'
 
 $total = 0
 foreach ($f in $files) {

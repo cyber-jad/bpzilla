@@ -1,7 +1,11 @@
 # Lightweight Local Static Web Server for GTR-Registry
 $port = 5588
-$path = $PSScriptRoot
-if (-not $path) { $path = "C:\Users\cyber\.gemini\antigravity\scratch\gtr-registry" }
+$root = $PSScriptRoot
+if (-not $root) { $root = "C:\Users\cyber\.gemini\antigravity\scratch\gtr-registry" }
+# Site files live in public/ — the only folder Cloudflare Workers Builds
+# deploys from, so serving anything outside it locally would mask a file
+# that's actually missing in production.
+$path = Join-Path $root "public"
 
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:$port/")

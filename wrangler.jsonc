@@ -1,0 +1,9 @@
+{
+  // Must exactly match the existing Worker's name in the Cloudflare
+  // dashboard ("old-night-b2a3") — Workers Builds fails otherwise.
+  "name": "old-night-b2a3",
+  "compatibility_date": "2026-08-19",
+  "assets": {
+    "directory": "./public"
+  }
+}
