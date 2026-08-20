@@ -1111,6 +1111,64 @@ h1, h2, h3, h4, .font-display {
   .godzilla-stat-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
+
+  /* The search bar is the fast path to one specific car — "I know the VIN,
+     just show it to me" — so on a phone it needs to read as an obvious,
+     inviting action instead of a quiet header detail. */
+  .header-search-input {
+    font-size: 1rem !important;
+    padding: 13px 16px 13px 42px !important;
+    border-width: 2px !important;
+  }
+  .search-icon-pos {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  /* Hero: on a phone this — title, subtitle, three action buttons, then the
+     Godzilla card — sat between the visitor and the first real VIN record,
+     often multiple screens of scrolling away. Collapses to a title strip;
+     the full hero (and everything it links to) is still one tap away via
+     the nav. */
+  .hero-tag,
+  .hero-subtitle,
+  .hero-actions-row,
+  .hero-godzilla-card {
+    display: none !important;
+  }
+  .hero-showcase {
+    padding: 14px 16px !important;
+    margin-bottom: 14px !important;
+  }
+  .hero-title {
+    font-size: 1.25rem !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Legibility: several pieces of real content were sized for desktop
+     density and read as genuinely small on a phone — nav labels, model
+     strip cards, table cells, the header ticker. */
+  .nav-tab-btn {
+    font-size: 0.85rem !important;
+  }
+  .m-code {
+    font-size: 0.95rem !important;
+  }
+  .m-name,
+  .m-count {
+    font-size: 0.78rem !important;
+  }
+  .registry-table th {
+    font-size: 0.8rem !important;
+  }
+  .registry-table td {
+    font-size: 0.88rem !important;
+  }
+  .ticker-value,
+  .ticker-value-muted,
+  .ticker-sep {
+    font-size: 0.8rem !important;
+  }
 }
 
 @media (max-width: 420px) {

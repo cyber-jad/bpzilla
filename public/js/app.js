@@ -176,7 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const details = document.createElement('details');
         details.className = 'model-gen-group';
         details.setAttribute('data-gen', gen);
-        if (gen === currentGen) details.open = true;
+        // On a phone, auto-opening the current generation still means
+        // scrolling past 5-6 cards before reaching any real VIN data — so
+        // the strip starts fully collapsed there, and only auto-opens on
+        // wider screens where that's a convenience rather than an obstacle.
+        if (gen === currentGen && window.innerWidth > 768) details.open = true;
 
         const summary = document.createElement('summary');
         summary.innerHTML = `
