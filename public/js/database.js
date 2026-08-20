@@ -383,8 +383,15 @@ const JDM_DATABASE = {
     // RS13 is the hatchback body — sold as the 180SX in Japan and as the
     // 200SX in Europe — not the Silvia coupe. Same S13 platform, different
     // model name and different sheet metal aft of the A-pillar.
+    // A K-flagged Super HiCAS (4WS) minority lives inside this physical file
+    // too — not as a leading-character prefix like KPS13/PS13, but as an
+    // embedded 'K' at model-code position 6, confirmed against
+    // s-chassis-archive.com's published RS13/KRS13 totals (7,262 records
+    // here vs. their 7,271 — same tier of variance as every other
+    // cross-checked total in this archive). See KRS13 below.
     'RS13': {
       id: 'RS13', chassisPrefix: 'RS13',
+      gradeFilter: '6:!K',
       generation: 'S13 (Silvia)',
       name: 'Nissan 180SX (RS13)',
       shortName: '180SX',
@@ -396,6 +403,21 @@ const JDM_DATABASE = {
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
       description: 'The fixed-headlight hatchback on the S13 platform — sold as the 180SX in Japan, 200SX in Europe.'
+    },
+    'KRS13': {
+      id: 'KRS13', chassisPrefix: 'RS13',
+      gradeFilter: '6:K',
+      generation: 'S13 (Silvia)',
+      name: 'Nissan 180SX Super HICAS (KRS13)',
+      shortName: '180SX Super HICAS',
+      chassisCode: 'E-KRS13',
+      bodyStyle: '3-Door Hatchback',
+      years: '1989 – 1991',
+      engine: 'CA18DET 1.8L Turbo',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The Super HICAS (rear-wheel steering) counterpart to RS13 — same relationship KPS13 has to PS13, one physical file apart. Split out rather than left folded into RS13\'s count.'
     },
 
     // =========================================================
@@ -802,7 +824,7 @@ const JDM_DATABASE = {
   // once, here, to be picked up everywhere this distinction matters (the
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
-    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'S14', 'CS14',
+    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'S14', 'CS14',
     'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS', 'NM35', 'HM35', 'PM35', 'PNM35',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_US', 'GZ32_US', 'Z32_CA', 'GZ32_CA', 'GZ32_EL', 'GZ32_ER'
@@ -1292,6 +1314,18 @@ const JDM_DATABASE = {
       if (c === 'U') return "Q's";
       return '';
     }
+    // 180SX (RS13/KRS13) — exact-match confirmed the same way as the S13
+    // family: 'D' at position 3 lands on 212 records, matching
+    // s-chassis-archive.com's published "Type I" total (212) exactly; 'J'
+    // covers the rest ("Type II"). A rare "Type II Leather Selection"
+    // sub-grade is real per the same source (286 + 84 records) but wasn't
+    // isolable at any position tried, so it stays folded into Type II.
+    if (modelId === 'RS13') {
+      const c = mc[3];
+      if (c === 'D') return 'Type I';
+      if (c === 'J') return 'Type II';
+      return '';
+    }
     return null;
   },
   // Z32 Twin Turbo (CZ32/GCZ32) — LOW CONFIDENCE, unlike everything above.
@@ -1360,17 +1394,21 @@ const JDM_DATABASE = {
     // Same idea for ECR33's two grades — see the ECR33_V model entry for
     // what's known (and not known) about what 'V' represents.
     'ECR33':  { 'T': 'GTS25-t', 'V': 'GTS25-t (Type V)' },
-    // Stagea WGC34/WHC34 — LOW CONFIDENCE. Real Nissan literature references
-    // an "E-WGC34 X" chassis suffix, matching the dominant letter here
-    // exactly, so 'X' is labeled on that basis. The other two real letters
-    // at this position ('E', 'F' — a genuine running change, not noise: 'F'
-    // stops in Jul 1998, 'E' starts Feb 1997 and runs to the end of
-    // production) have no equally-grounded name, so they're left as the
-    // generic "Grade E"/"Grade F" fallback rather than guessed at further.
-    // No external production-total source exists for Stagea to verify
-    // against (unlike the S13 family).
-    'WGC34': { 'X': 'Stagea X' },
-    'WHC34': { 'X': 'Stagea X' }
+    // Stagea WGC34/WHC34 — LOW CONFIDENCE, same tier as S14's K's/Q's. Real
+    // Nissan literature references an "E-WGC34 X" chassis suffix, matching
+    // the dominant letter here exactly, so 'X' is labeled on that basis.
+    // 'E' and 'F' are a genuine running change, not noise ('F' spans Mar
+    // 1996-Jul 1998, 'E' Feb 1997 onward) that closely brackets Nissan's
+    // documented WC34 "Series 1.5" running change of August 1997, which
+    // replaced the RB25DE/RB20E engines with RB25DE NEO/RB20DE NEO — real
+    // old-spec inventory commonly keeps shipping alongside new-spec for
+    // months after a running change, which would explain 'E' starting
+    // ~6 months before the official date and 'F' persisting ~11 months
+    // after it. No external production-total source exists for Stagea to
+    // verify this exactly (unlike the S13 family), so it's a plausible
+    // reading of real Nissan engine history, not a confirmed decode.
+    'WGC34': { 'X': 'Stagea X', 'E': 'RB25 NEO', 'F': 'RB25 (Pre-NEO)' },
+    'WHC34': { 'X': 'Stagea X', 'E': 'RB20 NEO', 'F': 'RB20 (Pre-NEO)' }
   },
 
   // ---- Transmission, decoded from the factory model code -------------------
