@@ -1328,24 +1328,22 @@ const JDM_DATABASE = {
     }
     return null;
   },
-  // Z32 Twin Turbo (CZ32/GCZ32) — LOW CONFIDENCE, unlike everything above.
-  // No external source (gtr-registry.com's own published Z32 breakdown is
-  // gone — site dead, and the URL is excluded from the Wayback Machine) was
-  // available to verify against, so this is a best-effort real-world-
-  // grounded guess, not a confirmed decode. The character right after the
-  // echoed "Z32" chassis text is 'S' (60-71% of records, full production
-  // span both ends) or 'A' (the rest, stops dead at Oct 1994 — the
-  // documented Z32 facelift date). Real JDM Twin Turbo grades include
-  // "Version S" — matching the literal letter — so 'S' is labeled that;
-  // 'A' has no equally-plausible named match among the other real grades
-  // (Version T/R/J), so it's left blank rather than guessed at further.
+  // Z32 Twin Turbo (CZ32/GCZ32) — RETRACTED, not decoded. An earlier pass
+  // through this file labeled the majority character here (60-71% of
+  // records, 'S') as "Version S" purely because the letter matched a real
+  // JDM grade name. Checking the actual launch date disproved that: real
+  // "Version S" cars were introduced in October 1994 (per Nissan press
+  // materials and contemporary road tests), but 'S' has been present at
+  // full volume since the very start of Z32 production in 1989 — it can't
+  // be a grade that didn't exist yet. The minority character, 'A', is the
+  // one whose date range actually lines up with something real (it stops
+  // dead in Oct 1994, the same month "Version S" launched and the
+  // documented Z32 facelift date), but that only tells us 'A' was
+  // discontinued then, not what it originally was. No source confirms
+  // either letter's real meaning, so both are left undecoded rather than
+  // naming one off a coincidence, the mistake made the first time around.
   _decodeZ32TwinTurboGrade: function(modelId, mc) {
-    if (modelId !== 'CZ32' && modelId !== 'GCZ32') return null;
-    const MD = window.MODEL_DECODER;
-    const span = MD && MD._chassisSpan(mc, 'Z32');
-    if (!span) return '';
-    const c = mc[span.end + 1];
-    return (c === 'S') ? 'Version S' : '';
+    return null;
   },
   _decodeGrade: function(modelId, mc) {
     const silvia = this._decodeSilviaGrade(modelId, mc);
@@ -1408,7 +1406,13 @@ const JDM_DATABASE = {
     // verify this exactly (unlike the S13 family), so it's a plausible
     // reading of real Nissan engine history, not a confirmed decode.
     'WGC34': { 'X': 'Stagea X', 'E': 'RB25 NEO', 'F': 'RB25 (Pre-NEO)' },
-    'WHC34': { 'X': 'Stagea X', 'E': 'RB20 NEO', 'F': 'RB20 (Pre-NEO)' }
+    'WHC34': { 'X': 'Stagea X', 'E': 'RB20 NEO', 'F': 'RB20 (Pre-NEO)' },
+    // Same position, same three letters, same 'F' cutoff to the exact
+    // month (Jul 1998) as WGC34/WHC34 above — strong corroboration this is
+    // the same platform-wide RB25 NEO running change reaching the 4WD "RS
+    // FOUR" chassis too, not a coincidence. Still the same low-confidence
+    // tier: no production-total source exists to verify it exactly.
+    'WGNC34': { 'X': 'Stagea X', 'E': 'RB25 NEO', 'F': 'RB25 (Pre-NEO)' }
   },
 
   // ---- Transmission, decoded from the factory model code -------------------
