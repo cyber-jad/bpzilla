@@ -65,6 +65,9 @@ const JDM_DATABASE = {
     // naturally aspirated 25GT and the turbocharged 25GT-t — distinguished
     // only by the factory grade code (position 5: E = 25GT, T = GT-t; checked
     // against all 37,266 ER34 records, no other character appears there).
+    // Displayed here as "GT" / "GT-T" rather than Nissan's own "25GT" /
+    // "25GT-t" — this site's naming convention, dropping the displacement
+    // prefix for readability, not a claim that "25GT" isn't the real name.
     // They're split into two browsable models here so "GT" isn't hidden
     // inside a combined GT/GT-t entry. `chassisPrefix` points both at the one
     // physical data file (fast_er34.json); `gradeFilter` is the character
@@ -72,8 +75,8 @@ const JDM_DATABASE = {
     'ER34_GT': {
       id: 'ER34_GT', chassisPrefix: 'ER34', gradeFilter: 'E',
       generation: 'R34 (10th Gen)',
-      name: 'Skyline 25GT (ER34)',
-      shortName: 'R34 25GT',
+      name: 'Skyline GT (ER34)',
+      shortName: 'R34 GT',
       chassisCode: 'GF-ER34',
       bodyStyle: '2-Door Coupe & 4-Door Sedan',
       years: '1998 – 2002',
@@ -81,12 +84,12 @@ const JDM_DATABASE = {
       transmission: '5-Speed Manual (FS5W71C) / 4-Speed Tiptronic',
       drivetrain: 'RWD + Helical LSD + Super HICAS',
       badgeClass: 'badge-nissan',
-      description: 'The naturally aspirated half of the ER34 chassis code — same body, same chassis, RB25DE instead of the turbo RB25DET.'
+      description: 'The naturally aspirated half of the ER34 chassis code — same body, same chassis, RB25DE instead of the turbo RB25DET. Nissan\'s own trim name is "25GT"; shown here simply as "GT."'
     },
     'ER34_GTT': {
       id: 'ER34_GTT', chassisPrefix: 'ER34', gradeFilter: 'T',
       generation: 'R34 (10th Gen)',
-      name: 'Skyline 25GT-t / GT-T (ER34)',
+      name: 'Skyline GT-T (ER34)',
       shortName: 'R34 GT-T',
       chassisCode: 'GF-ER34',
       bodyStyle: '2-Door Coupe & 4-Door Sedan',
@@ -95,7 +98,7 @@ const JDM_DATABASE = {
       transmission: '5-Speed Manual (FS5W71C) / 4-Speed Tiptronic',
       drivetrain: 'RWD + Helical LSD + Super HICAS',
       badgeClass: 'badge-nissan',
-      description: 'The turbocharged half of the ER34 chassis code — the iconic R34 GT-T, RB25DET NEO.'
+      description: 'The turbocharged half of the ER34 chassis code — the iconic R34 GT-T, RB25DET NEO. Nissan\'s own trim name is "25GT-t"; shown here simply as "GT-T."'
     },
     'ENR34': {
       id: 'ENR34', chassisPrefix: 'ENR34',
@@ -701,24 +704,32 @@ const JDM_DATABASE = {
     // NISSAN LEGENDS — Z32 EXPORT MARKETS (300ZX, worldwide)
     // =========================================================
     // Everything above this section is JDM Fairlady Z data from
-    // H:\AR-JP\JP. These six models are a genuinely different source:
+    // H:\AR-JP\JP. These two models are a genuinely different source:
     // H:\NISSAN\{US,CA,EL,ER}, Nissan's export-destination FAST archive,
     // which uses real 17-character NHTSA-style VINs instead of the JDM
-    // chassis+serial scheme. US and CA VINs were independently verified
-    // against the standard NHTSA check-digit algorithm — 89,194/89,195 (US)
-    // and 2,848/2,848 (CA) pass, a single US anomaly is unresolved and left
+    // chassis+serial scheme. Originally four separate physical sources per
+    // body style (US/Canada/"EL"/"ER" — six models total), now merged by
+    // _mergeExportGroups into one Z32_EXPORT (2-seat) and one GZ32_EXPORT
+    // (2+2) model — Z32 was the only chassis in this archive broken out by
+    // destination country in the model picker, and it read as an
+    // inconsistency next to every other model here. The merge is additive
+    // only: US and CA VINs were independently verified against the
+    // standard NHTSA check-digit algorithm — 89,194/89,195 (US) and
+    // 2,848/2,848 (CA) pass, a single US anomaly is unresolved and left
     // as-is rather than corrected. EL and ER's VINs do NOT pass check-digit
-    // validation (their reconstructed prefix is a shared literal, not a real
-    // per-vehicle WMI/VDS) — they're real Nissan FAST records with a genuine
-    // 300ZX chassis code, just not confirmed public VINs, and that caveat is
-    // carried into their `destination` text and surfaced in the UI rather
-    // than hidden.
+    // validation (their reconstructed prefix is a shared literal, not a
+    // real per-vehicle WMI/VDS) — they're real Nissan FAST records with a
+    // genuine 300ZX chassis code, just not confirmed public VINs. Every
+    // record still carries its own real market and confirmation status
+    // (see `rowSource` / `sourceInfo` on the merged column, and how
+    // _materialize reads them) — nothing about which country a given VIN
+    // belongs to is lost, it just no longer forces its own model entry.
     //
-    // What's NOT available for any of these six, unlike the JDM records:
+    // What's NOT available for either of these, unlike the JDM records:
     // no confirmed factory option/model code (Factory Build Code reads "—"),
     // no turbo-vs-NA distinction (export FAST tags only Z32/GZ32 = seat
-    // count, not engine), no T-top/slicktop split, and EL/ER have no
-    // confirmed per-vehicle build year at all.
+    // count, not engine), no T-top/slicktop split, and EL/ER records have
+    // no confirmed per-vehicle build year at all.
     //
     // "EL" and "ER" are Nissan's own literal internal destination codes
     // (confirmed via H:\NISSAN\FASTPRG\WIN\*\NSFASTKY.INI). What they stand
@@ -726,95 +737,35 @@ const JDM_DATABASE = {
     // "Europe RHD" is an external inference from matching third-party Nissan
     // parts-catalog listings, corroborated but not internally verified, so
     // it's presented here as inferred, not fact.
-    'Z32_US': {
-      id: 'Z32_US', chassisPrefix: 'Z32_US',
-      generation: 'Z32 Export (US / Canada)',
-      name: 'Nissan 300ZX 2-Seat — US Market (Z32)',
-      shortName: '300ZX 2-Seat (US)',
+    'Z32_EXPORT': {
+      id: 'Z32_EXPORT', chassisPrefix: 'Z32_EXPORT',
+      generation: 'Z32 Export',
+      name: 'Nissan 300ZX 2-Seat — Export Markets (Z32)',
+      shortName: '300ZX 2-Seat (Export)',
       chassisCode: 'Z32',
       bodyStyle: '2-Door Coupe (2-seat)',
       years: '1990 – 1996',
       engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
-      destination: 'United States',
+      destination: 'United States & Canada',
       badgeClass: 'badge-nissan',
-      description: 'US-market 300ZX 2-seat coupes, VIN reconstructed from the Nissan FAST export microfiche and independently validated against the NHTSA VIN check-digit algorithm (89,194 of 89,195 pass; one unresolved anomaly). No confirmed factory option code, turbo/NA split, or roof-type split for this dataset.'
+      description: 'US and Canadian-market 300ZX 2-seat coupes, combined into one entry. VINs reconstructed from the Nissan FAST export microfiche and independently validated against the NHTSA VIN check-digit algorithm — 89,194/89,195 (US) and 2,848/2,848 (Canada) pass; one unresolved US anomaly. Each record still reports its own real market. No confirmed factory option code, turbo/NA split, or roof-type split for this dataset.'
     },
-    'GZ32_US': {
-      id: 'GZ32_US', chassisPrefix: 'GZ32_US',
-      generation: 'Z32 Export (US / Canada)',
-      name: 'Nissan 300ZX 2+2 — US Market (GZ32)',
-      shortName: '300ZX 2+2 (US)',
+    'GZ32_EXPORT': {
+      id: 'GZ32_EXPORT', chassisPrefix: 'GZ32_EXPORT',
+      generation: 'Z32 Export',
+      name: 'Nissan 300ZX 2+2 — Export Markets (GZ32)',
+      shortName: '300ZX 2+2 (Export)',
       chassisCode: 'GZ32',
       bodyStyle: '2-Door Coupe (2+2 seat)',
-      years: '1990 – 1996',
+      years: '1990 – 1996 for US/Canada records; not decoded for "EL"/"ER" records',
       engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
-      destination: 'United States',
+      destination: 'United States, Canada, and Nissan FAST destination codes "EL" / "ER" (externally inferred as Europe LHD/RHD, not confirmed)',
       badgeClass: 'badge-nissan',
-      description: 'US-market 300ZX 2+2 coupes, VIN reconstructed and NHTSA check-digit validated the same way as the 2-seat US entry. T-top only, like every 2+2 Z32.'
-    },
-    'Z32_CA': {
-      id: 'Z32_CA', chassisPrefix: 'Z32_CA',
-      generation: 'Z32 Export (US / Canada)',
-      name: 'Nissan 300ZX 2-Seat — Canada Market (Z32)',
-      shortName: '300ZX 2-Seat (Canada)',
-      chassisCode: 'Z32',
-      bodyStyle: '2-Door Coupe (2-seat)',
-      years: '1990 – 1996',
-      engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
-      transmission: '5-Speed Manual / 4-Speed Auto',
-      drivetrain: 'RWD',
-      destination: 'Canada',
-      badgeClass: 'badge-nissan',
-      description: 'Canadian-market 300ZX 2-seat coupes, VIN reconstructed from the Nissan FAST export microfiche — all 2,848 records independently pass NHTSA VIN check-digit validation.'
-    },
-    'GZ32_CA': {
-      id: 'GZ32_CA', chassisPrefix: 'GZ32_CA',
-      generation: 'Z32 Export (US / Canada)',
-      name: 'Nissan 300ZX 2+2 — Canada Market (GZ32)',
-      shortName: '300ZX 2+2 (Canada)',
-      chassisCode: 'GZ32',
-      bodyStyle: '2-Door Coupe (2+2 seat)',
-      years: '1990 – 1996',
-      engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
-      transmission: '5-Speed Manual / 4-Speed Auto',
-      drivetrain: 'RWD',
-      destination: 'Canada',
-      badgeClass: 'badge-nissan',
-      description: 'Canadian-market 300ZX 2+2 coupes — all 1,055 records independently pass NHTSA VIN check-digit validation. T-top only, like every 2+2 Z32.'
-    },
-    'GZ32_EL': {
-      id: 'GZ32_EL', chassisPrefix: 'GZ32_EL',
-      generation: 'Z32 Export (Destination "EL" / "ER" — market name inferred)',
-      name: 'Nissan 300ZX 2+2 — Export Destination "EL" (GZ32)',
-      shortName: '300ZX 2+2 ("EL")',
-      chassisCode: 'GZ32',
-      bodyStyle: '2-Door Coupe (2+2 seat)',
-      years: 'Unknown — no per-vehicle build year decoded',
-      engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
-      transmission: '5-Speed Manual / 4-Speed Auto',
-      drivetrain: 'RWD',
-      destination: 'Nissan FAST destination code "EL" — externally inferred as Europe (left-hand-drive) from third-party Nissan parts-catalog listings, not confirmed inside this dataset',
-      badgeClass: 'badge-nissan',
-      description: '4,209 genuine Nissan FAST records tagged GZ32 under destination code "EL". Their identifier does not pass NHTSA VIN check-digit validation — it is Nissan\'s internal FAST record key for this market, not a confirmed public VIN — and no per-vehicle build year survives in this dataset.'
-    },
-    'GZ32_ER': {
-      id: 'GZ32_ER', chassisPrefix: 'GZ32_ER',
-      generation: 'Z32 Export (Destination "EL" / "ER" — market name inferred)',
-      name: 'Nissan 300ZX 2+2 — Export Destination "ER" (GZ32)',
-      shortName: '300ZX 2+2 ("ER")',
-      chassisCode: 'GZ32',
-      bodyStyle: '2-Door Coupe (2+2 seat)',
-      years: 'Unknown — no per-vehicle build year decoded',
-      engine: 'VG30DE / VG30DETT V6 (naturally aspirated or twin-turbo — not distinguished in this export dataset)',
-      transmission: '5-Speed Manual / 4-Speed Auto',
-      drivetrain: 'RWD',
-      destination: 'Nissan FAST destination code "ER" — externally inferred as Europe (right-hand-drive) from third-party Nissan parts-catalog listings, not confirmed inside this dataset',
-      badgeClass: 'badge-nissan',
-      description: '1,548 genuine Nissan FAST records tagged GZ32 under destination code "ER". Same caveats as destination "EL": identifier does not pass NHTSA VIN check-digit validation, and no per-vehicle build year survives in this dataset.'
+      description: 'All four 300ZX 2+2 export sources combined into one entry. US (30,213) and Canadian (1,055) VINs independently pass NHTSA check-digit validation; "EL" (4,209) and "ER" (1,548) records are genuine Nissan FAST entries under those destination codes but do not pass check-digit validation and carry no per-vehicle build year. Each record still reports its own real market and validation status — nothing is blended together. T-top only, like every 2+2 Z32.'
     }
   },
 
@@ -827,7 +778,7 @@ const JDM_DATABASE = {
     'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'S14', 'CS14',
     'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS', 'NM35', 'HM35', 'PM35', 'PNM35',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
-    'Z32_US', 'GZ32_US', 'Z32_CA', 'GZ32_CA', 'GZ32_EL', 'GZ32_ER'
+    'Z32_EXPORT', 'GZ32_EXPORT'
   ],
   isLegend: function(modelId) {
     return this._legendModelIds.includes(modelId);
@@ -879,6 +830,120 @@ const JDM_DATABASE = {
         : v;
     }
     return clean.vin ? clean : null;
+  },
+
+  // Z32 was the only chassis in this archive broken out by destination
+  // country in the model picker (6 separate US/Canada/EL/ER entries on top
+  // of the 5 real JDM body-style entries) — inconsistent with every other
+  // model here, which splits by real trim/body/grade, never by market.
+  // Collapses each pair/group of country-specific physical files into one
+  // browsable model per body style, decoding rows back to plain strings
+  // and re-encoding into a fresh shared dictionary so the merge is a
+  // straight concatenation, not index surgery. Per-record country and
+  // NHTSA check-digit status are NOT blended away in the process — each
+  // merged row keeps a `rowSource` index into `sourceInfo`
+  // ({destination, confirmed}), and _materialize reads that instead of the
+  // single-source `exportInfo` it uses for everything else, so a US VIN
+  // still reports itself as US-validated and an "EL" record still reports
+  // itself as unconfirmed, same as before the merge.
+  _mergeExportGroups: function() {
+    const groups = [
+      { newId: 'Z32_EXPORT', sources: [
+        { id: 'Z32_US', destination: 'United States' },
+        { id: 'Z32_CA', destination: 'Canada' }
+      ]},
+      { newId: 'GZ32_EXPORT', sources: [
+        { id: 'GZ32_US', destination: 'United States' },
+        { id: 'GZ32_CA', destination: 'Canada' },
+        { id: 'GZ32_EL', destination: 'Nissan FAST destination code "EL" — externally inferred as Europe (left-hand-drive) from third-party Nissan parts-catalog listings, not confirmed inside this dataset' },
+        { id: 'GZ32_ER', destination: 'Nissan FAST destination code "ER" — externally inferred as Europe (right-hand-drive) from third-party Nissan parts-catalog listings, not confirmed inside this dataset' }
+      ]}
+    ];
+
+    groups.forEach(({ newId, sources }) => {
+      const present = sources.filter(s => this._cols[s.id]);
+      if (!present.length) return;
+
+      const rows = [];
+      present.forEach(({ id: srcId, destination }) => {
+        const col = this._cols[srcId];
+        const info = col.exportInfo || {};
+        const confirmed = info.vinConfirmedTotal > 0 && info.vinConfirmedCount === info.vinConfirmedTotal;
+        for (let i = 0; i < col.n; i++) {
+          rows.push({
+            blkStr: col.dict.b[col.blk[i]] || '0',
+            ser: col.ser[i],
+            dateStr: col.dict.d[col.di[i]] || '',
+            colorStr: col.dict.c[col.ci[i]] || '',
+            interiorStr: col.dict.t[col.ti[i]] || '',
+            mcStr: col.dict.mc[col.mci[i]] || '',
+            vin: col.vin ? col.vin[i] : undefined,
+            srcId, destination, confirmed
+          });
+        }
+      });
+
+      // Keep the (block, serial)-sorted invariant the other lookup path
+      // (findChassis -> col.ranges -> _bsearch) documents and relies on,
+      // even though export models resolve by VIN first and rarely reach it.
+      rows.sort((a, b) => (a.blkStr === b.blkStr ? a.ser - b.ser : (a.blkStr < b.blkStr ? -1 : 1)));
+
+      const n = rows.length;
+      const bDict = [], dDict = [], cDict = [], tDict = [], mcDict = [];
+      const bIdx = new Map(), dIdx = new Map(), cIdx = new Map(), tIdx = new Map(), mcIdx = new Map();
+      const getIdx = (map, arr, val) => {
+        if (!map.has(val)) { map.set(val, arr.length); arr.push(val); }
+        return map.get(val);
+      };
+
+      const merged = {
+        n,
+        blk: new Uint8Array(n),
+        ser: new Int32Array(n),
+        di:  new Uint16Array(n),
+        ci:  new Uint16Array(n),
+        ti:  new Uint8Array(n),
+        mci: new Uint16Array(n),
+        dict: { b: bDict, d: dDict, c: cDict, t: tDict, mc: mcDict },
+        ranges: {},
+        vin: new Array(n),
+        vinIndex: new Map(),
+        rowSource: new Uint8Array(n),
+        sourceInfo: []
+      };
+      const sourceInfoIdx = new Map();
+
+      rows.forEach((r, i) => {
+        merged.blk[i] = getIdx(bIdx, bDict, r.blkStr);
+        merged.ser[i] = r.ser;
+        merged.di[i]  = getIdx(dIdx, dDict, r.dateStr);
+        merged.ci[i]  = getIdx(cIdx, cDict, r.colorStr);
+        merged.ti[i]  = getIdx(tIdx, tDict, r.interiorStr);
+        merged.mci[i] = getIdx(mcIdx, mcDict, r.mcStr);
+        merged.vin[i] = r.vin;
+        if (r.vin) merged.vinIndex.set(r.vin, i);
+
+        if (!sourceInfoIdx.has(r.srcId)) {
+          sourceInfoIdx.set(r.srcId, merged.sourceInfo.length);
+          merged.sourceInfo.push({ destination: r.destination, confirmed: r.confirmed });
+        }
+        merged.rowSource[i] = sourceInfoIdx.get(r.srcId);
+      });
+
+      for (let i = 0; i < n; i++) {
+        const b = merged.blk[i];
+        if (!merged.ranges[b]) merged.ranges[b] = [i, i];
+        merged.ranges[b][1] = i;
+      }
+
+      this._cols[newId] = merged;
+      this._byPrefix[newId] = { length: n };
+
+      present.forEach(({ id: srcId }) => {
+        delete this._cols[srcId];
+        delete this._byPrefix[srcId];
+      });
+    });
   },
 
   // ---- Load the compact FAST exports ---------------------------------------
@@ -963,6 +1028,8 @@ const JDM_DATABASE = {
         failed.push(`${upper} (${e.message})`);
       }
     }
+
+    this._mergeExportGroups();
 
     // Grade-split models (ER34_GT, ER34_GTT, ECR33_V, ...) share a physical
     // _cols entry with a sibling model, so they never get a _byPrefix entry
@@ -1084,9 +1151,19 @@ const JDM_DATABASE = {
     // js/database.js models{} "NISSAN LEGENDS — Z32 EXPORT MARKETS" comment.
     if (col.vin) {
       const vin = col.vin[i];
-      const info = col.exportInfo || {};
-      const marketName = (model || {}).destination || info.region || 'export market';
-      const confirmed = info.vinConfirmedTotal > 0 && info.vinConfirmedCount === info.vinConfirmedTotal;
+      // A merged export model (col.sourceInfo, built by _mergeExportGroups)
+      // has no single uniform market/confirmation status — look it up per
+      // record instead of falling back to a whole-column exportInfo.
+      let marketName, confirmed;
+      if (col.sourceInfo) {
+        const src = col.sourceInfo[col.rowSource[i]] || {};
+        marketName = src.destination || 'export market';
+        confirmed = !!src.confirmed;
+      } else {
+        const info = col.exportInfo || {};
+        marketName = (model || {}).destination || info.region || 'export market';
+        confirmed = info.vinConfirmedTotal > 0 && info.vinConfirmedCount === info.vinConfirmedTotal;
+      }
       return {
         chassisNumber: vin,
         plateNumber: vin,
@@ -1413,7 +1490,7 @@ const JDM_DATABASE = {
     // (67.4% T, 32.6% E, no other characters appear at this position). Now
     // that ER34_GT / ER34_GTT are separate browsable models (see models
     // above), this table is what tells the two apart when loading the file.
-    'ER34':   { 'T': '25GT-t (Turbo)', 'E': '25GT (NA)' },
+    'ER34':   { 'T': 'GT-T (Turbo)', 'E': 'GT (NA)' },
     // Same idea for ECR33's two grades — see the ECR33_V model entry for
     // what's known (and not known) about what 'V' represents.
     'ECR33':  { 'T': 'GTS25-t', 'V': 'GTS25-t (Type V)' },
@@ -1554,7 +1631,7 @@ const JDM_DATABASE = {
     ...(() => {
       const years = { '1990':'1990','1991':'1991','1992':'1992','1993':'1993','1994':'1994','1995':'1995','1996':'1996','Unknown':'Unknown' };
       const out = {};
-      ['Z32_US', 'GZ32_US', 'Z32_CA', 'GZ32_CA', 'GZ32_EL', 'GZ32_ER'].forEach(m => { out[m] = years; });
+      ['Z32_EXPORT', 'GZ32_EXPORT'].forEach(m => { out[m] = years; });
       return out;
     })()
   },
