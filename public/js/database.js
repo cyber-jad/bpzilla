@@ -1275,6 +1275,23 @@ const JDM_DATABASE = {
       if (c === 'F' || c === 'A') return "J's";
       return '';
     }
+    // S14/CS14 — lower confidence than the S13 family above: no external
+    // source with a matching total exists to confirm against exactly, so
+    // this rests on real-world grounding instead. Position 4 is 'T' (SR20DET
+    // turbo, real K's engine) or 'U' (SR20DE NA, real Q's engine) on every
+    // record checked, full 1993-1998 production span on both sides (a
+    // standing option, not a running change), independently echoed at
+    // position 9 (E/U, matches T/U exactly bar 54 stray records). 62%/38%
+    // T/U split is consistent with K's being the better-selling S14 grade,
+    // as commonly reported. No further sub-grade (Aero, Aero SE, Aero SE
+    // Limited — all real per s-chassis-archive's Japan-market rows) isolable
+    // from any position tried, so those stay folded into K's/Q's.
+    if (modelId === 'S14' || modelId === 'CS14') {
+      const c = mc[4];
+      if (c === 'T') return "K's";
+      if (c === 'U') return "Q's";
+      return '';
+    }
     return null;
   },
   _decodeGrade: function(modelId, mc) {
