@@ -1350,9 +1350,17 @@ const JDM_DATABASE = {
     if (silvia !== null) return silvia;
     const z32tt = this._decodeZ32TwinTurboGrade(modelId, mc);
     if (z32tt !== null) return z32tt;
+    // WGNC34's 'E'/'F' -> RB25 NEO/Pre-NEO labels do not apply to the
+    // 260RS records folded into this same physical file (gradeFilter
+    // '12:P') — the 260RS runs an Autech-swapped RB26DETT, not an RB25 at
+    // all, so the same letters there (confirmed present: 748 'E', 986 'F')
+    // would be a real factual error if labeled the same way. Skip the
+    // table lookup for those records; they fall through to the generic
+    // fallback below instead.
+    const is260RS = (modelId === 'WGNC34' && mc[12] === 'P');
     const pos = this.gradePositions[modelId] || 4;
     if (mc.length <= pos) return '';
-    const table = this.gradeCodes[modelId];
+    const table = is260RS ? null : this.gradeCodes[modelId];
     if (table && table[mc[pos]]) return table[mc[pos]];
 
     // No confirmed English name for this model. Position 4 is only a real
@@ -1365,11 +1373,28 @@ const JDM_DATABASE = {
     // character on a confirmed positional layout, and stays blank
     // otherwise — no filter is better than a misleading one.
     if (pos !== 4) return '';
+    if (this._noRealGradeSplit.includes(modelId)) return '';
     const layouts = (window.MODEL_DECODER || {}).LAYOUTS;
     if (!layouts || layouts[mc.slice(-3)] !== 'positional') return '';
     const ch = mc[4];
     return (ch && ch !== ' ' && ch !== '-') ? `Grade ${ch}` : '';
   },
+
+  // Checked every "positional" model at this position: these five show a
+  // single constant character across 100% of records, zero exceptions —
+  // there is no real grade split to report, so the generic "Grade ${ch}"
+  // fallback would just be dressing up a non-fact as one. Left out of
+  // gradeCodes and suppressed here instead of showing a label that's
+  // technically a real character but conveys no actual information
+  // (getGradeColorMatrix rows then group by series alone, which is real).
+  // ER33 and HR33 are NOT on this list — they have a genuine, sizeable
+  // split (both real letters present at meaningful volume, full production
+  // span) — an attempt to name it as "Type G" was checked against real
+  // production numbers and rejected: the real "Type G" is a rare ~850-unit
+  // HICAS-less GTS25-t variant, but this letter is the 65-100% majority on
+  // three different chassis — wrong scale entirely, so it stays an honest
+  // unnamed "Grade E"/"Grade G" rather than a wrong name.
+  _noRealGradeSplit: ['ENR33', 'ENR34', 'HR34', 'HM35', 'PM35'],
 
   gradeCodes: {
     'BCNR33': { 'Q': 'Standard GT-R', 'W': 'V-Spec' },
@@ -1705,7 +1730,11 @@ const JDM_DATABASE = {
       if (!code) continue;
 
       const mc = col.dict.mc[col.mci[i]] || '';
-      const grade = this._decodeGrade(physicalId, mc) || 'Unknown';
+      // Deliberately NOT defaulted to 'Unknown' here — an empty decode means
+      // two very different things depending on context, and conflating them
+      // was actively misleading. Handled below once we know whether a real
+      // series label exists for this record too.
+      const grade = this._decodeGrade(physicalId, mc);
       const block = col.dict.b[col.blk[i]] || '0';
       // Series is tracked two different ways depending on chassis — a block
       // character (most models) or a serial-number threshold (BCNR33) — see
@@ -1721,7 +1750,15 @@ const JDM_DATABASE = {
           }
         }
       }
-      const rowLabel = seriesLabel ? `${grade} (${seriesLabel})` : grade;
+      // grade + series -> "Grade (Series)". Grade alone -> "Grade". Series
+      // alone (no grade decoded for this chassis at all) -> just "Series",
+      // with no false "Unknown" grade prefix — that word is reserved for
+      // genuinely unparseable records, not chassis that simply don't have a
+      // decoded grade system. Neither -> the one real "Unknown" case, a
+      // record with no grade AND no series to fall back on.
+      const rowLabel = grade
+        ? (seriesLabel ? `${grade} (${seriesLabel})` : grade)
+        : (seriesLabel || 'Unknown');
 
       if (!rowColorCounts.has(rowLabel)) rowColorCounts.set(rowLabel, new Map());
       const cellMap = rowColorCounts.get(rowLabel);
