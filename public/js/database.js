@@ -1294,9 +1294,30 @@ const JDM_DATABASE = {
     }
     return null;
   },
+  // Z32 Twin Turbo (CZ32/GCZ32) — LOW CONFIDENCE, unlike everything above.
+  // No external source (gtr-registry.com's own published Z32 breakdown is
+  // gone — site dead, and the URL is excluded from the Wayback Machine) was
+  // available to verify against, so this is a best-effort real-world-
+  // grounded guess, not a confirmed decode. The character right after the
+  // echoed "Z32" chassis text is 'S' (60-71% of records, full production
+  // span both ends) or 'A' (the rest, stops dead at Oct 1994 — the
+  // documented Z32 facelift date). Real JDM Twin Turbo grades include
+  // "Version S" — matching the literal letter — so 'S' is labeled that;
+  // 'A' has no equally-plausible named match among the other real grades
+  // (Version T/R/J), so it's left blank rather than guessed at further.
+  _decodeZ32TwinTurboGrade: function(modelId, mc) {
+    if (modelId !== 'CZ32' && modelId !== 'GCZ32') return null;
+    const MD = window.MODEL_DECODER;
+    const span = MD && MD._chassisSpan(mc, 'Z32');
+    if (!span) return '';
+    const c = mc[span.end + 1];
+    return (c === 'S') ? 'Version S' : '';
+  },
   _decodeGrade: function(modelId, mc) {
     const silvia = this._decodeSilviaGrade(modelId, mc);
     if (silvia !== null) return silvia;
+    const z32tt = this._decodeZ32TwinTurboGrade(modelId, mc);
+    if (z32tt !== null) return z32tt;
     const pos = this.gradePositions[modelId] || 4;
     if (mc.length <= pos) return '';
     const table = this.gradeCodes[modelId];
@@ -1338,7 +1359,18 @@ const JDM_DATABASE = {
     'ER34':   { 'T': '25GT-t (Turbo)', 'E': '25GT (NA)' },
     // Same idea for ECR33's two grades — see the ECR33_V model entry for
     // what's known (and not known) about what 'V' represents.
-    'ECR33':  { 'T': 'GTS25-t', 'V': 'GTS25-t (Type V)' }
+    'ECR33':  { 'T': 'GTS25-t', 'V': 'GTS25-t (Type V)' },
+    // Stagea WGC34/WHC34 — LOW CONFIDENCE. Real Nissan literature references
+    // an "E-WGC34 X" chassis suffix, matching the dominant letter here
+    // exactly, so 'X' is labeled on that basis. The other two real letters
+    // at this position ('E', 'F' — a genuine running change, not noise: 'F'
+    // stops in Jul 1998, 'E' starts Feb 1997 and runs to the end of
+    // production) have no equally-grounded name, so they're left as the
+    // generic "Grade E"/"Grade F" fallback rather than guessed at further.
+    // No external production-total source exists for Stagea to verify
+    // against (unlike the S13 family).
+    'WGC34': { 'X': 'Stagea X' },
+    'WHC34': { 'X': 'Stagea X' }
   },
 
   // ---- Transmission, decoded from the factory model code -------------------
