@@ -451,12 +451,17 @@ const JDM_DATABASE = {
     },
     // WGNC34 also underpins the Autech 260RS — 1,734 cars Autech built with
     // a complete R33 GT-R RB26DETT/ATTESA E-TS Pro drivetrain swap in
-    // 1997-1998. The FAST data pulled here doesn't carry a separate marker
-    // distinguishing 260RS cars from the rest of WGNC34, so it isn't broken
-    // out as its own browsable model — noted here rather than silently
-    // folded in without comment.
+    // 1997-1998. An earlier pass here concluded the FAST data had no marker
+    // distinguishing them and folded them into plain WGNC34. That was wrong
+    // — a full per-position scan found one: position 12 is 'P' for exactly
+    // 1,734 records, all sharing one identical model code
+    // (GKNRFAC34UDAP88AZAWC), dated 1997-07 to 2001-03. The count matching
+    // the documented production figure exactly, on an otherwise-untouched
+    // position, is about as strong a match as this kind of check gets — see
+    // WGNC34_260RS below.
     'WGNC34': {
       id: 'WGNC34', chassisPrefix: 'WGNC34',
+      gradeFilter: '12:!P',
       generation: 'C34 (Stagea)',
       name: 'Nissan Stagea 25t RS Four (WGNC34)',
       shortName: 'Stagea 25 (4WD)',
@@ -467,7 +472,26 @@ const JDM_DATABASE = {
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'ATTESA E-TS AWD',
       badgeClass: 'badge-nissan',
-      description: 'The ATTESA E-TS four-wheel-drive Stagea wagon, and the chassis Autech used as the base for the RB26DETT-swapped 260RS.'
+      description: 'The ATTESA E-TS four-wheel-drive Stagea wagon. The 260RS built on this same chassis is now broken out separately — see below.'
+    },
+    'WGNC34_260RS': {
+      id: 'WGNC34_260RS', chassisPrefix: 'WGNC34',
+      gradeFilter: '12:P',
+      generation: 'C34 (Stagea)',
+      name: 'Nissan Stagea 260RS (Autech, WGNC34-based)',
+      shortName: 'Stagea 260RS',
+      chassisCode: 'E-WGNC34 (Autech-converted)',
+      bodyStyle: '5-Door Wagon',
+      years: '1997 – 1998 (built) / records dated through 2001-03',
+      engine: 'RB26DETT 2.6L Twin-Turbo I6 (R33 GT-R swap, Autech-installed)',
+      // Per-record decode shows a real, roughly 57/43 automatic/manual
+      // split — not manual-only as the R33 GT-R drivetrain donor might
+      // suggest, so Autech evidently kept the Stagea's own transmission
+      // options rather than swapping that too.
+      transmission: '5-Speed Manual / 4-Speed Automatic',
+      drivetrain: 'ATTESA E-TS Pro AWD (R33 GT-R swap)',
+      badgeClass: 'badge-gtr',
+      description: 'Autech\'s complete R33 GT-R RB26DETT/ATTESA E-TS Pro drivetrain swap into a standard WGNC34 Stagea body — 1,734 built, all recorded here under one identical factory model code. The GT-R-grade drivetrain is why this carries the GT-R badge style rather than the standard Stagea one.'
     },
 
     // =========================================================
@@ -758,7 +782,7 @@ const JDM_DATABASE = {
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
     'S13', 'PS13', 'KS13', 'RS13', 'S14', 'CS14',
-    'WGC34', 'WHC34', 'WGNC34', 'NM35', 'HM35', 'PM35', 'PNM35',
+    'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS', 'NM35', 'HM35', 'PM35', 'PNM35',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_US', 'GZ32_US', 'Z32_CA', 'GZ32_CA', 'GZ32_EL', 'GZ32_ER'
   ],
@@ -901,9 +925,12 @@ const JDM_DATABASE = {
     // _cols entry with a sibling model, so they never get a _byPrefix entry
     // from the loop above. Backfill every `models` key here — cheap no-op for
     // the non-split majority (getModelRecordCount just returns col.n), and
-    // gives the split entries a correct scoped count instead of 0.
+    // gives the split entries a correct scoped count instead of 0. A model
+    // that itself carries a gradeFilter (WGNC34 excluding its own 260RS
+    // split, for instance) needs recomputing even though it already has a
+    // _byPrefix entry — that entry is the raw unfiltered physical count.
     Object.keys(this.models).forEach(key => {
-      if (!this._byPrefix[key]) {
+      if (!this._byPrefix[key] || this.models[key].gradeFilter) {
         this._byPrefix[key] = { length: this.getModelRecordCount(key) };
       }
     });
@@ -942,10 +969,27 @@ const JDM_DATABASE = {
 
   // Does row i of a (physical) column belong to a given grade-split model?
   // Always true for non-split models (filterChar is null).
+  // filterChar is normally a single character checked at position 4 (the
+  // original ER34_GT/ECR33_V-style split). It can also encode a different
+  // position and/or a negation as "pos:char" or "pos:!char" — e.g. WGNC34's
+  // 260RS split lives at position 12, not 4, so it's "12:P" / "12:!P".
+  // Shared by _rowMatches and _virtualModelFor so both stay in sync.
+  _matchesFilter: function(mc, filterChar) {
+    if (!filterChar) return false;
+    const m = /^(\d+):(!?)(.+)$/.exec(filterChar);
+    if (m) {
+      const pos = parseInt(m[1], 10);
+      const negate = m[2] === '!';
+      const target = m[3];
+      return negate ? mc[pos] !== target : mc[pos] === target;
+    }
+    return mc[4] === filterChar;
+  },
+
   _rowMatches: function(col, i, filterChar) {
     if (!filterChar) return true;
     const mc = col.dict.mc[col.mci[i]] || '';
-    return mc[4] === filterChar;
+    return this._matchesFilter(mc, filterChar);
   },
 
   // Given a physical chassis prefix and a specific factory code, which
@@ -953,11 +997,10 @@ const JDM_DATABASE = {
   // sibling whose gradeFilter matches; for everything else there's exactly
   // one models entry per chassisPrefix, so it's returned directly.
   _virtualModelFor: function(physicalId, mc) {
-    const ch = mc ? mc[4] : undefined;
     const candidates = Object.keys(this.models).filter(k =>
       (this.models[k].chassisPrefix || k) === physicalId);
     if (candidates.length <= 1) return candidates[0] || physicalId;
-    const match = candidates.find(k => this.models[k].gradeFilter === ch);
+    const match = candidates.find(k => this._matchesFilter(mc || '', this.models[k].gradeFilter));
     return match || candidates[0];
   },
 
@@ -1252,15 +1295,43 @@ const JDM_DATABASE = {
   // Keyed by physical chassis id, not the (possibly grade-split) browsable
   // model id — _decodeTransmission is always called with physicalId, same
   // as gradeCodes above. ER34_GT/ER34_GTT both resolve to physical 'ER34'.
+  //
+  // Same pattern, same F/A letters, confirmed the same way on the rest of
+  // the Nissan Legends archive too:
+  //   Silvia (S13, KS13, RS13, S14, CS14) — clean F/A split, full production
+  //   span on both sides, same as every Skyline chassis above. PS13 has a
+  //   real complication: ~11% of its records use a different chassis-prefix
+  //   spelling ("K..." instead of "S...") that shifts this position by one,
+  //   so that minority reports no transmission rather than a wrong one —
+  //   not fixed here, flagged for a future pass.
+  //   Stagea WGC34 and WHC34 (the 2WD/base grades) are constant 'A' with
+  //   zero exceptions across 55,298 and 14,674 records — automatic only,
+  //   which fits their real-world positioning as the family-wagon grades.
+  //   WGNC34 (the AWD/turbo grade Autech used as the 260RS base) is the one
+  //   Stagea chassis with a genuine F/A split, consistent with being the
+  //   enthusiast-oriented grade. The newer M35-generation Stagea (NM35 and
+  //   siblings) use a visibly different code scheme at this position — not
+  //   guessed at, left undecoded.
+  //   Z32 (300ZX) — checked, no clean signal found in the option string;
+  //   also left undecoded rather than forced.
   transmissionPositions: {
     'BCNR33': 5, 'ECR33': 5, 'ER33': 5, 'ENR33': 5, 'HR33': 5,
-    'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5
+    'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5,
+    'S13': 3, 'PS13': 4, 'KS13': 3, 'RS13': 4, 'S14': 5, 'CS14': 5,
+    'WGC34': 5, 'WHC34': 5, 'WGNC34': 5
   },
   transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32'],
+  // 'F'/'A' are confirmed on every chassis in transmissionPositions/
+  // transmissionR32Models. 'Y' is BNR34-only (its distinct 6-speed Getrag) —
+  // kept out of the shared table so an unrelated model that happens to reuse
+  // the letter 'Y' at its own transmission position (PS13 does) doesn't get
+  // mislabeled "6-Speed Manual" too.
   transmissionCodes: {
     'F': '5-Speed Manual',
-    'A': '4-Speed Automatic',
-    'Y': '6-Speed Manual'
+    'A': '4-Speed Automatic'
+  },
+  transmissionCodesByModel: {
+    'BNR34': { 'Y': '6-Speed Manual' }
   },
   _decodeTransmission: function(modelId, mc) {
     if (!mc) return '';
@@ -1277,6 +1348,8 @@ const JDM_DATABASE = {
     } else {
       return '';
     }
+    const modelOverride = this.transmissionCodesByModel[modelId];
+    if (modelOverride && modelOverride[ch]) return modelOverride[ch];
     return this.transmissionCodes[ch] || '';
   },
 
