@@ -1041,7 +1041,7 @@ const JDM_DATABASE = {
       colorName: name,
       colorHex: hex,
       interiorCode: col.dict.t[col.ti[i]] || '',
-      transmission: model ? model.transmission : '',
+      transmission: this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') || (model ? model.transmission : ''),
       destination: 'Japan Domestic Market (JDM)',
       status: '✅ Genuine FAST Record',
       notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
@@ -1165,10 +1165,25 @@ const JDM_DATABASE = {
 
   // ---- Grade, derived from the 20-character factory model code -------------
   // Confirmed against BCNR33, where position 4 carries Q (standard) or W (V-Spec).
+  //
+  // Position 4 only works for "positional" layouts (R33/R34-style: option
+  // string first, chassis marker embedded mid-code). "Chassis-led" layouts
+  // (R32, Silvia's S13 family, 180SX, Z32 — chassis fragment spelled out at
+  // the very start) push the chassis text itself through position 4, so the
+  // grade slot lands somewhere else. BNR32 is confirmed: position 6 is 'X'
+  // (Standard GT-R) before Feb 1993 essentially without exception, then 'B'
+  // (V-Spec) appears and stays in real volume from 1993-02 onward — matching
+  // the real V-Spec I launch date (3 Feb 1993) exactly, independently of
+  // this project. See gradePositions for other chassis-led models — none
+  // else are confirmed yet, so they still fall back to the generic path.
+  gradePositions: {
+    'BNR32': 6
+  },
   _decodeGrade: function(modelId, mc) {
-    if (mc.length < 5) return '';
+    const pos = this.gradePositions[modelId] || 4;
+    if (mc.length <= pos) return '';
     const table = this.gradeCodes[modelId];
-    if (table && table[mc[4]]) return table[mc[4]];
+    if (table && table[mc[pos]]) return table[mc[pos]];
 
     // No confirmed English name for this model. Position 4 is only a real
     // option/grade slot on "positional" layouts (R33/R34-style codes: option
@@ -1179,6 +1194,7 @@ const JDM_DATABASE = {
     // a grade there would just be wrong, so this only falls back to the raw
     // character on a confirmed positional layout, and stays blank
     // otherwise — no filter is better than a misleading one.
+    if (pos !== 4) return '';
     const layouts = (window.MODEL_DECODER || {}).LAYOUTS;
     if (!layouts || layouts[mc.slice(-3)] !== 'positional') return '';
     const ch = mc[4];
@@ -1188,6 +1204,14 @@ const JDM_DATABASE = {
   gradeCodes: {
     'BCNR33': { 'Q': 'Standard GT-R', 'W': 'V-Spec' },
     'BNR34':  { 'W': 'V-Spec', 'V': 'Standard GT-R' },
+    // BNR32 — position 6 (see gradePositions). 'B' covers V-Spec broadly
+    // (V-Spec I from Feb 1993, V-Spec II from Jan 1994 — this character
+    // does not distinguish the two) rather than any narrower sub-grade;
+    // real total 2,829 'B' records is consistent with V-Spec I + II
+    // combined, not just the ~1,453 V-Spec I figure alone. 6 stray 'B'
+    // records before Feb 1993 (Jun/Sep/Dec 1992, Jan 1993) are almost
+    // certainly pre-production samples, not a real early run.
+    'BNR32':  { 'X': 'Standard GT-R', 'B': 'V-Spec' },
     // ER34 carries both the NA 25GT and the turbo 25GT-t under one chassis
     // code — position 4 is 'E' for every naturally aspirated record and 'T'
     // for every turbo record, checked against all 37,266 FAST ER34 rows
@@ -1198,6 +1222,62 @@ const JDM_DATABASE = {
     // Same idea for ECR33's two grades — see the ECR33_V model entry for
     // what's known (and not known) about what 'V' represents.
     'ECR33':  { 'T': 'GTS25-t', 'V': 'GTS25-t (Type V)' }
+  },
+
+  // ---- Transmission, decoded from the factory model code -------------------
+  // 'F' = 5-speed manual, 'A' = 4-speed automatic on every GTS-trim R32/R33/
+  // R34 Skyline checked. Confirmed structurally, not just by letter-matching:
+  // every GT-R chassis in every generation is CONSTANT at a single value with
+  // zero exceptions — BNR32 100% 'F' (43,893/43,895, 2 stray blanks), BCNR33
+  // 100% 'F' (16,560/16,560, same 5-speed architecture as R32), BNR34 100%
+  // 'Y' (11,474/11,474, the newer Getrag 6-speed introduced for R34) — which
+  // is exactly what "GT-R never offered an automatic, in any generation" (a
+  // real, well-documented fact) predicts, and R32/R33 sharing 'F' while R34
+  // alone uses 'Y' tracks the real transmission architecture change. Every
+  // GTS-trim chassis checked (HCR32, HNR32, HR32, FR32, ENR33, HR33, ENR34,
+  // HR34, ER34_GT, ER34_GTT) shows a genuine two-way F/A split spanning the
+  // entire production run on both sides — a standing customer choice, not a
+  // running change.
+  //
+  // ER33 and ECR33 (GTS25 / GTS25-t) are the exception: alongside F/A they
+  // also carry 'N' on early production only (1993-02 to 1995-12, then never
+  // again through the end of production in 1998) — a clean running-change
+  // boundary, so it's real, but what 'N' itself encoded isn't confirmed.
+  // Those records report unknown transmission rather than a guess.
+  //
+  // Position differs by code layout: R33/R34 ("positional") have it at a
+  // fixed index; R32 ("chassis-led") has the chassis text itself at the
+  // front, sometimes with an extra leading 'R' marker, so the option field
+  // start has to be computed per-record — see _decodeTransmission.
+  // Keyed by physical chassis id, not the (possibly grade-split) browsable
+  // model id — _decodeTransmission is always called with physicalId, same
+  // as gradeCodes above. ER34_GT/ER34_GTT both resolve to physical 'ER34'.
+  transmissionPositions: {
+    'BCNR33': 5, 'ECR33': 5, 'ER33': 5, 'ENR33': 5, 'HR33': 5,
+    'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5
+  },
+  transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32'],
+  transmissionCodes: {
+    'F': '5-Speed Manual',
+    'A': '4-Speed Automatic',
+    'Y': '6-Speed Manual'
+  },
+  _decodeTransmission: function(modelId, mc) {
+    if (!mc) return '';
+    let ch;
+    const fixedPos = this.transmissionPositions[modelId];
+    if (fixedPos !== undefined) {
+      ch = mc[fixedPos];
+    } else if (this.transmissionR32Models.includes(modelId)) {
+      const MD = window.MODEL_DECODER;
+      const span = MD && MD._chassisSpan(mc, 'R32');
+      if (!span) return '';
+      const skip = (mc[span.end] === 'R') ? 2 : 1;
+      ch = mc[span.end + skip];
+    } else {
+      return '';
+    }
+    return this.transmissionCodes[ch] || '';
   },
 
   // FAST splits each chassis into series blocks and restarts the serial in each.
@@ -1234,7 +1314,8 @@ const JDM_DATABASE = {
       seriesFilter = 'ALL',
       gradeFilter = 'ALL',
       colorFilter = 'ALL',
-      yearFilter = 'ALL'
+      yearFilter = 'ALL',
+      transmissionFilter = 'ALL'
     } = params;
 
     // 'ALL' walks every browsable model (this.models), not every physical
@@ -1264,6 +1345,9 @@ const JDM_DATABASE = {
         if (yearFilter !== 'ALL' && (col.dict.d[col.di[i]] || '').slice(0, 4) !== yearFilter) continue;
         if (gradeFilter !== 'ALL') {
           if (this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '') !== gradeFilter) continue;
+        }
+        if (transmissionFilter !== 'ALL') {
+          if (this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') !== transmissionFilter) continue;
         }
         if (q) {
           const code = col.dict.c[col.ci[i]] || '';
@@ -1304,6 +1388,7 @@ const JDM_DATABASE = {
     const gradeCounts = new Map();
     const yearCounts = new Map();
     const blockCounts = new Map();
+    const transmissionCounts = new Map();
     let totalCount = 0;
 
     for (let i = 0; i < col.n; i++) {
@@ -1313,8 +1398,12 @@ const JDM_DATABASE = {
       const c = col.dict.c[col.ci[i]] || '';
       colorCounts.set(c, (colorCounts.get(c) || 0) + 1);
 
-      const g = this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '');
+      const mc = col.dict.mc[col.mci[i]] || '';
+      const g = this._decodeGrade(physicalId, mc);
       if (g) gradeCounts.set(g, (gradeCounts.get(g) || 0) + 1);
+
+      const t = this._decodeTransmission(physicalId, mc);
+      if (t) transmissionCounts.set(t, (transmissionCounts.get(t) || 0) + 1);
 
       const yr = (col.dict.d[col.di[i]] || '').substring(0, 4) || 'Unknown';
       yearCounts.set(yr, (yearCounts.get(yr) || 0) + 1);
@@ -1343,6 +1432,10 @@ const JDM_DATABASE = {
       .sort((a, b) => b[1] - a[1])
       .map(([grade, count]) => ({ grade, count, percent: pct(count) }));
 
+    const transmissionBreakdown = [...transmissionCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([transmission, count]) => ({ transmission, count, percent: pct(count) }));
+
     const productionByYear = [...yearCounts.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
       .map(([year, count]) => ({ year, count }));
@@ -1356,7 +1449,74 @@ const JDM_DATABASE = {
         percent: pct(count)
       }));
 
-    return { totalCount, colorBreakdown, gradeBreakdown, productionByYear, seriesBreakdown };
+    return { totalCount, colorBreakdown, gradeBreakdown, transmissionBreakdown, productionByYear, seriesBreakdown };
+  },
+
+  // ---- Grade/series x paint code cross-tabulation ---------------------------
+  // The color and grade breakdowns above are each one dimension at a time.
+  // This answers the denser question — "how many V-Spec II cars in KH2" — in
+  // one cell, the same shape old-registry production-number tables used.
+  // Row label combines grade with series only where series is itself known
+  // for this physical chassis (seriesNames), so a chassis with no series
+  // table just gets plain grade rows instead of a misleading "(Series ?)".
+  getGradeColorMatrix: function(modelId) {
+    const resolved = this._resolvePhysical(modelId);
+    if (!resolved || !resolved.col.n) return null;
+    const { col, physicalId, filterChar } = resolved;
+
+    const rowColorCounts = new Map();   // rowLabel -> Map(colorCode -> count)
+    const rowTotals = new Map();
+    const colTotals = new Map();
+    let grandTotal = 0;
+
+    for (let i = 0; i < col.n; i++) {
+      if (!this._rowMatches(col, i, filterChar)) continue;
+      const code = col.dict.c[col.ci[i]] || '';
+      if (!code) continue;
+
+      const mc = col.dict.mc[col.mci[i]] || '';
+      const grade = this._decodeGrade(physicalId, mc) || 'Unknown';
+      const block = col.dict.b[col.blk[i]] || '0';
+      // Series is tracked two different ways depending on chassis — a block
+      // character (most models) or a serial-number threshold (BCNR33) — see
+      // _decodeSeries above, which this mirrors minus the build-date suffix
+      // that's useful per-record but not useful as a row-grouping label.
+      let seriesLabel = (this.seriesNames[physicalId] || {})[block];
+      if (!seriesLabel) {
+        const cuts = this.seriesSerials[physicalId];
+        if (cuts) {
+          const serial = col.ser[i];
+          for (let s = cuts.length - 1; s >= 0; s--) {
+            if (serial >= cuts[s][0]) { seriesLabel = cuts[s][1]; break; }
+          }
+        }
+      }
+      const rowLabel = seriesLabel ? `${grade} (${seriesLabel})` : grade;
+
+      if (!rowColorCounts.has(rowLabel)) rowColorCounts.set(rowLabel, new Map());
+      const cellMap = rowColorCounts.get(rowLabel);
+      cellMap.set(code, (cellMap.get(code) || 0) + 1);
+
+      rowTotals.set(rowLabel, (rowTotals.get(rowLabel) || 0) + 1);
+      colTotals.set(code, (colTotals.get(code) || 0) + 1);
+      grandTotal++;
+    }
+
+    if (!grandTotal) return null;
+
+    const cols = [...colTotals.entries()].sort((a, b) => b[1] - a[1]).map(([code]) => ({
+      code,
+      name: this._paint[code] || (this.colorNames[code] || {}).name || code,
+      total: colTotals.get(code)
+    }));
+
+    const rows = [...rowTotals.entries()].sort((a, b) => b[1] - a[1]).map(([label, total]) => ({
+      label,
+      total,
+      cells: cols.map(c => rowColorCounts.get(label).get(c.code) || 0)
+    }));
+
+    return { rows, cols, grandTotal, multiDimensional: rows.length > 1 };
   },
 
   // ---- Every paint code across the whole archive, with a per-chassis count
@@ -1416,28 +1576,37 @@ const JDM_DATABASE = {
     if (!filterChar) {
       // No split for this model — every distinct value in the physical file applies.
       const grades = new Set();
+      const transmissions = new Set();
       for (let i = 0; i < col.n; i++) {
-        const g = this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '');
+        const mc = col.dict.mc[col.mci[i]] || '';
+        const g = this._decodeGrade(physicalId, mc);
         if (g) grades.add(g);
+        const t = this._decodeTransmission(physicalId, mc);
+        if (t) transmissions.add(t);
       }
       return {
         colors: col.dict.c.slice().sort(),
         grades: [...grades].sort(),
-        series: Object.keys(col.ranges).map(b => col.dict.b[b] || '0').sort()
+        series: Object.keys(col.ranges).map(b => col.dict.b[b] || '0').sort(),
+        transmissions: [...transmissions].sort()
       };
     }
     // Grade-split model — scope every value to only the rows that belong to this split.
     const grades = new Set();
     const colors = new Set();
     const series = new Set();
+    const transmissions = new Set();
     for (let i = 0; i < col.n; i++) {
       if (!this._rowMatches(col, i, filterChar)) continue;
-      const g = this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '');
+      const mc = col.dict.mc[col.mci[i]] || '';
+      const g = this._decodeGrade(physicalId, mc);
       if (g) grades.add(g);
       colors.add(col.dict.c[col.ci[i]] || '');
       series.add(col.dict.b[col.blk[i]] || '0');
+      const t = this._decodeTransmission(physicalId, mc);
+      if (t) transmissions.add(t);
     }
-    return { colors: [...colors].sort(), grades: [...grades].sort(), series: [...series].sort() };
+    return { colors: [...colors].sort(), grades: [...grades].sort(), series: [...series].sort(), transmissions: [...transmissions].sort() };
   }
 
 };

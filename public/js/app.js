@@ -439,6 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const filterYear = document.getElementById(p + 'filter-year');
       const filterSeries = document.getElementById(p + 'filter-series');
       const filterTrim = document.getElementById(p + 'filter-trim');
+      const filterTransmission = document.getElementById(p + 'filter-transmission');
       const filterColor = document.getElementById(p + 'filter-color');
       const filterMarket = document.getElementById(p + 'filter-market');
       const filterSearch = document.getElementById(p + 'filter-chassis-search');
@@ -460,6 +461,7 @@ document.addEventListener('DOMContentLoaded', () => {
       filterYear?.addEventListener('change', refreshHandler);
       filterSeries?.addEventListener('change', refreshHandler);
       filterTrim?.addEventListener('change', refreshHandler);
+      filterTransmission?.addEventListener('change', refreshHandler);
       filterColor?.addEventListener('change', refreshHandler);
       filterMarket?.addEventListener('change', refreshHandler);
       filterSearch?.addEventListener('input', refreshHandler);
@@ -492,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const filterYear = document.getElementById(p + 'filter-year');
       const filterSeries = document.getElementById(p + 'filter-series');
       const filterTrim = document.getElementById(p + 'filter-trim');
+      const filterTransmission = document.getElementById(p + 'filter-transmission');
       const filterColor = document.getElementById(p + 'filter-color');
       const filterMarket = document.getElementById(p + 'filter-market');
 
@@ -524,6 +527,16 @@ document.addEventListener('DOMContentLoaded', () => {
         filterTrim.innerHTML = '<option value="ALL">All Grades</option>';
         vals.grades.forEach(g => {
           filterTrim.innerHTML += `<option value="${g}">${g}</option>`;
+        });
+      }
+
+      // Transmission options, decoded from the factory model code — empty on
+      // chassis where it isn't confirmed (see _decodeTransmission), which
+      // just leaves this dropdown at its default "All Transmissions".
+      if (filterTransmission) {
+        filterTransmission.innerHTML = '<option value="ALL">All Transmissions</option>';
+        vals.transmissions.forEach(t => {
+          filterTransmission.innerHTML += `<option value="${t}">${t}</option>`;
         });
       }
 
@@ -563,6 +576,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const yearVal = document.getElementById(p + 'filter-year')?.value || 'ALL';
       const seriesVal = document.getElementById(p + 'filter-series')?.value || 'ALL';
       const trimVal = document.getElementById(p + 'filter-trim')?.value || 'ALL';
+      const transmissionVal = document.getElementById(p + 'filter-transmission')?.value || 'ALL';
       const colorVal = document.getElementById(p + 'filter-color')?.value || 'ALL';
       const marketVal = document.getElementById(p + 'filter-market')?.value || 'ALL';
       const searchVal = document.getElementById(p + 'filter-chassis-search')?.value.trim().toUpperCase() || '';
@@ -574,6 +588,7 @@ document.addEventListener('DOMContentLoaded', () => {
         search: searchVal,
         seriesFilter: seriesVal,
         gradeFilter: trimVal,
+        transmissionFilter: transmissionVal,
         colorFilter: colorVal,
         yearFilter: yearVal
       });
@@ -769,7 +784,97 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      // Hidden entirely (not shown empty) on chassis where transmission
+      // isn't decoded — Legends models, and the Skyline models where the
+      // source data itself doesn't distinguish it (see database.js).
+      const transmissionAccordion = document.getElementById('stats-transmission-accordion');
+      const transmissionTbody = document.getElementById('stats-transmission-table-body');
+      if (transmissionAccordion && transmissionTbody) {
+        const hasData = stats.transmissionBreakdown && stats.transmissionBreakdown.length > 0;
+        transmissionAccordion.style.display = hasData ? '' : 'none';
+        if (hasData) {
+          transmissionTbody.innerHTML = '';
+          stats.transmissionBreakdown.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td><strong>${t.transmission}</strong></td>
+              <td class="mono">${t.count.toLocaleString()}</td>
+              <td class="mono"><strong>${t.percent}%</strong></td>
+              <td>
+                <div class="table-progress-wrap">
+                  <div class="table-progress-bar">
+                    <div class="table-progress-fill" style="width: ${Math.min(100, parseFloat(t.percent) * 2.5)}%;"></div>
+                  </div>
+                </div>
+              </td>
+            `;
+            transmissionTbody.appendChild(tr);
+          });
+        }
+      }
+
+      this.renderStatsMatrix(modelKey);
       this.renderStatsCharts(stats);
+    },
+
+    // Grade/series x paint color cross-tab — one cell per real combination,
+    // e.g. "how many V-Spec II cars came in KH2." Hidden (with a note)
+    // rather than shown empty when a chassis has no decoded grade/series to
+    // cross-tabulate against, since a single-row matrix isn't useful.
+    renderStatsMatrix: function(modelKey) {
+      const table = document.getElementById('stats-matrix-table');
+      const thead = document.getElementById('stats-matrix-thead');
+      const tbody = document.getElementById('stats-matrix-table-body');
+      const emptyNote = document.getElementById('stats-matrix-empty-note');
+      if (!table || !thead || !tbody) return;
+
+      const matrix = JDM_DATABASE.getGradeColorMatrix(modelKey);
+      if (!matrix || !matrix.multiDimensional) {
+        table.style.display = 'none';
+        if (emptyNote) emptyNote.style.display = 'block';
+        return;
+      }
+      table.style.display = '';
+      if (emptyNote) emptyNote.style.display = 'none';
+
+      const fmt = n => n > 0 ? n.toLocaleString() : '–';
+
+      thead.innerHTML = `
+        <tr>
+          <th>Grade / Series</th>
+          ${matrix.cols.map(c => `<th class="mono" title="${c.name}">${c.code}</th>`).join('')}
+          <th>Total</th>
+        </tr>
+      `;
+
+      tbody.innerHTML = '';
+      matrix.rows.forEach(r => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${r.label}</strong></td>
+          ${r.cells.map(n => `<td class="mono">${fmt(n)}</td>`).join('')}
+          <td class="mono"><strong>${r.total.toLocaleString()}</strong></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const totalsRow = document.createElement('tr');
+      totalsRow.className = 'matrix-totals-row';
+      totalsRow.innerHTML = `
+        <td><strong>Total</strong></td>
+        ${matrix.cols.map(c => `<td class="mono">${c.total.toLocaleString()}</td>`).join('')}
+        <td class="mono"><strong>${matrix.grandTotal.toLocaleString()}</strong></td>
+      `;
+      tbody.appendChild(totalsRow);
+
+      const pctRow = document.createElement('tr');
+      pctRow.className = 'matrix-totals-row';
+      pctRow.innerHTML = `
+        <td><strong>%</strong></td>
+        ${matrix.cols.map(c => `<td class="mono">${(c.total / matrix.grandTotal * 100).toFixed(1)}%</td>`).join('')}
+        <td class="mono">100%</td>
+      `;
+      tbody.appendChild(pctRow);
     },
 
     renderStatsCharts: function(stats) {

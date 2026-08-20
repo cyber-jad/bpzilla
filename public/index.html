@@ -238,7 +238,7 @@
         </div>
 
         <details class="refine-filters">
-          <summary>Refine by series, trim, color or destination</summary>
+          <summary>Refine by series, trim, transmission, color or destination</summary>
           <div class="filter-row refine-filters-row">
             <select id="filter-series" class="filter-select">
               <option value="ALL">All Series / Generations</option>
@@ -246,6 +246,10 @@
 
             <select id="filter-trim" class="filter-select">
               <option value="ALL">All Trim / Editions</option>
+            </select>
+
+            <select id="filter-transmission" class="filter-select">
+              <option value="ALL">All Transmissions</option>
             </select>
 
             <select id="filter-color" class="filter-select">
@@ -467,6 +471,48 @@
             </tbody>
           </table>
         </div>
+      </details>
+
+      <!-- Transmission Breakdown Table (collapsed by default) — hidden
+           entirely on chassis where transmission isn't decoded (Legends
+           models), rather than shown empty. -->
+      <details class="breakdown-accordion" style="margin-bottom: 28px;" id="stats-transmission-accordion">
+        <summary>Transmission Production Breakdown</summary>
+        <div class="table-responsive">
+          <table class="registry-table">
+            <thead>
+              <tr>
+                <th>Transmission</th>
+                <th>Units Produced</th>
+                <th>Percentage</th>
+                <th>Distribution Bar</th>
+              </tr>
+            </thead>
+            <tbody id="stats-transmission-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- Production Matrix: grade/series (rows) x paint code (columns), one
+           cell per real combination — denser than the two tables above, for
+           digging into an exact spec. Collapsed by default, same as those. -->
+      <details class="breakdown-accordion" style="margin-bottom: 28px;">
+        <summary>Production Matrix — Grade &amp; Series by Paint Code</summary>
+        <div class="table-responsive">
+          <table class="registry-table matrix-table" id="stats-matrix-table">
+            <thead id="stats-matrix-thead">
+              <!-- Populated via JS: paint code header row -->
+            </thead>
+            <tbody id="stats-matrix-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="stats-matrix-empty-note" style="display:none; color: var(--text-muted); font-size: 0.78rem; padding: 12px 16px;">
+          No decoded grade or series data for this chassis — every record falls under one row, so this view isn't more useful than the color breakdown above.
+        </p>
       </details>
 
       <!-- ============================================================= -->

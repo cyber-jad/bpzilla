@@ -301,6 +301,49 @@
   background: var(--gtr-red-soft);
 }
 
+/* Production Matrix — a dense grade/series x paint-color grid, not a list of
+   clickable records, so it drops the pointer cursor/click-hover styling the
+   base .registry-table assumes. First column stays pinned while the rest
+   scrolls, since a chassis with 20+ colors makes for a genuinely wide table. */
+.matrix-table {
+  font-size: 0.78rem;
+}
+.matrix-table th,
+.matrix-table td {
+  padding: 7px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+.matrix-table th:first-child,
+.matrix-table td:first-child {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--bg-secondary);
+  box-shadow: 1px 0 0 var(--border-subtle);
+}
+.matrix-table th:first-child {
+  background: var(--bg-tertiary);
+  z-index: 1;
+}
+.matrix-table tbody tr {
+  cursor: default;
+}
+.matrix-table tbody tr:hover {
+  background: var(--gtr-red-soft);
+  box-shadow: none;
+}
+.matrix-table tbody tr:hover td:first-child {
+  background: var(--gtr-red-soft);
+}
+.matrix-table tr.matrix-totals-row {
+  background: var(--bg-tertiary);
+  font-weight: 600;
+}
+.matrix-table tr.matrix-totals-row td:first-child {
+  background: var(--bg-tertiary);
+}
+
 .chassis-link {
   font-family: var(--font-mono);
   font-weight: 600;

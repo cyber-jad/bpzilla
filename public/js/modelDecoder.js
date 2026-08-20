@@ -234,9 +234,10 @@ const MODEL_DECODER = {
   _gradeFor: function(gen, pos, ch, chassisList) {
     const DB = window.JDM_DATABASE;
     if (!DB) return null;
-    if (pos !== 4) return null;
     if (!chassisList || chassisList.length !== 1) return null;
     const modelId = chassisList[0];
+    const expectedPos = (DB.gradePositions || {})[modelId] || 4;
+    if (pos !== expectedPos) return null;
     const table = DB.gradeCodes[modelId];
     if (!table) return null;
     const g = table[ch];
