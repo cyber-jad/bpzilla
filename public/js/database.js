@@ -327,8 +327,14 @@ const JDM_DATABASE = {
       badgeClass: 'badge-nissan',
       description: 'Naturally aspirated S13 Silvia coupe — CA18DE early cars, SR20DE after the 1991 running change.'
     },
+    // 12,197 records inside this physical file literally spell "KS13..."
+    // rather than "S13...", the same shape as our separate KS13 (which is
+    // itself confirmed to be a real distinct Super HICAS chassis, not this
+    // one) — a different chassis-prefix text mixed into one file, the same
+    // situation the WGNC34/260RS split was. Split out below as KPS13.
     'PS13': {
       id: 'PS13', chassisPrefix: 'PS13',
+      gradeFilter: '0:!K',
       generation: 'S13 (Silvia)',
       name: 'Nissan Silvia Turbo (PS13)',
       shortName: 'S13 Turbo',
@@ -340,6 +346,21 @@ const JDM_DATABASE = {
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
       description: 'Turbocharged S13 Silvia coupe — CA18DET early cars, SR20DET after the 1991 running change.'
+    },
+    'KPS13': {
+      id: 'KPS13', chassisPrefix: 'PS13',
+      gradeFilter: '0:K',
+      generation: 'S13 (Silvia)',
+      name: 'Nissan Silvia Turbo, Super HICAS (KPS13)',
+      shortName: 'S13 Turbo HICAS',
+      chassisCode: 'E-KPS13',
+      bodyStyle: '2-Door Coupe',
+      years: '1988 – 1993',
+      engine: 'CA18DET 1.8L Turbo / SR20DET 2.0L Turbo (model-year dependent)',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The Super HICAS (rear-wheel steering) counterpart to PS13 — same relationship KS13 has to plain S13, one physical file apart. 12,197 records, split out rather than left folded into PS13\'s count.'
     },
     // What KS13 specifically denotes isn't confirmed with the same certainty
     // as S13/PS13/RS13. The best-corroborated public reading is a Super
@@ -781,7 +802,7 @@ const JDM_DATABASE = {
   // once, here, to be picked up everywhere this distinction matters (the
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
-    'S13', 'PS13', 'KS13', 'RS13', 'S14', 'CS14',
+    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'S14', 'CS14',
     'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS', 'NM35', 'HM35', 'PM35', 'PNM35',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_US', 'GZ32_US', 'Z32_CA', 'GZ32_CA', 'GZ32_EL', 'GZ32_ER'
@@ -1222,7 +1243,43 @@ const JDM_DATABASE = {
   gradePositions: {
     'BNR32': 6
   },
+  // Silvia grade family (K's/Q's/J's) — confirmed by exact-match cross-
+  // reference against s-chassis-archive.com's independently published
+  // S13/KS13/PS13/KPS13 production totals by grade+series: every bucket
+  // below landed within the same ~0.3-0.5% variance seen across every
+  // other total in this dataset (different snapshot of the same factory
+  // records), several matching to the exact record (e.g. KPS13's three
+  // families hit 6565/5627/5 against a source total of 6565/5627/5 with
+  // zero variance). 'Club' is a further split confirmed the same way, but
+  // only isolable on the SR20 (PS13/KPS13) chassis — a single 'E' flag at
+  // grade-position+2 (Q's) or +3 (K's) exactly matches the source's Q's
+  // Club / K's Club subtotals on both chassis. The CA18 (S13/KS13) chassis
+  // has real 'Diamond' sub-grades too per the same source, and PS13 has a
+  // real 'Almighty'/'Square' sub-grade, but no letter position was found
+  // that isolates any of them cleanly — they stay folded into their parent
+  // grade rather than guessed at.
+  _decodeSilviaGrade: function(modelId, mc) {
+    if (modelId === 'S13' || modelId === 'KS13') {
+      const c = mc[2];
+      if (c === 'H') return "Q's";
+      if (c === 'J') return "K's";
+      if (c === 'F' || c === 'A') return "J's";
+      return '';
+    }
+    if (modelId === 'PS13') {
+      const shift = (mc[0] === 'K') ? 1 : 0;
+      const gp = 3 + shift;
+      const c = mc[gp];
+      if (c === 'H') return (mc[gp + 2] === 'E') ? "Q's Club" : "Q's";
+      if (c === 'J') return (mc[gp + 3] === 'E') ? "K's Club" : "K's";
+      if (c === 'F' || c === 'A') return "J's";
+      return '';
+    }
+    return null;
+  },
   _decodeGrade: function(modelId, mc) {
+    const silvia = this._decodeSilviaGrade(modelId, mc);
+    if (silvia !== null) return silvia;
     const pos = this.gradePositions[modelId] || 4;
     if (mc.length <= pos) return '';
     const table = this.gradeCodes[modelId];
@@ -1314,6 +1371,11 @@ const JDM_DATABASE = {
   //   guessed at, left undecoded.
   //   Z32 (300ZX) — checked, no clean signal found in the option string;
   //   also left undecoded rather than forced.
+  // KPS13 (the K-prefixed "KS13..." minority inside the physical PS13 file)
+  // isn't listed here — it shares physicalId 'PS13' with plain PS13 records,
+  // so _decodeTransmission special-cases it directly (mc[0]==='K' shifts the
+  // position by +1: verified against 12,192/12,197 K-records cleanly
+  // matching F/A at PS13's position + 1).
   transmissionPositions: {
     'BCNR33': 5, 'ECR33': 5, 'ER33': 5, 'ENR33': 5, 'HR33': 5,
     'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5,
@@ -1336,9 +1398,13 @@ const JDM_DATABASE = {
   _decodeTransmission: function(modelId, mc) {
     if (!mc) return '';
     let ch;
-    const fixedPos = this.transmissionPositions[modelId];
-    if (fixedPos !== undefined) {
-      ch = mc[fixedPos];
+    // KPS13 records live inside the physical 'PS13' file with a leading 'K'
+    // ("KS13HFW..." vs "S13HFW...") that shifts every field after it by one
+    // character — same H/J-then-F/A shape as plain S13, just offset by 1.
+    if (modelId === 'PS13' && mc[0] === 'K') {
+      ch = mc[this.transmissionPositions.PS13 + 1];
+    } else if (this.transmissionPositions[modelId] !== undefined) {
+      ch = mc[this.transmissionPositions[modelId]];
     } else if (this.transmissionR32Models.includes(modelId)) {
       const MD = window.MODEL_DECODER;
       const span = MD && MD._chassisSpan(mc, 'R32');
