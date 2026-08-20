@@ -434,6 +434,29 @@
         </div>
       </div>
 
+      <!-- Production Matrix: grade/series (rows) x paint code (columns), one
+           cell per real combination. Leads the breakdown tables and starts
+           open — this is the headline view for digging into an exact spec,
+           not a secondary table like the ones below it. Still a normal
+           +/- accordion (see .breakdown-accordion in style.css), just
+           pre-opened. -->
+      <details class="breakdown-accordion" style="margin-bottom: 28px;" open>
+        <summary>Production Matrix — Grade &amp; Series by Paint Code</summary>
+        <div class="table-responsive">
+          <table class="registry-table matrix-table" id="stats-matrix-table">
+            <thead id="stats-matrix-thead">
+              <!-- Populated via JS: paint code header row -->
+            </thead>
+            <tbody id="stats-matrix-table-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="stats-matrix-empty-note" style="display:none; color: var(--text-muted); font-size: 0.78rem; padding: 12px 16px;">
+          No decoded grade or series data for this chassis — every record falls under one row, so this view isn't more useful than the color breakdown above.
+        </p>
+      </details>
+
       <!-- Color Breakdown Table (collapsed by default — expand to dig in) -->
       <details class="breakdown-accordion" style="margin-bottom: 16px;">
         <summary>Factory Paint Code Production Breakdown</summary>
@@ -499,25 +522,6 @@
         </div>
       </details>
 
-      <!-- Production Matrix: grade/series (rows) x paint code (columns), one
-           cell per real combination — denser than the two tables above, for
-           digging into an exact spec. Collapsed by default, same as those. -->
-      <details class="breakdown-accordion" style="margin-bottom: 28px;">
-        <summary>Production Matrix — Grade &amp; Series by Paint Code</summary>
-        <div class="table-responsive">
-          <table class="registry-table matrix-table" id="stats-matrix-table">
-            <thead id="stats-matrix-thead">
-              <!-- Populated via JS: paint code header row -->
-            </thead>
-            <tbody id="stats-matrix-table-body">
-              <!-- Populated via JS -->
-            </tbody>
-          </table>
-        </div>
-        <p id="stats-matrix-empty-note" style="display:none; color: var(--text-muted); font-size: 0.78rem; padding: 12px 16px;">
-          No decoded grade or series data for this chassis — every record falls under one row, so this view isn't more useful than the color breakdown above.
-        </p>
-      </details>
 
       <!-- ============================================================= -->
       <!-- RARITY & "1 OF X" CALCULATOR — merged into this view so the   -->
