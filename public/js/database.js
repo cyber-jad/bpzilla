@@ -1198,7 +1198,7 @@ const JDM_DATABASE = {
       modelCode: col.dict.mc[col.mci[i]] || '',
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
-      grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || ''),
+      grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
       buildDate: date,
       colorCode: code,
       colorName: name,
@@ -1422,11 +1422,121 @@ const JDM_DATABASE = {
   _decodeZ32TwinTurboGrade: function(modelId, mc) {
     return null;
   },
-  _decodeGrade: function(modelId, mc) {
+  // BNR34 sub-grade (V-Spec / V-Spec II / M-Spec / V-Spec II Nür / M-Spec
+  // Nür) — EXACT-MATCH CONFIRMED, same tier as the S13 family. Position 14
+  // splits the existing 'W' (V-Spec) / 'V' (Standard GT-R) grade at
+  // position 4 further: under 'W', 'K' vs 'Z' cleanly follows the real Jan
+  // 2000 V-Spec II boundary (K: 1998-06 to 2000-07, Z: 2000-02 onward,
+  // same overlap-during-changeover pattern seen elsewhere in this file);
+  // '2' -> M-Spec (366 records, introduced 2001); 'V' -> V-Spec II Nür
+  // (718 records) and 'M' -> M-Spec Nür (284 records) are both correct to
+  // the exact record against gtr-registry.com's own published R34 GT-R
+  // production figures (718 V-Spec II Nür, 285 M-Spec Nür, 366 M-Spec,
+  // 1,003 total Nür — archived via a 2013-era forum repost of the site's
+  // findings, since the site itself is gone). The 1-record M-Spec Nür gap
+  // (284 vs 285) is the same order of variance seen on every other
+  // cross-checked total in this archive. Under 'V' (Standard GT-R), 'J'
+  // vs 'X' is the same Series 1/2 boundary, but Standard GT-R was never
+  // given its own Series 2 name the way V-Spec was, so both map to the
+  // same "Standard GT-R" label — no invented name for a distinction
+  // Nissan itself didn't market.
+  _decodeBNR34SubGrade: function(modelId, mc) {
+    if (modelId !== 'BNR34') return null;
+    const base = mc[4];
+    const sub = mc[14];
+    if (base === 'W') {
+      if (sub === 'V') return 'V-Spec II Nür';
+      if (sub === 'M') return 'M-Spec Nür';
+      if (sub === '2') return 'M-Spec';
+      if (sub === 'Z') return 'V-Spec II';
+      if (sub === 'K') return 'V-Spec';
+      return 'V-Spec';
+    }
+    if (base === 'V') return 'Standard GT-R';
+    return null;
+  },
+  // BNR32 sub-grade (V-Spec / V-Spec II split, plus N1 and Police flags on
+  // top of any grade) — EXACT-MATCH CONFIRMED against the same
+  // gtr-registry.com production figures used for BNR34 above. The existing
+  // position-6 grade only ever distinguished Standard ('X') from the whole
+  // V-Spec family ('B') — this splits 'B' further and adds two option
+  // flags found layered on top of *either* base grade:
+  //   - Position 9 (or +1 if V-Spec II's own prefix pushes it over — see
+  //     below) reading 'P' is a Police-spec car: 13 under Standard, 1
+  //     under V-Spec, 14 total — exact match to the real "14 police cars"
+  //     figure.
+  //   - Positions 9-10 (again +1 under V-Spec II) reading "ZN" followed by
+  //     blank padding is the N1 homologation package: 118 under Standard,
+  //     64 under V-Spec, 63 under V-Spec II — 245 combined, exact match to
+  //     the real total. ("ZN" followed by a further character, not blank,
+  //     is a real but different combination — left undecoded rather than
+  //     folded into the exact-match N1 figure.)
+  //   - Within grade 'B' specifically, an '8' at position 9 marks V-Spec
+  //     II rather than V-Spec — first appears Feb 1994, matching the real
+  //     Jan 1994 V-Spec II launch almost exactly, and shifts the P/N1
+  //     check above one character to the right. 1,306 V-Spec II (exact)
+  //     and 1,395 V-Spec (real: 1,396, same 1-record variance seen
+  //     throughout this archive) once N1/Police are pulled out.
+  _decodeBNR32SubGrade: function(modelId, mc) {
+    if (modelId !== 'BNR32') return null;
+    const base = mc[6];
+    if (base !== 'X' && base !== 'B') return null;
+    const isVSpecII = (base === 'B' && mc[9] === '8');
+    const off = isVSpecII ? 1 : 0;
+    const c1 = mc[9 + off], c2 = mc[10 + off], c3 = mc[11 + off];
+    const isN1 = (c1 === 'Z' && c2 === 'N' && (c3 === ' ' || c3 === undefined));
+    const isPolice = (c1 === 'P');
+    if (base === 'X') {
+      if (isN1) return 'GT-R N1';
+      if (isPolice) return 'Standard GT-R (Police)';
+      return 'Standard GT-R';
+    }
+    const specName = isVSpecII ? 'V-Spec II' : 'V-Spec';
+    if (isN1) return specName + ' N1';
+    if (isPolice) return specName + ' (Police)';
+    return specName;
+  },
+  // BCNR33 (R33 GT-R) — same exact-match tier, same gtr-registry.com
+  // figures. Position 12 reading 'P' under grade 'Q' (Standard GT-R) is
+  // the 416 Autech-converted GT-Rs — exact match, and consistent with the
+  // real fact that all but one shared the same model code. Position 14
+  // carries the N1 flag under grade 'W' (V-Spec), but with a different
+  // letter per series rather than one constant character: 'C' in Series 1
+  // (55 records, real: 56), 'N' in Series 2 (21, exact). Series 3's letter,
+  // 'R', is shared with something bigger — 112 total, not 10 — but splits
+  // cleanly on date into two real things: a tight run of exactly 102
+  // records from Jun-Aug 1996 (a real gap follows, nothing again until
+  // Feb 1997), matching the real 102-car "V-Spec LM" Le Mans commemorative
+  // exactly, and 10 scattered records from Feb 1997 onward, matching
+  // Series 3 V-Spec N1 exactly. 55+21+10 = 86 N1 against a real total of
+  // 87. 5 real police cars are documented too, but no position or
+  // character combination tried isolates them cleanly — left undecoded.
+  _decodeBCNR33SubGrade: function(modelId, mc, date) {
+    if (modelId !== 'BCNR33') return null;
+    const base = mc[4];
+    if (base !== 'Q' && base !== 'W') return null;
+    if (base === 'Q') {
+      if (mc[12] === 'P') return 'Autech GT-R';
+      return 'Standard GT-R';
+    }
+    if (mc[14] === 'C' || mc[14] === 'N') return 'V-Spec N1';
+    if (mc[14] === 'R') {
+      if (date && date >= '1996-06' && date <= '1996-08') return 'V-Spec LM';
+      return 'V-Spec N1';
+    }
+    return 'V-Spec';
+  },
+  _decodeGrade: function(modelId, mc, date) {
     const silvia = this._decodeSilviaGrade(modelId, mc);
     if (silvia !== null) return silvia;
     const z32tt = this._decodeZ32TwinTurboGrade(modelId, mc);
     if (z32tt !== null) return z32tt;
+    const bnr34sub = this._decodeBNR34SubGrade(modelId, mc);
+    if (bnr34sub !== null) return bnr34sub;
+    const bnr32sub = this._decodeBNR32SubGrade(modelId, mc);
+    if (bnr32sub !== null) return bnr32sub;
+    const bcnr33sub = this._decodeBCNR33SubGrade(modelId, mc, date);
+    if (bcnr33sub !== null) return bcnr33sub;
     // WGNC34's 'E'/'F' -> RB25 NEO/Pre-NEO labels do not apply to the
     // 260RS records folded into this same physical file (gradeFilter
     // '12:P') — the 260RS runs an Autech-swapped RB26DETT, not an RB25 at
@@ -1676,7 +1786,7 @@ const JDM_DATABASE = {
         if (seriesFilter !== 'ALL' && (col.dict.b[col.blk[i]] || '0') !== seriesFilter) continue;
         if (yearFilter !== 'ALL' && (col.dict.d[col.di[i]] || '').slice(0, 4) !== yearFilter) continue;
         if (gradeFilter !== 'ALL') {
-          if (this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '') !== gradeFilter) continue;
+          if (this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', col.dict.d[col.di[i]] || '') !== gradeFilter) continue;
         }
         if (transmissionFilter !== 'ALL') {
           if (this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') !== transmissionFilter) continue;
@@ -1731,7 +1841,7 @@ const JDM_DATABASE = {
       colorCounts.set(c, (colorCounts.get(c) || 0) + 1);
 
       const mc = col.dict.mc[col.mci[i]] || '';
-      const g = this._decodeGrade(physicalId, mc);
+      const g = this._decodeGrade(physicalId, mc, col.dict.d[col.di[i]] || '');
       if (g) gradeCounts.set(g, (gradeCounts.get(g) || 0) + 1);
 
       const t = this._decodeTransmission(physicalId, mc);
@@ -1811,7 +1921,7 @@ const JDM_DATABASE = {
       // two very different things depending on context, and conflating them
       // was actively misleading. Handled below once we know whether a real
       // series label exists for this record too.
-      const grade = this._decodeGrade(physicalId, mc);
+      const grade = this._decodeGrade(physicalId, mc, col.dict.d[col.di[i]] || '');
       const block = col.dict.b[col.blk[i]] || '0';
       // Series is tracked two different ways depending on chassis — a block
       // character (most models) or a serial-number threshold (BCNR33) — see
@@ -1923,7 +2033,7 @@ const JDM_DATABASE = {
       const transmissions = new Set();
       for (let i = 0; i < col.n; i++) {
         const mc = col.dict.mc[col.mci[i]] || '';
-        const g = this._decodeGrade(physicalId, mc);
+        const g = this._decodeGrade(physicalId, mc, col.dict.d[col.di[i]] || '');
         if (g) grades.add(g);
         const t = this._decodeTransmission(physicalId, mc);
         if (t) transmissions.add(t);
@@ -1943,7 +2053,7 @@ const JDM_DATABASE = {
     for (let i = 0; i < col.n; i++) {
       if (!this._rowMatches(col, i, filterChar)) continue;
       const mc = col.dict.mc[col.mci[i]] || '';
-      const g = this._decodeGrade(physicalId, mc);
+      const g = this._decodeGrade(physicalId, mc, col.dict.d[col.di[i]] || '');
       if (g) grades.add(g);
       colors.add(col.dict.c[col.ci[i]] || '');
       series.add(col.dict.b[col.blk[i]] || '0');
