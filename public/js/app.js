@@ -398,11 +398,15 @@ document.addEventListener('DOMContentLoaded', () => {
       searchInput.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter') return;
         const query = e.target.value.trim().toUpperCase();
-        // JDM lookups are typed with a dash (BNR34-000123); export-market
-        // records use a real dash-less 17-char VIN (JN1CZ24A0LX000001), so
-        // a bare alnum string of plausible VIN length is accepted too.
-        const looksLikeVin = /^[A-Z0-9]{11,17}$/.test(query);
-        if ((!query.includes('-') && !looksLikeVin) || query.length < 8) return;
+        // Just a minimum-length guard against firing on a query the user
+        // obviously hasn't finished typing yet — the actual shape
+        // validation (dash or no dash, JDM chassis+serial or a real
+        // dash-less export VIN) belongs to resolveChassis/findChassis, not
+        // here. An earlier version of this check required either a dash or
+        // an 11-17 char string, which silently dropped valid dash-less JDM
+        // lookups shorter than 11 characters (e.g. "ER34013961", 10 chars)
+        // on the floor before resolveChassis ever ran.
+        if (query.length < 6) return;
         const rec = JDM_DATABASE.resolveChassis(query);
         const which = rec ? (JDM_DATABASE.isLegend(rec.modelId) ? 'legends' : 'skyline') : this._whichForQuery(query);
         this.switchTab(which === 'legends' ? 'legends-view' : 'database-view');
