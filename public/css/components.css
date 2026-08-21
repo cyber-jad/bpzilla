@@ -274,6 +274,25 @@
 .registry-table th.sortable:hover {
   color: var(--gtr-red);
 }
+/* Direction arrow on the column currently being sorted. Reserved space on
+   every sortable header so the row doesn't shift width when sorting moves
+   between columns. */
+.registry-table th.sortable::after {
+  content: '';
+  display: inline-block;
+  width: 0.75em;
+  margin-left: 4px;
+}
+.registry-table th.sortable.sorted {
+  color: var(--gtr-red);
+}
+.registry-table th.sortable.sorted::after {
+  content: '\25B2';           /* ▲ ascending */
+  font-size: 0.7em;
+}
+.registry-table th.sortable.sorted.sorted-desc::after {
+  content: '\25BC';           /* ▼ descending */
+}
 
 .registry-table td {
   padding: 11px 14px;
@@ -1071,7 +1090,7 @@ textarea.form-control {
 /* ==========================================================================
    MODEL CODE DECODER
    The old decoder showed one fixed table of invented character meanings. This
-   one reports what the 543,299 records actually support, per generation, so
+   one reports what the 1,284,067 records actually support, per generation, so
    the styling has to distinguish a derived fact from a bare observation.
    ========================================================================== */
 
@@ -1525,6 +1544,7 @@ textarea.form-control {
   max-width: 280px;
   width: 100%;
   justify-self: end;
+  cursor: pointer;
   /* --bg-surface was never defined anywhere in this codebase, so the card had
      no real panel behind it — it was fully transparent over the hero photo,
      which is why the stat/description text underneath blended into whatever

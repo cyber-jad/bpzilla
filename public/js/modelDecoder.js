@@ -11,7 +11,7 @@
  *   R33 / R34   GJPRQFR33ZDA-J---R33     positional option string, dash filler
  *   R32         BNR32RXFSLMZG    R32     chassis code first, space filler
  *
- * So the meanings here are derived at runtime from all 543,299 records. For a
+ * So the meanings here are derived at runtime from all 1,284,067 records. For a
  * given character at a given position, we look at which chassis actually carry
  * it, and if every one of those chassis shares the same engine, drivetrain or
  * body style, that is reported as the meaning — with the evidence attached.
@@ -682,9 +682,16 @@ const MODEL_DECODER = {
         }
         const c = col.dict.c[col.ci[i]] || '';
         colors.set(c, (colors.get(c) || 0) + 1);
-        const g = DB._decodeGrade(modelId, code);
+        const g = DB._decodeGrade(modelId, code, d);
         if (g) grades.set(g, (grades.get(g) || 0) + 1);
-        if (examples.length < 6) examples.push(DB._materialize(modelId, i));
+        // _materialize needs the BROWSABLE model id, not the physical file
+        // id this loop iterates. On a grade-split chassis the physical id
+        // ('ER34', 'ECR33', 'PS13', 'RS13', 'WGNC34') isn't a key in
+        // DB.models at all, so the example records came back with the raw
+        // id as their name and an em-dash for engine and every other spec.
+        if (examples.length < 6) {
+          examples.push(DB._materialize(DB._virtualModelFor(modelId, code), i));
+        }
       }
     });
 

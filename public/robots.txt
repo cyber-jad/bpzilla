@@ -1,5 +1,4 @@
-# Blue Plate — Nissan Skyline factory record archive
-# Change bpzilla.com below once the domain is decided.
+# BPZILLA — Nissan factory record archive
 
 # Search engines: fully crawlable — that's the point, this is how people
 # find the site. Only /data/ is off-limits (see below).

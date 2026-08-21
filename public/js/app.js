@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     dbPageSize: 25,
     dbSortField: 'chassis',
     dbSortAsc: true,
+    legendsSortField: 'chassis',
+    legendsSortAsc: true,
     colorChartInstance: null,
     timelineChartInstance: null,
 
@@ -147,8 +149,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // state) that otherwise behave identically — this config is what lets
     // one set of functions drive both instead of duplicating them.
     _dbViewConfig: {
-      skyline: { prefix: '', pageProp: 'dbPage', modelProp: 'currentModel', stripId: 'model-strip', allScope: 'ALL_SKYLINE', isLegend: false },
-      legends: { prefix: 'legends-', pageProp: 'legendsPage', modelProp: 'currentLegendsModel', stripId: 'legends-model-strip', allScope: 'ALL_LEGENDS', isLegend: true }
+      skyline: { prefix: '', pageProp: 'dbPage', modelProp: 'currentModel', stripId: 'model-strip', allScope: 'ALL_SKYLINE', isLegend: false, sortFieldProp: 'dbSortField', sortAscProp: 'dbSortAsc' },
+      legends: { prefix: 'legends-', pageProp: 'legendsPage', modelProp: 'currentLegendsModel', stripId: 'legends-model-strip', allScope: 'ALL_LEGENDS', isLegend: true, sortFieldProp: 'legendsSortField', sortAscProp: 'legendsSortAsc' }
     },
 
     renderModelStrip: function(which) {
@@ -474,6 +476,34 @@ document.addEventListener('DOMContentLoaded', () => {
       filterMarket?.addEventListener('change', refreshHandler);
       filterSearch?.addEventListener('input', refreshHandler);
 
+      // Column sorting. The headers have carried class="sortable", a pointer
+      // cursor and a hover colour since the first build, but nothing was
+      // ever bound to them and getVirtualPage had no sort — the table
+      // advertised a control that did nothing. Clicking a header now sorts;
+      // clicking the active one again reverses it.
+      const table = tbody => tbody?.closest('table');
+      table(document.getElementById(p + 'chassis-table-body'))
+        ?.querySelectorAll('th.sortable').forEach(th => {
+          const field = th.getAttribute('data-sort');
+          if (!field) return;
+          th.setAttribute('role', 'button');
+          th.setAttribute('tabindex', '0');
+          const activate = () => {
+            if (this[cfg.sortFieldProp] === field) {
+              this[cfg.sortAscProp] = !this[cfg.sortAscProp];
+            } else {
+              this[cfg.sortFieldProp] = field;
+              this[cfg.sortAscProp] = true;
+            }
+            this[cfg.pageProp] = 1;
+            this.renderDbTable(which);
+          };
+          th.addEventListener('click', activate);
+          th.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+          });
+        });
+
       document.getElementById(p + 'btn-prev-page')?.addEventListener('click', () => {
         if (this[cfg.pageProp] > 1) {
           this[cfg.pageProp]--;
@@ -598,7 +628,19 @@ document.addEventListener('DOMContentLoaded', () => {
         gradeFilter: trimVal,
         transmissionFilter: transmissionVal,
         colorFilter: colorVal,
-        yearFilter: yearVal
+        yearFilter: yearVal,
+        sortField: this[cfg.sortFieldProp],
+        sortAsc: this[cfg.sortAscProp]
+      });
+
+      // Mark the sorted column for both sighted users (the ::after arrow in
+      // components.css) and screen readers (aria-sort).
+      const headTable = tbody.closest('table');
+      headTable?.querySelectorAll('th.sortable').forEach(th => {
+        const active = th.getAttribute('data-sort') === this[cfg.sortFieldProp];
+        th.classList.toggle('sorted', active);
+        th.classList.toggle('sorted-desc', active && !this[cfg.sortAscProp]);
+        th.setAttribute('aria-sort', active ? (this[cfg.sortAscProp] ? 'ascending' : 'descending') : 'none');
       });
 
       const records = virtualData.records;
@@ -673,7 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!modal || !body) return;
       body.innerHTML = `
         <div style="text-align: center; padding: 48px 24px;">
-          <div style="font-size: 3rem; margin-bottom: 16px;">ðŸ”</div>
+          <div style="font-size: 3rem; margin-bottom: 16px;">&#128269;</div>
           <h2 style="color: var(--gtr-red); margin-bottom: 8px;">VIN Not Found in FAST Database</h2>
           <p style="color: var(--text-secondary); margin-bottom: 16px;">
             <code style="font-family: monospace; font-size: 1.1rem; color: var(--text-primary);">${query}</code>
@@ -1372,7 +1414,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const modelId = document.getElementById('calc-model-select')?.value || 'BNR34';
       const trim = document.getElementById('calc-trim-select')?.value || 'V-Spec II';
       const colorCode = document.getElementById('calc-color-select')?.value || 'TV2';
-      const vinInput = document.getElementById('calc-vin-input')?.value.trim() || 'SKYLINE-REGISTERED';
+      // Placeholder when no chassis number is supplied. Was 'SKYLINE-REGISTERED',
+      // which printed on the certificate of a Silvia or a 300ZX too.
+      const vinInput = document.getElementById('calc-vin-input')?.value.trim() || 'NOT SUPPLIED';
 
       const options = [];
       if (document.getElementById('opt-cold-weather')?.checked) options.push('cold_weather');
@@ -1394,7 +1438,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       resultArea.innerHTML = `
         <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">AUTHENTICITY SKYLINE SPECIFICATION CERTIFICATE</span>
+          <span style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">FACTORY SPECIFICATION CERTIFICATE OF AUTHENTICITY</span>
           <button class="btn-page" id="btn-print-certificate" style="display: flex; align-items: center; gap: 6px;">
             <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
             <span>Print / Save Certificate</span>
@@ -1601,6 +1645,25 @@ document.addEventListener('DOMContentLoaded', () => {
       this.renderCompareResult();
     },
 
+    // `options` is an array of {pos, char, text} (see _decodeOptions in
+    // database.js) — joining the objects directly renders "[object Object]".
+    _optionText: function(rec) {
+      const opts = rec && rec.options ? rec.options : [];
+      if (!opts.length) return 'Standard specification';
+      return opts.map(o => o.text).join(', ');
+    },
+
+    // Records carry no per-car rarity field, so the old "Rarity Ranking" row
+    // fell through to a hardcoded "Top 1% Spec" for every car ever compared.
+    // This reports something the archive actually knows: how common that
+    // car's factory paint is on its own chassis.
+    _paintShare: function(rec) {
+      if (!rec || !rec.colorCode) return '—';
+      const stats = JDM_DATABASE.getModelStats(rec.modelId);
+      const hit = stats && stats.colorBreakdown.find(c => c.code === rec.colorCode);
+      return hit ? `${hit.percent}% of ${rec.modelId} built this colour` : '—';
+    },
+
     renderCompareResult: function() {
       const outArea = document.getElementById('compare-result-area');
       const vinA = document.getElementById('compare-select-a')?.value || 'BNR34-000055';
@@ -1665,19 +1728,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${recB.transmission}</td>
               </tr>
               <tr>
-                <td><strong>Rarity Ranking</strong></td>
-                <td><span class="badge badge-grail">${recA.rarityRank || 'Top 1% Spec'}</span></td>
-                <td><span class="badge badge-grail">${recB.rarityRank || 'Top 1% Spec'}</span></td>
+                <td><strong>Factory Paint Share</strong></td>
+                <td><span class="badge badge-grail">${this._paintShare(recA)}</span></td>
+                <td><span class="badge badge-grail">${this._paintShare(recB)}</span></td>
               </tr>
               <tr>
                 <td><strong>Factory Equipment</strong></td>
-                <td>${(recA.options || []).join(', ')}</td>
-                <td>${(recB.options || []).join(', ')}</td>
+                <td>${this._optionText(recA)}</td>
+                <td>${this._optionText(recB)}</td>
               </tr>
               <tr>
-                <td><strong>Known Location / Status</strong></td>
-                <td>${recA.location} (${recA.status})</td>
-                <td>${recB.location} (${recB.status})</td>
+                <td><strong>Destination / Status</strong></td>
+                <td>${recA.destination || '&mdash;'} (${recA.status})</td>
+                <td>${recB.destination || '&mdash;'} (${recB.status})</td>
               </tr>
             </tbody>
           </table>
@@ -1698,11 +1761,43 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('godzilla-lore-modal')?.classList.add('active');
       };
       document.getElementById('godzilla-avatar-btn')?.addEventListener('click', openGodzilla);
-      document.getElementById('godzilla-modal-btn')?.addEventListener('click', openGodzilla);
       document.getElementById('hero-godzilla-btn')?.addEventListener('click', openGodzilla);
+      // The hero feature card has always had a hover-lift that implies it's
+      // clickable, but nothing was ever bound to it — the listener here was
+      // pointed at 'godzilla-modal-btn', an id that doesn't exist in the
+      // markup, so the card did nothing. Bound to the card itself, with the
+      // keyboard equivalent since a <div> gets none for free.
+      const godzillaCard = document.getElementById('hero-godzilla-card');
+      if (godzillaCard) {
+        godzillaCard.addEventListener('click', openGodzilla);
+        godzillaCard.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openGodzilla(); }
+        });
+      }
       document.getElementById('btn-history-open-godzilla')?.addEventListener('click', openGodzilla);
       document.getElementById('modal-godzilla-close')?.addEventListener('click', () => {
         document.getElementById('godzilla-lore-modal')?.classList.remove('active');
+      });
+
+      // Both modals previously had exactly one way out: the small × in the
+      // corner. Escape and a click on the dark backdrop are what people
+      // actually reach for, and Escape is the only route at all for someone
+      // navigating by keyboard.
+      const modalIds = ['chassis-detail-modal', 'godzilla-lore-modal'];
+      const closeAllModals = () => {
+        modalIds.forEach(id => document.getElementById(id)?.classList.remove('active'));
+      };
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAllModals();
+      });
+      modalIds.forEach(id => {
+        const overlay = document.getElementById(id);
+        // Only a click on the overlay itself closes — clicks that bubble up
+        // from the dialog content must not, or selecting text inside the
+        // spec sheet would dismiss it.
+        overlay?.addEventListener('click', (e) => {
+          if (e.target === overlay) overlay.classList.remove('active');
+        });
       });
     },
 

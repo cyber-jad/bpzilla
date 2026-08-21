@@ -4,6 +4,12 @@
   "name": "old-night-b2a3",
   "compatibility_date": "2026-08-19",
   "assets": {
-    "directory": "./public"
+    "directory": "./public",
+    // Without this an unknown path returns a zero-byte 404 with no markup at
+    // all — a blank white page. Serves public/404.html instead. Deliberately
+    // NOT "single-page-application": that would answer every unknown path
+    // with index.html and a 200, which would tell search engines that every
+    // typo'd URL is a real page.
+    "not_found_handling": "404-page"
   }
 }
