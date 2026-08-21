@@ -121,7 +121,7 @@ const RARITY_CALCULATOR = {
                 <span class="cert-japanese-seal">公認記録</span>
                 <div class="cert-title-group">
                   <h2 class="cert-main-title">OFFICIAL REGISTRY CERTIFICATE</h2>
-                  <p class="cert-subtitle">BPZILLA &mdash; NISSAN SKYLINE FACTORY RECORD ARCHIVE</p>
+                  <p class="cert-subtitle">BPZILLA &mdash; NISSAN FACTORY RECORD ARCHIVE</p>
                 </div>
               </div>
               <div class="cert-meta">

@@ -6,23 +6,34 @@
  * the 20-character factory model code. Verified byte-for-byte against that
  * source on 2026-08-18 (see the R31/R30 note below for what changed since).
  *
- * 543,299 factory records across 14 FAST chassis files, 1987–2002:
- *   HCR32  144,097   HR32    73,321   HR33    63,726   ECR33   64,256
- *   BNR32   43,895   ER34    37,266   ER33    28,380   HNR32   17,667
- *   FR32    16,881   BCNR33  16,560   HR34    14,917   BNR34   11,474
- *   ENR33    7,476   ENR34    3,383
+ * 1,284,067 factory records across 34 FAST chassis files, 1987–2007, in
+ * five families (the site's own totals; each family is the sum of its
+ * loaded files, and the five sum exactly to the figure above):
+ *   Skyline R32/R33/R34   543,299     Silvia / 180SX S13-S14   414,207
+ *   Stagea C34 / M35      163,895     300ZX Z32 export          97,800
+ *   Fairlady Z Z32 (JDM)   64,866
+ * Largest single files: S13 165,864, HCR32 144,097, PS13 112,312,
+ * S14 81,023, HR32 73,321, ECR33 64,256, HR33 63,726, WGNC34 63,436.
+ *
+ * (543,299 was this file's headline number back when the archive was
+ * Skyline-only. It is still exactly right as the Skyline subtotal, which
+ * is why it survived so long in the site copy after the Silvia, Stagea and
+ * Z32 families were added — it just stopped being the whole archive.)
  *
  * R31 (HR31, 182,351 records — the single largest chassis) and R30 (DR30,
  * 44,439 records) are intentionally out of scope and not loaded. Both counts
  * were verified against the real FAST source and were not a bug, they were
  * just judged out of scope for this site and dropped by request.
  *
- * Two chassis share a single FAST code across more than one real trim, so
+ * Several chassis share a single FAST file across more than one real car, so
  * they're presented here as more than one browsable model even though they
  * come from one physical data file — see `chassisPrefix` / `gradeFilter`
  * below. ER34 covers both the NA 25GT and the turbo 25GT-t; ECR33 covers a
  * dominant grade plus a rare ~1.8% variant whose exact trim name isn't
- * confirmed (see the ECR33_V entry).
+ * confirmed (see the ECR33_V entry); PS13 and RS13 each hide a Super HICAS
+ * sibling (KPS13, KRS13); and WGNC34 carries the Autech 260RS. The reverse
+ * also happens once: the six country-specific Z32 export files are merged
+ * into two browsable models (see _mergeExportGroups).
  *
  * Storage note: at this scale a record-per-object model costs hundreds of
  * megabytes in the browser, so each model is held as parallel typed arrays
@@ -1864,6 +1875,20 @@ const JDM_DATABASE = {
     })()
   },
 
+  // Column-header sorting. Each entry returns the value to order by for one
+  // row; 'chassis' is deliberately absent because the store is already held
+  // in (block, serial) order, so ascending chassis is the natural order and
+  // needs no sort pass at all — see getVirtualPage.
+  _sortKeys: {
+    buildDate: (col, i) => col.dict.d[col.di[i]] || '',
+    color:     (col, i) => col.dict.c[col.ci[i]] || '',
+    // Sorting by model has to keep each model's rows internally ordered, or
+    // the "All Skyline"/"All Legends" views would shuffle chassis numbers
+    // within a model. Serial is padded so it compares as a string alongside
+    // the model id.
+    model:     (col, i, physicalId) => physicalId + String(col.ser[i]).padStart(7, '0')
+  },
+
   // ---- Paged, filtered access ---------------------------------------------
   getVirtualPage: function(params) {
     const {
@@ -1875,8 +1900,20 @@ const JDM_DATABASE = {
       gradeFilter = 'ALL',
       colorFilter = 'ALL',
       yearFilter = 'ALL',
-      transmissionFilter = 'ALL'
+      transmissionFilter = 'ALL',
+      sortField = '',
+      sortAsc = true
     } = params;
+
+    // Ascending chassis is the order the rows are already stored in, so it
+    // costs nothing; every other column (and descending chassis) needs a
+    // real pass. Reversing is done by the comparator rather than by sorting
+    // and reversing, so equal keys keep a stable relative order either way.
+    const sortKey = sortField && this._sortKeys[sortField]
+      ? this._sortKeys[sortField]
+      : (sortField === 'chassis' && !sortAsc
+          ? (col, i, physicalId) => physicalId + String(col.ser[i]).padStart(7, '0')
+          : null);
 
     // 'ALL' walks every browsable model (this.models), not every physical
     // file (this._cols) — that's what keeps a removed chassis like R31 out
@@ -1912,19 +1949,39 @@ const JDM_DATABASE = {
         if (q) {
           const code = col.dict.c[col.ci[i]] || '';
           const name = (this._paint[code] || '').toUpperCase();
+          // Dashes are stripped from both sides before comparing, so the
+          // table filter accepts a chassis number typed the way it's stamped
+          // ("BNR34-000055"), the fully-qualified FAST key
+          // ("BNR340-000055"), or with no dash at all ("BNR34000055") — the
+          // last of which previously matched nothing, since every candidate
+          // string it was compared against contained a dash.
+          const qBare = q.replace(/-/g, '');
           if (col.vin) {
             const vin = col.vin[i].toUpperCase();
-            if (!vin.includes(q) && !code.includes(q) && !name.includes(q)) continue;
+            if (!vin.includes(q) && !vin.replace(/-/g, '').includes(qBare) &&
+                !code.includes(q) && !name.includes(q)) continue;
           } else {
             const block = col.dict.b[col.blk[i]] || '0';
-            const vin = `${physicalId}${block}-${String(col.ser[i]).padStart(6, '0')}`;
+            const serial = String(col.ser[i]).padStart(6, '0');
+            const fastKey = `${physicalId}${block}-${serial}`;   // BNR340-000055
+            const plate = `${physicalId}-${serial}`;             // BNR34-000055
             const mc = (col.dict.mc[col.mci[i]] || '').toUpperCase();
-            if (!vin.includes(q) && !vin.replace(`${physicalId}${block}`, physicalId).includes(q) &&
+            if (!fastKey.includes(q) && !plate.includes(q) &&
+                !fastKey.replace(/-/g, '').includes(qBare) &&
+                !plate.replace(/-/g, '').includes(qBare) &&
                 !code.includes(q) && !name.includes(q) && !mc.includes(q)) continue;
           }
         }
-        matches.push([id, i]);
+        // The sort key is captured here rather than looked up later: `col` is
+        // already in hand for this row, and after the loop a match is just an
+        // (id, index) pair that would need its column resolved all over again.
+        matches.push(sortKey ? [id, i, sortKey(col, i, physicalId)] : [id, i]);
       }
+    }
+
+    if (sortKey) {
+      const dir = sortAsc ? 1 : -1;
+      matches.sort((a, b) => (a[2] < b[2] ? -dir : a[2] > b[2] ? dir : 0));
     }
 
     const total = matches.length;

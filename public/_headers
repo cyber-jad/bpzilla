@@ -1,11 +1,16 @@
-# Cloudflare Pages header rules.
+# Cloudflare static-asset header rules.
 #
-# The factory data never changes once deployed — it is a snapshot of the FAST
-# microfiche — so it can be cached hard. Everything else gets a short cache so
-# a redeploy shows up straight away.
+# The factory records themselves are a fixed snapshot of the FAST microfiche,
+# so /data/ is cached long. Not `immutable` with a one-year max-age any more,
+# though: that was written when /data/ held only the record files, and it has
+# since gained derived files that DO get corrected as decoding improves
+# (paint.json, factoryOptions.json). A returning visitor would have been stuck
+# with a stale copy for up to a year, with no way to bust it short of renaming
+# the file — a Cloudflare cache purge doesn't reach a browser cache. One day
+# keeps repeat visits fast while letting a correction actually land.
 
 /data/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=86400
 
 /assets/*
   Cache-Control: public, max-age=2592000
@@ -19,3 +24,21 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+  # Nothing here is meant to be embedded in someone else's page, and the site
+  # has no login or form to clickjack into — DENY costs nothing.
+  X-Frame-Options: DENY
+  # None of these are used by the site, so they're switched off rather than
+  # left available to anything that ends up running on the page.
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  # One year, but deliberately without includeSubDomains or preload: www does
+  # not resolve yet, and both of those are painful to walk back once a browser
+  # has cached them. Note this only protects visitors who have already reached
+  # the site over HTTPS once — the plain-HTTP entry point still needs
+  # "Always Use HTTPS" turned on in the Cloudflare dashboard.
+  Strict-Transport-Security: max-age=31536000
+  # No Content-Security-Policy here on purpose. The page pulls Lucide from
+  # unpkg and Chart.js from jsDelivr, and leans on inline style attributes
+  # throughout, so any policy strict enough to be worth having would need
+  # 'unsafe-inline' anyway — and a wrong one silently breaks the charts and
+  # icons on a live site. Low value against a static page with no auth, no
+  # cookies and no user input that is ever stored.
