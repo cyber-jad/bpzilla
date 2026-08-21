@@ -969,6 +969,13 @@ const JDM_DATABASE = {
       // paint names are a nicety; codes still display without them
     }
 
+    try {
+      const res = await fetch('data/factoryOptions.json');
+      if (res.ok) this._factoryOptions = JSON.parse((await res.text()).replace(/^﻿/, ''));
+    } catch (e) {
+      // factory option decode is additive; records still display without it
+    }
+
     for (const p of prefixes) {
       const upper = p.toUpperCase();
       try {
@@ -1199,7 +1206,7 @@ const JDM_DATABASE = {
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
       grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
-      options: this._decodeOptions(physicalId, col.dict.mc[col.mci[i]] || ''),
+      options: this._decodeOptions(physicalId, col.dict.mc[col.mci[i]] || '', date),
       buildDate: date,
       colorCode: code,
       colorName: name,
@@ -1769,44 +1776,62 @@ const JDM_DATABASE = {
   // on the cheapest RWD 20GT — exactly the snowy-region skew a real cold
   // package would have, and nothing a random flag would produce.
   //
-  // Positions 12/13/15/16 are decoded for the R34 family only, where real
-  // photographed plates document the letters. Letters observed in the data
-  // but not documented on any plate stay silent rather than guessed.
+  // Positions 12-16 (the five-character factory option block; build-plate
+  // positions 13-17) are decoded from Nissan's OWN per-letter definition
+  // table: the FASTOP file inside the FAST source (H:\AR-JP\JP\FASTOP),
+  // extracted and translated by extract_fastop.ps1 into
+  // data/factoryOptions.json. Each entry carries the date-validity window
+  // Nissan assigned it, because letters were genuinely redefined over time
+  // (R33 has five windows) — a 1994 'K' and a 1996 'K' mean different
+  // equipment, and the lookup matches on the car's build date. FASTOP only
+  // exists for the positional-layout chassis this archive serves (R33, R34,
+  // S14, WC34 Stagea); a letter with no FASTOP definition stays silent
+  // rather than guessed. The earlier hand-built R34 tables (from real plate
+  // photos) were checked against FASTOP and matched — FASTOP is simply the
+  // same information from the source itself, with fuller letter coverage
+  // and correct windows, so it replaced them.
   _optionalEquipmentChassis: [
     'BCNR33', 'ECR33', 'ER33', 'ENR33', 'HR33',
     'BNR34', 'ER34', 'ENR34', 'HR34',
     'S14', 'CS14', 'WGC34', 'WHC34', 'WGNC34'
   ],
-  _r34Family: ['BNR34', 'ER34', 'ENR34', 'HR34'],
-  _r34GlassPackages: {
-    'B': 'Rear wiper + UV-cut tinted glass',
-    'C': 'Rear wiper + UV-cut tinted glass + xenon headlamps',
-    'D': 'Rear wiper + UV-cut tinted glass + xenon headlamps + privacy glass',
-    'G': 'Rear wiper + privacy glass',
-    'K': 'Rear wiper + UV-cut tinted privacy glass + xenon headlamps + rear spoiler'
+  _factoryOptions: null,   // loaded from data/factoryOptions.json in loadFastData
+  _factoryOptionsGen: { 'R33': 'R33', 'R34': 'R34', 'S14': 'S14', 'WC3': 'WC34' },
+  // "1995-07" -> 9507; 2000s get +10000 so 2000-08 sorts after 1998-05 the
+  // same way FASTOP's own YYMM windows do (9805 vs 0008 -> 9805 vs 10008).
+  _yymm: function(date) {
+    if (!date || date.length < 7) return null;
+    const yr = parseInt(date.slice(0, 4), 10);
+    const mm = parseInt(date.slice(5, 7), 10);
+    if (isNaN(yr) || isNaN(mm)) return null;
+    return (yr % 100) * 100 + mm + (yr >= 2000 ? 10000 : 0);
   },
-  _r34Audio: {
-    'A': '2-DIN audio, 6 speakers',
-    'B': '2-DIN audio, 8 speakers',
-    'C': 'TV receiver + single-DIN stereo + 120W amp + 6 speakers + navigation',
-    'E': 'No audio (stereo delete)'
-  },
-  _decodeOptions: function(modelId, mc) {
+  _decodeOptions: function(modelId, mc, date) {
     const opts = [];
     if (!mc || this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, char: 'Z', text: 'Cold Weather Package (Cold Area spec)' });
     }
-    if (this._r34Family.includes(modelId)) {
-      if (mc[12] === 'A') opts.push({ pos: 12, char: 'A', text: 'Super Fine Hard Coat paint' });
-      const glass = this._r34GlassPackages[mc[13]];
-      if (glass) opts.push({ pos: 13, char: mc[13], text: glass });
-      const audio = this._r34Audio[mc[15]];
-      if (audio) opts.push({ pos: 15, char: mc[15], text: audio });
-      if (modelId === 'BNR34') {
-        if (mc[16] === 'D') opts.push({ pos: 16, char: 'D', text: 'Rear fog lamp' });
-        if (mc[16] === 'E') opts.push({ pos: 16, char: 'E', text: 'Side airbags + rear fog lamp' });
+    const table = this._factoryOptions && this._factoryOptions[this._factoryOptionsGen[mc.slice(-3)]];
+    if (!table) return opts;
+    const d = this._yymm(date);
+    for (let p = 0; p < 5; p++) {
+      const ch = mc[12 + p];
+      if (!ch || ch === '-' || ch === ' ') continue;
+      // exact window match on build date first; for cars built after the
+      // last window FASTOP was maintained to (table upkeep stopped before
+      // production did on every chassis here), fall back to the latest
+      // definition of that letter rather than dropping it.
+      let hit = null, latest = null;
+      for (const e of table) {
+        if (e.pos !== p || e.char !== ch) continue;
+        const from = e.from < 8000 ? e.from + 10000 : e.from;
+        const to = e.to < 8000 ? e.to + 10000 : e.to;
+        if (d !== null && from <= d && d <= to) { hit = e; break; }
+        if (!latest || to > (latest._to || 0)) { latest = e; latest._to = to; }
       }
+      const use = hit || (d !== null && latest && d > latest._to ? latest : null);
+      if (use) opts.push({ pos: 12 + p, char: ch, text: use.text });
     }
     return opts;
   },

@@ -562,7 +562,7 @@ const MODEL_DECODER = {
     // and claim their positions before the generic pass reaches them.
     const physical = DB._resolvePhysical ? DB._resolvePhysical(record.modelId) : null;
     if (physical && DB._decodeOptions) {
-      DB._decodeOptions(physical.physicalId, record.modelCode || '').forEach(o => {
+      DB._decodeOptions(physical.physicalId, record.modelCode || '', record.buildDate).forEach(o => {
         opts.push({ pos: o.pos + 1, char: o.char, text: o.text, records: 0 });
         seenText.add(o.text);
         optionedPositions.add(o.pos);
