@@ -552,14 +552,37 @@ const MODEL_DECODER = {
     // in the spec table above, and repeating "RB26DETT" six times is noise.
     const opts = [];
     const seenText = new Set();
+    const optionedPositions = new Set();
     let confirmModel = 0;
+
+    // Authoritative per-position factory options first (cold weather
+    // package, glass/audio packages, etc.) — decoded in database.js from
+    // real photographed build plates and Nissan's own SPECDSC option
+    // glossary, so they outrank the statistically-derived findings below
+    // and claim their positions before the generic pass reaches them.
+    const physical = DB._resolvePhysical ? DB._resolvePhysical(record.modelId) : null;
+    if (physical && DB._decodeOptions) {
+      DB._decodeOptions(physical.physicalId, record.modelCode || '').forEach(o => {
+        opts.push({ pos: o.pos + 1, char: o.char, text: o.text, records: 0 });
+        seenText.add(o.text);
+        optionedPositions.add(o.pos);
+      });
+    }
+
     if (record.modelCode) {
       const body = record.modelCode.slice(0, -3);
       for (let p = 0; p < body.length; p++) {
+        if (optionedPositions.has(p)) continue;
         const e = this.explainChar(gen, p, body[p]);
         if (!e || !e.headline || e.kind !== 'derived') continue;
         const isModelRestatement = /^(Engine|Drivetrain|Chassis)/.test(e.headline);
         if (isModelRestatement) { confirmModel++; continue; }
+        // A statistically-derived grade claim is a >=90% association, not a
+        // certainty — the record's own decoded grade is authoritative. Skip
+        // any derived "Grade:" row that contradicts it (e.g. one of the 6
+        // rare Standard-GT-R BNR34s carrying the letter that means V-Spec
+        // on the other 4,172 cars) rather than showing both.
+        if (/^Grade: /.test(e.headline) && record.grade && e.headline !== 'Grade: ' + record.grade) continue;
         if (seenText.has(e.headline)) continue;
         seenText.add(e.headline);
         opts.push({ pos: p + 1, char: e.shown, text: e.headline, records: e.records });
