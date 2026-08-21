@@ -1199,6 +1199,7 @@ const JDM_DATABASE = {
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
       grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
+      options: this._decodeOptions(physicalId, col.dict.mc[col.mci[i]] || ''),
       buildDate: date,
       colorCode: code,
       colorName: name,
@@ -1468,6 +1469,15 @@ const JDM_DATABASE = {
       if (sub === '2') return 'M-Spec';
       if (sub === 'Z') return 'V-Spec II';
       if (sub === 'K') return 'V-Spec';
+      // N1 homologation letters, added after a real R34 GT-R N1 build
+      // plate ("GGJPRWYR34ZDAA--L--") surfaced showing 'L' at this slot
+      // labeled "GT-R N1 specification": 'L' -> V-Spec N1 (37 records vs
+      // gtr-registry's "38 known V-Spec N1"), '1' -> V-Spec II N1 (18
+      // records, exact match to the real 18 V-Spec II N1). Both also show
+      // '-' in the glass-package slot (position 13) — consistent with N1
+      // cars' documented equipment deletion.
+      if (sub === 'L') return 'V-Spec N1';
+      if (sub === '1') return 'V-Spec II N1';
       return 'V-Spec';
     }
     if (base === 'V') return 'Standard GT-R';
@@ -1738,6 +1748,71 @@ const JDM_DATABASE = {
     const modelOverride = this.transmissionCodesByModel[modelId];
     if (modelOverride && modelOverride[ch]) return modelOverride[ch];
     return this.transmissionCodes[ch] || '';
+  },
+
+  // ---- Factory option decode (build-plate trailing positions) --------------
+  // The plate's MODEL string carries one extra leading character (body
+  // style) that the FAST mc drops, so published per-position plate decodes
+  // map onto this data at exactly -1 — an alignment confirmed against real
+  // photographed build plates for BNR32/BCNR33/BNR34/ER34. Three independent
+  // sources agree on these fields: (1) real plate photos + published
+  // per-position decodes, (2) Nissan's own option-code glossary shipped
+  // inside the FAST source itself (H:\AR-JP\JP\SPECDSC.AA1 — e.g.
+  // "COLD2R34: F/COLD AREA", "COAT3R34: F/SUPER FINE HARD COATING",
+  // "GLSSWR34: F/PRIVACY GLASS"), and (3) this archive's own distributions.
+  //
+  // Position 10 (climate) is a strict two-character field — 'D' or 'Z',
+  // nothing else — on every positional-layout chassis checked (all R33s,
+  // all R34s, S14, CS14, all three C34 Stageas). 'Z' = the cold-weather
+  // "Cold Area" spec, corroborated by the take-rate pattern: the AWD
+  // 25GT-Four shows 39% (R34) / 37% (R33) cold-weather share versus 1.4%
+  // on the cheapest RWD 20GT — exactly the snowy-region skew a real cold
+  // package would have, and nothing a random flag would produce.
+  //
+  // Positions 12/13/15/16 are decoded for the R34 family only, where real
+  // photographed plates document the letters. Letters observed in the data
+  // but not documented on any plate stay silent rather than guessed.
+  _optionalEquipmentChassis: [
+    'BCNR33', 'ECR33', 'ER33', 'ENR33', 'HR33',
+    'BNR34', 'ER34', 'ENR34', 'HR34',
+    'S14', 'CS14', 'WGC34', 'WHC34', 'WGNC34'
+  ],
+  _r34Family: ['BNR34', 'ER34', 'ENR34', 'HR34'],
+  _r34GlassPackages: {
+    'B': 'Rear wiper + UV-cut tinted glass',
+    'C': 'Rear wiper + UV-cut tinted glass + xenon headlamps',
+    'D': 'Rear wiper + UV-cut tinted glass + xenon headlamps + privacy glass',
+    'G': 'Rear wiper + privacy glass',
+    'K': 'Rear wiper + UV-cut tinted privacy glass + xenon headlamps + rear spoiler'
+  },
+  _r34Audio: {
+    'A': '2-DIN audio, 6 speakers',
+    'B': '2-DIN audio, 8 speakers',
+    'C': 'TV receiver + single-DIN stereo + 120W amp + 6 speakers + navigation',
+    'E': 'No audio (stereo delete)'
+  },
+  _decodeOptions: function(modelId, mc) {
+    const opts = [];
+    if (!mc || this.layoutOf(mc) !== 'positional') return opts;
+    if (this._optionalEquipmentChassis.includes(modelId)) {
+      if (mc[10] === 'Z') opts.push({ pos: 10, char: 'Z', text: 'Cold Weather Package (Cold Area spec)' });
+    }
+    if (this._r34Family.includes(modelId)) {
+      if (mc[12] === 'A') opts.push({ pos: 12, char: 'A', text: 'Super Fine Hard Coat paint' });
+      const glass = this._r34GlassPackages[mc[13]];
+      if (glass) opts.push({ pos: 13, char: mc[13], text: glass });
+      const audio = this._r34Audio[mc[15]];
+      if (audio) opts.push({ pos: 15, char: mc[15], text: audio });
+      if (modelId === 'BNR34') {
+        if (mc[16] === 'D') opts.push({ pos: 16, char: 'D', text: 'Rear fog lamp' });
+        if (mc[16] === 'E') opts.push({ pos: 16, char: 'E', text: 'Side airbags + rear fog lamp' });
+      }
+    }
+    return opts;
+  },
+  layoutOf: function(mc) {
+    const layouts = (window.MODEL_DECODER || {}).LAYOUTS || {};
+    return layouts[String(mc || '').slice(-3)] || '';
   },
 
   // FAST splits each chassis into series blocks and restarts the serial in each.
