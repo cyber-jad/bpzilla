@@ -1265,22 +1265,40 @@ const JDM_DATABASE = {
     // A physical chassis prefix — what's actually stamped on the car — never
     // a grade-split model id, since a VIN alone doesn't say GT vs GT-t.
     const physicalId = m[1];
-    const block = m[2];
-    const serial = parseInt(m[3], 10);
     const col = this._cols[physicalId];
     if (!col) return [];
 
-    const hits = [];
-    for (const b of Object.keys(col.ranges)) {
-      const blockChar = col.dict.b[b] || '0';
-      if (block !== undefined && block !== null && block !== '' && blockChar !== block) continue;
-      const [lo, hi] = col.ranges[b];
-      const i = this._bsearch(col.ser, lo, hi, serial);
-      if (i >= 0) {
-        const mc = col.dict.mc[col.mci[i]] || '';
-        const virtualId = this._virtualModelFor(physicalId, mc);
-        hits.push(this._materialize(virtualId, i));
+    const search = (block, serial) => {
+      const found = [];
+      for (const b of Object.keys(col.ranges)) {
+        const blockChar = col.dict.b[b] || '0';
+        if (block !== undefined && block !== null && block !== '' && blockChar !== block) continue;
+        const [lo, hi] = col.ranges[b];
+        const i = this._bsearch(col.ser, lo, hi, serial);
+        if (i >= 0) {
+          const mc = col.dict.mc[col.mci[i]] || '';
+          const virtualId = this._virtualModelFor(physicalId, mc);
+          found.push(this._materialize(virtualId, i));
+        }
       }
+      return found;
+    };
+
+    const block = m[2];
+    const serialStr = m[3];
+    const hits = search(block, parseInt(serialStr, 10));
+    if (hits.length) return hits;
+
+    // No block digit was given before the dash, and the plain serial found
+    // nothing. A real chassis number is sometimes typed with the series
+    // block folded into the front of the serial instead of set off before
+    // the dash — e.g. "HCR32-259955" for a real Series 2 car whose serial
+    // is actually 059955 (259955 = block '2' + serial 59955, with the
+    // leading zero a written-out block+serial pairing would need simply
+    // dropped). Retry once with the first digit of the serial reinterpreted
+    // as the block, rather than silently reporting no match for a real car.
+    if (!block && serialStr.length >= 6) {
+      return search(serialStr[0], parseInt(serialStr.slice(1), 10));
     }
     return hits;
   },
