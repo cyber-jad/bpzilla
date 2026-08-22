@@ -23,35 +23,36 @@
 // a real YYMM date, a printable paint code, and the structural nulls. See
 // extract_vindat.js for the field layout.
 //
-// HOW TO READ THE OUTPUT — and what it found on 2026-08-22
+// WHAT IT FOUND, and where it stands as of 2026-08-22
 //
-// "MISSING" is the trustworthy verdict. The walker can undercount but it does
-// not invent records, so a chassis it finds in the source and cannot find on
-// the site is a real gap.
+// Final state: 34 in-scope chassis in the source, 34 accounted for on the
+// site, 0 missing, 0 differing. Every chassis this archive is about now
+// matches the FAST source to the record.
 //
-// "COUNT DIFFERS" where the SITE HOLDS MORE is not a gap and never can be.
-// It means this walker undercounted, and there are two known reasons:
+// Getting there took three corrections to this tool, and every one of them
+// had first been reported as a fault in the DATA:
 //
-//   1. The site groups siblings into one file. fast_ps13.json is PS13 plus
-//      KPS13 (100,115 + 12,197 = 112,312 exactly) and fast_rs13.json is RS13
-//      plus KRS13 (19,478 + 7,262 = 26,740 exactly), which is what
-//      database.js documents. Those are complete, not short.
-//   2. Genuine undercounting. R34 comes back ~24,000 light and Z32 ~300
-//      light against files whose totals are known good, so the walk
-//      desynchronises somewhere in those volumes. R34 and Z32 completeness is
-//      therefore UNPROVEN by this tool, not disproven. Worth fixing before
-//      trusting a clean bill of health for either.
+//   1. Phantom chassis. "GC34" and "HC34" were reported missing; they are the
+//      Laurel, which shares the C34 platform with the Stagea and which this
+//      site has never covered. Matching a suffix is not matching a model.
+//   2. R34 "missing" ~24,000 records. The year is two digits and R34 runs into
+//      2000-2002, stored as 00, 01, 02; a "yr < 60 is not a date" rule threw
+//      all of it away. Another 358 went to a required-zero tail that R34 does
+//      not have. The site had been right about R34 the whole time.
+//   3. Six chassis reported missing or short that were neither. Some shipped
+//      files hold more than one code — see FOLDED_INTO — and the tool now
+//      checks that arithmetic instead of crying wolf on it.
 //
-// What it established:
-//   COMPLETE, exactly     R32 (all seven), R33 (all five), S14, CS14,
-//                         KS13, HZ32 — source and site agree to the record
-//   REAL GAP              RPS13 (74,910) and KRPS13 (11,655) — 86,565 180SX
-//                         records, the SR20-era chassis code. The site holds
-//                         RS13 + KRS13 = 26,740, which is 24% of the 180SX
-//                         in the source. Zero records in any loaded file
-//                         carry an RPS13 code; the ten such entries in the
-//                         shared dictionary are referenced by nothing.
-//   OUT OF SCOPE          the Laurel C34 codes — see the note on GENS below
+// The one REAL gap it found, and which is now closed: RPS13 (74,910) and
+// KRPS13 (11,655), the SR20-era 180SX. 86,565 records the site had never
+// held, while presenting RS13's 26,740 — 24% of the 180SX in the source —
+// as the 180SX.
+//
+// The lesson worth keeping: when this tool and the site disagree, the tool is
+// the more likely to be wrong. It said "unproven, not disproven" about R34 and
+// Z32 rather than declaring a gap, and that was the correct call — both were
+// complete. A site holding MORE records than the source appears to contain is
+// always this tool undercounting, because a walk cannot invent records.
 //
 // USAGE
 //   node audit_chassis.js               every chassis in every JP VINDAT file
@@ -93,13 +94,24 @@ function validAt(buf, o, L) {
   if (blk < 0x30 || blk > 0x39) return false;
   const ymm = be16(buf, o + L + 4);
   const mo = ymm % 100, yr = Math.floor(ymm / 100);
-  if (mo < 1 || mo > 12 || yr < 60 || yr > 99) return false;
+  // The year is two digits and it wraps. R34 production runs into 2000-2002,
+  // stored as 00, 01, 02 - and a "yr < 60 means not a date" rule threw all of
+  // it away. That single line was most of why this tool reported R34 nearly
+  // 24,000 records short and called its completeness unproven; the site had
+  // been right all along. Any two-digit year is a year.
+  if (mo < 1 || mo > 12 || yr > 99) return false;
   for (let k = 7; k < 10; k++) {
     const ch = buf[o + L + k];
     if (!((ch >= 65 && ch <= 90) || (ch >= 48 && ch <= 57))) return false;
   }
+  // [L+18] is null on every record of every chassis and is the reliable anchor.
+  //
+  // The four bytes at [L+22] are NOT. They are zero on the older chassis, which
+  // made them look structural, but R34 records carry data there - the trailing
+  // bytes of a BNR34 record read 00 00 d6 cb. Requiring zeros discarded another
+  // 358 real records. The contiguity requirement in the walk below is what
+  // actually rejects false matches, so this check is not needed for that.
   if (buf[o + L + 18] !== 0) return false;
-  if (be24(buf, o + L + 22) !== 0 || buf[o + L + 25] !== 0) return false;
   return true;
 }
 
@@ -200,6 +212,12 @@ const inScope = (code) =>
   (code.endsWith('C34') && code.startsWith('W')) ||
   (genArg && code.endsWith(genArg));
 
+// Some shipped files hold more than one chassis code, so a code with no file
+// of its own is not necessarily absent - it may be folded into a sibling's.
+// Without this the tool cries wolf on six chassis that are all present and
+// correct, which is exactly the noise that makes an audit stop being read.
+const FOLDED_INTO = { KPS13: 'PS13', KRS13: 'RS13', KRPS13: 'RPS13' };
+
 const rows = [...source.entries()]
   .filter(([code, n]) => n >= 100 && (genArg ? code.endsWith(genArg) : inScope(code)))
   .sort((a, b) => (a[0].slice(-3) + a[0]).localeCompare(b[0].slice(-3) + b[0]));
@@ -211,13 +229,28 @@ let missing = 0, mismatch = 0;
 for (const [code, n] of rows) {
   const have = site.get(code);
   let status;
-  if (have === undefined) { status = 'MISSING from the site'; missing++; }
-  else if (have !== n) { status = 'COUNT DIFFERS (' + (have - n > 0 ? '+' : '') + (have - n) + ')'; mismatch++; }
-  else status = 'ok';
+  if (have === undefined && FOLDED_INTO[code]) {
+    // Present, just not in a file of its own. Confirm the arithmetic rather
+    // than take it on trust: the host file must hold its own count plus this.
+    const host = FOLDED_INTO[code];
+    const hostHas = site.get(host), hostSrc = source.get(host);
+    const ok = hostHas !== undefined && hostSrc !== undefined && hostHas === hostSrc + n;
+    status = ok ? `ok (inside fast_${host.toLowerCase()}.json)`
+                : `CHECK: expected fast_${host.toLowerCase()}.json to hold ${(hostSrc || 0) + n}, holds ${hostHas}`;
+    if (!ok) mismatch++;
+  } else if (have === undefined) { status = 'MISSING from the site'; missing++; }
+  else if (have !== n) {
+    const folded = Object.entries(FOLDED_INTO).filter(([, host]) => host === code).map(([k]) => k);
+    const expect = n + folded.reduce((s, k) => s + (source.get(k) || 0), 0);
+    status = (folded.length && have === expect)
+      ? `ok (+ ${folded.join(', ')})`
+      : 'COUNT DIFFERS (' + (have - n > 0 ? '+' : '') + (have - n) + ')';
+    if (!status.startsWith('ok')) mismatch++;
+  } else status = 'ok';
   console.log(code.padEnd(9), String(n).padStart(9), String(have === undefined ? '-' : have).padStart(11), '  ' + status);
 }
 console.log('');
-console.log(`${rows.length} in-scope chassis in the source: ${rows.length - missing - mismatch} match, ${missing} missing, ${mismatch} differing.`);
+console.log(`${rows.length} in-scope chassis in the source: ${rows.length - missing - mismatch} accounted for, ${missing} missing, ${mismatch} differing.`);
 
 // Anything the site loads that the scan did not see at all is worth knowing
 // about too - it would mean the walker is wrong, not that the data is.
