@@ -941,7 +941,11 @@ document.addEventListener('DOMContentLoaded', () => {
           record's model code.</p>`;
       } else {
         optionsHTML = opts.map(o => {
-          const pos = o.platePos != null ? o.platePos : o.pos;
+          const rawPos = o.platePos != null ? o.platePos : o.pos;
+          // Position and character run together — "(11L)". Two of the R32's
+          // series markers are digits, so "(11" + "7" would read as position
+          // 117; those get a separator. Letters keep the plain form.
+          const pos = /^[0-9]/.test(o.char) ? `${rawPos}·` : rawPos;
           if (!o.text) {
             return `<li class="plate-opt plate-opt-unknown">
               <code>(${pos}${esc(o.char)})</code>
