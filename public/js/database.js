@@ -2067,6 +2067,87 @@ const JDM_DATABASE = {
     'BNR34', 'ER34', 'ENR34', 'HR34',
     'S14', 'CS14', 'WGC34', 'WHC34', 'WGNC34'
   ],
+  // ---- R34, second option-code window --------------------------------------
+  //
+  // FASTOP carries exactly one R34 window, 9805-200008. The R34 ran to 2002,
+  // and its OPTION CODE LIST volume (H:\AR-JP\JP\081) documents two:
+  // [199805-200008] and [200008- ]. Every letter FASTOP is missing at these
+  // positions belongs to the second window, and 94.7% of the R34 records that
+  // decoded to nothing were built 2000-08 or later.
+  //
+  // Read from that volume's pages その3 (14桁目), その5 (15桁目) and その7
+  // (16桁目). Each page is a matrix of features against option letters, so a
+  // letter is the SET of features ticked in its column — the same combination
+  // encoding FASTOP uses. Positions 17 and 18 are not reproduced: FASTOP
+  // already defines every letter this archive uses there.
+  _r34LateFrom: 10008,     // 2000-08 in this file's YYMM+10000 form
+  _r34Late: {
+    // 14桁目 — paint finish, sunroof, and wheel type. Four codes per wheel
+    // type: bare, +Super Fine Coat, +sunroof, +both.
+    0: {
+      A: 'Super Fine Coat paint',
+      B: 'electric glass sunroof',
+      C: '15-inch alloy road wheels (with lock keys)',
+      D: 'Super Fine Coat paint + electric glass sunroof',
+      E: 'electric glass sunroof + 15-inch alloy road wheels (with lock keys)',
+      F: 'Super Fine Coat paint + 15-inch alloy road wheels (with lock keys)',
+      G: 'Super Fine Coat paint + electric glass sunroof + 15-inch alloy road wheels (with lock keys)',
+      H: '16-inch alloy road wheels',
+      J: 'Super Fine Coat paint + 16-inch alloy road wheels',
+      K: 'electric glass sunroof + 16-inch alloy road wheels',
+      L: 'Super Fine Coat paint + electric glass sunroof + 16-inch alloy road wheels',
+      R: '15-inch steel road wheels',
+      S: 'Super Fine Coat paint + 15-inch steel road wheels',
+      T: 'electric glass sunroof + 15-inch steel road wheels',
+      U: 'Super Fine Coat paint + electric glass sunroof + 15-inch steel road wheels',
+      V: '15-inch alloy road wheels (without lock keys)',
+      W: 'Super Fine Coat paint + 15-inch alloy road wheels (without lock keys)',
+      X: 'electric glass sunroof + 15-inch alloy road wheels (without lock keys)',
+      Y: 'Super Fine Coat paint + electric glass sunroof + 15-inch alloy road wheels (without lock keys)'
+    },
+    // 15桁目 — rear wiper, xenon headlamps, privacy glass, rear spoiler. The
+    // spoiler comes in a 2-door and a 4-door part number, which is why the same
+    // combination appears twice under different letters.
+    1: {
+      A: 'rear wiper',
+      B: 'xenon headlamps',
+      C: 'rear wiper + xenon headlamps',
+      D: 'xenon headlamps + rear spoiler (4-door)',
+      E: 'rear wiper + rear spoiler (4-door)',
+      F: 'rear wiper + xenon headlamps + rear spoiler (4-door)',
+      G: 'rear wiper + privacy glass',
+      H: 'rear wiper + xenon headlamps + privacy glass',
+      J: 'rear wiper + privacy glass + rear spoiler (4-door)',
+      K: 'rear wiper + xenon headlamps + privacy glass + rear spoiler (4-door)',
+      L: 'privacy glass',
+      M: 'rear spoiler (4-door)',
+      N: 'xenon headlamps + privacy glass',
+      P: 'privacy glass + rear spoiler (4-door)',
+      Q: 'xenon headlamps + privacy glass + rear spoiler (4-door)',
+      R: 'rear spoiler (2-door)',
+      S: 'rear wiper + rear spoiler (2-door)',
+      T: 'xenon headlamps + rear spoiler (2-door)',
+      U: 'rear wiper + xenon headlamps + rear spoiler (2-door)',
+      V: 'rear wiper + privacy glass + rear spoiler (2-door)',
+      W: 'rear wiper + xenon headlamps + privacy glass + rear spoiler (2-door)'
+    },
+    // 16桁目 — the variant slot. This is where V-Spec II, M-Spec, the two Nür
+    // cars and the N1 are recorded, as sets of the equipment that defines them
+    // rather than by name, which is how the legend writes them.
+    2: {
+      A: 'urethane steering wheel',
+      C: 'auto headlights + driver vanity mirror',
+      L: 'tricot seat trim + urethane steering wheel',
+      M: 'large rear brakes + multi-function display + advanced aero system + ripple-control dampers + M-Spec + V-Spec II Nür / M-Spec Nür',
+      P: 'front and rear strut tower bars',
+      V: 'large rear brakes + multi-function display + advanced aero system + V-Spec II Nür / M-Spec Nür',
+      X: 'large rear brakes',
+      Z: 'large rear brakes + multi-function display + advanced aero system',
+      1: 'GT-R N1 specification',
+      2: 'large rear brakes + multi-function display + advanced aero system + ripple-control dampers + M-Spec'
+    }
+  },
+
   _factoryOptions: null,   // loaded from data/factoryOptions.json in loadFastData
   _factoryOptionsGen: { 'R33': 'R33', 'R34': 'R34', 'S14': 'S14', 'WC3': 'WC34' },
 
@@ -2571,12 +2652,21 @@ const JDM_DATABASE = {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
         text: 'Cold Weather Package (Cold Area spec)', verified: true });
     }
-    const table = this._factoryOptions && this._factoryOptions[this._factoryOptionsGen[mc.slice(-3)]];
+    const gen = this._factoryOptionsGen[mc.slice(-3)];
+    const table = this._factoryOptions && this._factoryOptions[gen];
     if (!table) return opts;
     const d = this._yymm(date);
+    // R34 cars built into the second option-code window read from the legend
+    // volume rather than FASTOP, which was only ever maintained to 200008.
+    const late = (gen === 'R34' && d !== null && d >= this._r34LateFrom) ? this._r34Late : null;
     for (let p = 0; p < 5; p++) {
       const ch = mc[12 + p];
       if (!ch || ch === '-' || ch === ' ') continue;
+      if (late && late[p] && late[p][ch]) {
+        opts.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
+                    text: late[p][ch], verified: true });
+        continue;
+      }
       // Exact window match on the build date first, then the nearest window
       // that defines this letter at this position.
       //
