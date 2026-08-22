@@ -15,11 +15,24 @@
 /assets/*
   Cache-Control: public, max-age=2592000
 
+# The markup and the code behind it have to move together. index.html is
+# revalidated on every visit (max-age=0) and the worker's routes hold for five
+# minutes, but these were held for an hour — so for up to an hour after a
+# deploy a returning visitor ran new markup against an old script. That is not
+# theoretical: it shipped a chassis lookup whose box rendered and whose button
+# did nothing, because the HTML carrying it arrived an hour before the function
+# that binds it.
+#
+# stale-while-revalidate keeps that cheap. The browser still paints instantly
+# from cache and never blocks on a round trip; it just refreshes in the
+# background, so a deploy is picked up on the next visit rather than an hour
+# later. There is no build step here to hash filenames with, which is the
+# other way to solve this.
 /css/*
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=60, stale-while-revalidate=604800
 
 /js/*
-  Cache-Control: public, max-age=3600
+  Cache-Control: public, max-age=60, stale-while-revalidate=604800
 
 /*
   X-Content-Type-Options: nosniff
