@@ -55,13 +55,16 @@ const VIEW_ROUTES = {
 
 // The canonical host — what every page tells a search engine it really is.
 //
-// gtr-registry.org is intended to become primary: it describes the content far
-// better than bpzilla does, and .org suits a registry. It is NOT flipped here
-// yet, and the order matters. A canonical pointing at a host that does not
-// resolve tells search engines to drop the pages that do work, so this changes
-// only once the domain is confirmed serving. Both domains then canonical here,
-// which is what makes them one site rather than two competing copies.
-const SITE = 'https://bpzilla.com';
+// gtr-registry.org is primary: it describes the content far better than
+// bpzilla does, and .org suits a registry. Flipped here only after the domain
+// was confirmed serving — a canonical pointing at a host that does not resolve
+// tells search engines to drop the pages that do work, so the order mattered.
+//
+// BOTH domains canonical here, which is the point: it makes them one site
+// rather than two copies of the same 1.25M records competing with each other.
+// bpzilla.com keeps working and keeps its own wordmark; it just tells search
+// engines where the real address is.
+const SITE = 'https://gtr-registry.org';
 
 // Hosts that wear the GTR Registry mark instead of the BPZILLA one. Same
 // worker, same assets, same records — one deployment answering to both names,

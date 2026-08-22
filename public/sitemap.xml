@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- BPZILLA sitemap. The site is a single document with tabbed views, so
-     there is one URL. If the domain changes it appears here, in robots.txt
-     and in index.html's canonical tag. -->
+<!-- Sitemap for the archive, canonical host gtr-registry.org. bpzilla.com
+     serves the same site and canonicals here, so it is deliberately not
+     listed as a second set of URLs.
+
+     Only "/" is listed. The worker gives /stats, /decoder, /history, /tools
+     and /legends real URLs with their own titles, and they are NOT here yet —
+     worth adding, since they are indexable pages this file currently hides.
+     If the domain changes it appears here, in robots.txt, in index.html's
+     canonical tag, and as SITE in src/index.js. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://bpzilla.com/</loc>
+    <loc>https://gtr-registry.org/</loc>
     <lastmod>2026-08-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
