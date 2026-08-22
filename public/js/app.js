@@ -173,9 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     initRouter: function() {
+      // Deep links are applied; the address bar is otherwise left alone. The
+      // reverse direction — rewriting the URL as you browse — is deliberately
+      // not wired up yet, because syncing on load would turn a plain visit to
+      // the site into "/model/BCNR33" in the address bar before the visitor
+      // has chosen anything.
       const route = this.Router.parse(location.pathname);
       if (route) this.Router.apply(route);
-      else this.Router.sync();
 
       window.addEventListener('popstate', () => {
         const r = this.Router.parse(location.pathname);

@@ -17,7 +17,20 @@
     // and the page itself — and which silently meant the /data/ gate was
     // never consulted on a GET. These paths go to the script first; it
     // decides, then hands them back to the assets binding.
-    "run_worker_first": ["/data/*"],
+    // Both jobs the script does need it to run before asset serving. /data/ so
+    // the gate is consulted at all, and the view routes because no file exists
+    // at /model/BNR34 — without this Cloudflare 404s them before the script
+    // ever sees the request. Everything else still comes straight off the edge.
+    "run_worker_first": [
+      "/data/*",
+      "/model/*",
+      "/chassis/*",
+      "/stats",
+      "/decoder",
+      "/history",
+      "/tools",
+      "/legends"
+    ],
     // Without this an unknown path returns a zero-byte 404 with no markup at
     // all — a blank white page. Serves public/404.html instead. Deliberately
     // NOT "single-page-application": that would answer every unknown path

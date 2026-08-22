@@ -1087,14 +1087,14 @@ const JDM_DATABASE = {
     const failed = [];
 
     try {
-      const res = await fetch('data/paint.json');
+      const res = await fetch('/data/paint.json');
       if (res.ok) this._paint = JSON.parse((await res.text()).replace(/^﻿/, ''));
     } catch (e) {
       // paint names are a nicety; codes still display without them
     }
 
     try {
-      const res = await fetch('data/factoryOptions.json');
+      const res = await fetch('/data/factoryOptions.json');
       if (res.ok) this._factoryOptions = JSON.parse((await res.text()).replace(/^﻿/, ''));
     } catch (e) {
       // factory option decode is additive; records still display without it
@@ -1103,7 +1103,7 @@ const JDM_DATABASE = {
     for (const p of prefixes) {
       const upper = p.toUpperCase();
       try {
-        const res = await fetch(`data/fast_${p}.json`);
+        const res = await fetch(`/data/fast_${p}.json`);
         if (!res.ok) { failed.push(`${upper} (HTTP ${res.status})`); continue; }
 
         // Decode by hand so a UTF-8 BOM never reaches JSON.parse.
