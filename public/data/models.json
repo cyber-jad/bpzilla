@@ -1,6 +1,6 @@
 {
  "generated": "2026-08-22",
- "total": 1284067,
+ "total": 1253580,
  "models": {
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
@@ -309,50 +309,6 @@
    "stamp": "WGNC34",
    "legend": true,
    "count": 1734
-  },
-  "NM35": {
-   "name": "Nissan Stagea 25RS Four (NM35)",
-   "short": "Stagea 25 (M35)",
-   "code": "GH-NM35",
-   "years": "2001 – 2007",
-   "engine": "VQ25DD 2.5L NA V6 / VQ25DET 2.5L Turbo V6 (grade dependent)",
-   "body": "5-Door Wagon",
-   "stamp": "NM35",
-   "legend": true,
-   "count": 25281
-  },
-  "HM35": {
-   "name": "Nissan Stagea 300RX (HM35)",
-   "short": "Stagea 300RX",
-   "code": "GH-HM35",
-   "years": "2001 – 2004",
-   "engine": "VQ30DD 3.0L NA V6",
-   "body": "5-Door Wagon",
-   "stamp": "HM35",
-   "legend": true,
-   "count": 1682
-  },
-  "PM35": {
-   "name": "Nissan Stagea 350RX (PM35)",
-   "short": "Stagea 350RX",
-   "code": "CBA-PM35",
-   "years": "2004 – 2007",
-   "engine": "VQ35DE 3.5L NA V6",
-   "body": "5-Door Wagon",
-   "stamp": "PM35",
-   "legend": true,
-   "count": 1675
-  },
-  "PNM35": {
-   "name": "Nissan Stagea 350RX Four (PNM35)",
-   "short": "Stagea 350RX (4WD)",
-   "code": "CBA-PNM35",
-   "years": "2004 – 2007",
-   "engine": "VQ35DE 3.5L NA V6",
-   "body": "5-Door Wagon",
-   "stamp": "PNM35",
-   "legend": true,
-   "count": 1849
   },
   "Z32": {
    "name": "Nissan Fairlady Z 2-Seat NA (Z32)",
