@@ -2474,6 +2474,144 @@ const JDM_DATABASE = {
   },
 
 
+
+  // ---- Z32: 300ZX / Fairlady Z --------------------------------------------
+  //
+  // Source: the OPTION CODE LIST volume at H:/AR-JP/JP/132, twelve pages.
+  //
+  //   [ルーフ][エンジン][シーター] Z32 [車格][変速機][過給][VS記号][パック記号]
+  //   ルーフ    スペース 標準 / K Tバールーフ / C コンバーチブル (C from 9208)
+  //   エンジン   R VG30DE系      シーター  スペース 2シーター / G 2+2シーター
+  //   車格 J GL  変速機 スペース MT / A AT   過給 スペース ノンターボ / S ツインターボ
+  //
+  // The layout diagrams stop at VS記号 and draw no パック記号 box, which makes the
+  // trailing characters look like one long VS code. The records disprove that:
+  // RGZ32JASHE7 and RGZ32JAE7 differ by exactly the VS character H over the same
+  // pack E7.
+  //
+  // Two things about this chassis that the other volumes do not do.
+  //
+  // The tables use THREE symbols and key them: ◎標準, ○オプション, △レスオプション.
+  // A delete-option is equipment fitted as standard that the buyer removed, so
+  // reading it as an option would say a car HAS what it was ordered WITHOUT.
+  // fast_matrix.js separates them by shape and by ink, and the delete case is
+  // reported here as "... deleted" rather than folded in.
+  //
+  // And the pack tables are keyed by more than the code: 車型タイプ (turbo or not)
+  // and トランスミッション (MT or AT), with the same code appearing under each and
+  // meaning different things. Both are characters in the model code, so both are
+  // recoverable per record.
+  //
+  // What is here: the [8907-9309] window, pages 5 and 6, which covers 56,476 of
+  // the 64,866 JDM records. The later windows ([9309-9410], [9410-9701],
+  // [9701-9810], [9810- ], pages 7 to 12) are not read across yet.
+  //
+  // Known limitation: the roof character is the one the export drops, so a
+  // convertible cannot be told from a coupe here, and the separate コンバーチブル
+  // table on page 6 is therefore not applied.
+  _z32Chassis: ['Z32', 'GZ32', 'CZ32', 'GCZ32', 'HZ32'],
+
+  _z32Layout: function(mc) {
+    const body = String(mc || '').replace(/\s+Z32\s*$/, '').trimEnd();
+    const a = body.indexOf('Z32');
+    if (a < 0) return null;
+    let i = a + 3;
+    if (body[i] === 'J') i++;                       // 車格 GL
+    const trans = body[i] === 'A' ? 'AT' : 'MT';    // 変速機
+    if (body[i] === 'A') i++;
+    const turbo = body[i] === 'S' ? 'TT' : 'NT';    // 過給
+    if (body[i] === 'S') i++;
+    return { optionsFrom: i, end: body.length, body: body, trans: trans, turbo: turbo };
+  },
+
+  _z32Legend: {
+    // VS記号, page 4. The later window adds airbag combinations and uses two
+    // characters for them, so a VS code here can be one character or two.
+    vsEarly: {
+      B: 'BOSE audio', H: '4WAS (ABS)', P: 'BOSE audio + leather seats',
+      W: 'Leather seats', Z: 'Cold-region specification'
+    },
+    vsLate: {
+      H: 'ABS', D: 'ABS + BOSE audio', L: 'ABS + leather seats',
+      R: 'ABS + BOSE audio + leather seats',
+      HT: 'ABS + airbag', DT: 'ABS + BOSE audio + airbag',
+      LT: 'ABS + leather seats + airbag',
+      RT: 'ABS + BOSE audio + leather seats + airbag',
+      B: 'BOSE audio', W: 'Leather seats', P: 'BOSE audio + leather seats',
+      T: 'Airbag', BT: 'BOSE audio + airbag', TW: 'Leather seats + airbag',
+      PT: 'BOSE audio + leather seats + airbag', Z: 'Cold-region specification'
+    },
+    // パック記号 [8907-9309], pages 5 and 6, by turbo then transmission.
+    pack1: {
+      // 300ZX non-turbo
+      NT: {
+        MT: {
+          E: 'Power seat deleted',
+          E1: 'Cruise control (ASCD) + power seat deleted',
+          E2: 'Rear spoiler + power seat deleted',
+          E3: 'Cruise control (ASCD) + rear spoiler + power seat deleted',
+          E4: 'Power seat',
+          E5: 'Cruise control (ASCD) + power seat',
+          E6: 'Rear spoiler + power seat',
+          E7: 'Cruise control (ASCD) + rear spoiler + power seat',
+          E8: 'Power seat deleted',
+          F: 'Fender mirrors + power seat deleted',
+          F1: 'Fender mirrors + cruise control (ASCD) + power seat deleted',
+          F2: 'Fender mirrors + rear spoiler + power seat deleted',
+          F3: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat deleted',
+          F4: 'Fender mirrors + power seat',
+          F5: 'Fender mirrors + cruise control (ASCD) + power seat',
+          F6: 'Fender mirrors + rear spoiler + power seat',
+          F7: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat',
+          F8: 'Fender mirrors + power seat deleted'
+        },
+        AT: {
+          E1: 'Cruise control (ASCD) + power seat deleted',
+          E3: 'Cruise control (ASCD) + rear spoiler + power seat deleted',
+          E5: 'Cruise control (ASCD) + power seat',
+          E7: 'Cruise control (ASCD) + rear spoiler + power seat',
+          F1: 'Fender mirrors + cruise control (ASCD) + power seat deleted',
+          F3: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat deleted',
+          F5: 'Fender mirrors + cruise control (ASCD) + power seat',
+          F7: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat'
+        }
+      },
+      // 300ZX twin-turbo
+      TT: {
+        MT: {
+          E: 'Rear spoiler deleted + power seat deleted',
+          E1: 'Cruise control (ASCD) + rear spoiler deleted + power seat deleted',
+          E2: 'Rear spoiler + power seat deleted',
+          E3: 'Cruise control (ASCD) + rear spoiler + power seat deleted',
+          E4: 'Rear spoiler deleted + power seat',
+          E5: 'Cruise control (ASCD) + rear spoiler deleted + power seat',
+          E6: 'Rear spoiler + power seat',
+          E7: 'Cruise control (ASCD) + rear spoiler + power seat',
+          E8: 'Rear spoiler deleted + power seat deleted',
+          F: 'Fender mirrors + rear spoiler deleted + power seat deleted',
+          F1: 'Fender mirrors + cruise control (ASCD) + rear spoiler deleted + power seat deleted',
+          F2: 'Fender mirrors + rear spoiler + power seat deleted',
+          F3: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat deleted',
+          F4: 'Fender mirrors + rear spoiler deleted + power seat',
+          F5: 'Fender mirrors + cruise control (ASCD) + rear spoiler deleted + power seat',
+          F6: 'Fender mirrors + rear spoiler + power seat',
+          F7: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat',
+          F8: 'Fender mirrors + rear spoiler deleted + power seat deleted'
+        },
+        AT: {
+          E1: 'Cruise control (ASCD) + rear spoiler deleted + power seat deleted',
+          E3: 'Cruise control (ASCD) + rear spoiler + power seat deleted',
+          E5: 'Cruise control (ASCD) + rear spoiler deleted + power seat',
+          E7: 'Cruise control (ASCD) + rear spoiler + power seat',
+          F1: 'Fender mirrors + cruise control (ASCD) + rear spoiler deleted + power seat deleted',
+          F3: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat deleted',
+          F5: 'Fender mirrors + cruise control (ASCD) + rear spoiler deleted + power seat',
+          F7: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat'
+        }
+      }
+    }
+  },
+
   // ---- S13 family: Silvia and 180SX -----------------------------------------
   //
   // Source: the OPTION CODE LIST volumes for these cars — H:/AR-JP/JP/087 for
@@ -2960,11 +3098,52 @@ const JDM_DATABASE = {
     return opts;
   },
 
+  _decodeZ32Plate: function(modelId, mc, date) {
+    const opts = [];
+    const L = this._z32Layout(mc);
+    if (!L) return opts;
+    let tail = L.body.slice(L.optionsFrom);
+    let idx = L.optionsFrom;
+    const d = String(date || '');
+
+    // Pack first, off the end. Codes here are one OR two characters — E and F
+    // are codes in their own right alongside E1..E8 and F1..F8 — so the longer
+    // match is tried first and only a code the table actually holds is taken.
+    let packTxt = null, packStr = null;
+    const tab = (d && d < '1993-09') ? ((this._z32Legend.pack1[L.turbo] || {})[L.trans] || {}) : {};
+    if (tail.length >= 2 && tab[tail.slice(-2)]) { packStr = tail.slice(-2); }
+    else if (tail.length >= 1 && tab[tail.slice(-1)]) { packStr = tail.slice(-1); }
+    if (packStr) { packTxt = tab[packStr]; tail = tail.slice(0, -packStr.length); }
+
+    // VS characters. The later window codes airbag combinations as two
+    // characters (HT, DT, LT, RT, BT, TW, PT), so match greedily.
+    const vs = (d && d >= '1992-08') ? this._z32Legend.vsLate : this._z32Legend.vsEarly;
+    let p = 0;
+    while (p < tail.length) {
+      const two = tail.substr(p, 2);
+      if (two.length === 2 && vs[two]) {
+        opts.push({ pos: idx, platePos: this.platePos(idx), char: two, field: 'VS',
+                    text: vs[two], verified: true });
+        idx += 2; p += 2; continue;
+      }
+      const one = tail[p];
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: one, field: 'VS',
+                  text: vs[one] || null, verified: !!vs[one], undecoded: !vs[one] });
+      idx += 1; p += 1;
+    }
+    if (packStr) {
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: packStr, field: 'Pack',
+                  text: packTxt, verified: true });
+    }
+    return opts;
+  },
+
   _decodeOptions: function(modelId, mc, date) {
     const opts = [];
     if (!mc) return opts;
     if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc, date);
     if (this._s13Chassis.includes(modelId)) return this._decodeS13Plate(modelId, mc, date);
+    if (this._z32Chassis.includes(modelId)) return this._decodeZ32Plate(modelId, mc, date);
     if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
