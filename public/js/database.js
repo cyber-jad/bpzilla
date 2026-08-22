@@ -1984,27 +1984,38 @@ const JDM_DATABASE = {
   // follows is built from this archive's own distributions first, with outside
   // sources used only to name what the data had already isolated.
   //
-  // The R32's tail is not the fixed five-slot block the R33/R34 use. It is
-  // variable length (2 to 5 characters, no padding, no internal blanks across
-  // all 58 distinct BNR32 codes), but it is still positional by absolute index —
-  // shorter codes simply stop early. Plate position = mc index + 2, the same
-  // one-character body-style offset documented at the top of this file.
+  // The R32's tail is not the fixed five-slot block the R33/R34 use. Those are
+  // exactly five characters, '-' padded, so absolute index IS the field
+  // ("-----" is a car with no options, "GJ-FK" has options in slots 0,1,3,4).
+  // The R32 writes no padding at all: 1 to 4 characters, never a '-', and the
+  // block is LEFT-PACKED, so absolute index is not the field. Reading it as
+  // though it were is the mistake every published R32 chart makes.
   //
-  // What the data itself settles:
+  // Two independent measurements settle the structure:
   //
-  //   mc[9] is a SERIES marker, not equipment. It maps almost one-to-one onto
-  //   the series blocks — L to blocks 0/1, A to block 2, 7 to block 3 — and its
-  //   values partition the production run in time (L ends 1991-07, 7 begins
-  //   1993-01) rather than scattering across it the way an option would. Widely
-  //   circulated tables call this position "Sunroof" or "Projector Headlamps";
-  //   neither survives that test, so neither is used here.
+  //   Anchoring the block at its right end rather than its left drops the total
+  //   per-column entropy on all four R32 chassis (BNR32 4.91 -> 4.35 bits,
+  //   HCR32 7.87 -> 6.03, HR32 8.41 -> 5.69, HNR32 6.77 -> 5.26), and turns the
+  //   outermost column of the long codes from noise into a near-constant L
+  //   (95-100%, entropy 0.04-0.34 bits).
   //
-  //   mc[10] carries a baseline letter per series with a small variant against
-  //   it — M vs T in Series 1 (16,364 vs 1,018), A vs Z in Series 3 (13,077 vs
-  //   980). The variant is where the real option sits, and it is Z, which is
-  //   Cold Weather in every Nissan scheme and sits at exactly the mc position 10
-  //   this file already reads cold-weather from on the R33/R34/S14/C34 chassis.
-  //   T is M plus that same Z.
+  //   The families say the same thing directly. All 22 distinct 7- and 8-headed
+  //   BNR32 codes have a bare twin with an identical body, and the marker is
+  //   simply prepended: AA -> 7AA -> 8AA, ZAA -> 7ZAA -> 8ZAA, MA -> 7MA,
+  //   NA -> 7NA. Read from the left those look like unrelated option sets; read
+  //   as marker-plus-body they are the same car in three model years.
+  //
+  // So the block is parsed as [series marker][equipment body], the marker is
+  // stripped before the body is indexed, and plate position = mc index + 2 (the
+  // one-character body-style offset documented at the top of this file) is
+  // reported against the character's real index.
+  //
+  // Anchor point from outside the archive: an owner's own FAST lookup of
+  // KBNR32RXFS7AA returns "GT-R標準車 / メーカーオプション無し" — GT-R standard,
+  // no factory options. That is body "AA" behind a Series 3 marker, which is
+  // what fixes A as the null value in each body slot, and it makes the 22,828
+  // BNR32 records whose body is all A's (52.0% of the chassis) reportable as
+  // carrying no factory options rather than as three unnamed letters.
   //
   // Anything below marked reported: true is named from outside sources (owner
   // documentation supplied for this work, corroborated by published R32 plate
@@ -2036,38 +2047,85 @@ const JDM_DATABASE = {
     8: {
       S: { text: 'RB26DETT twin-turbo, intercooled', verified: true }
     },
-    // mc[9] — series / specification marker
-    // Only the four letters whose series mapping this archive can actually
-    // demonstrate. Z, N, M, T and P also appear here, and outside charts offer
-    // names for them, but those names contradict decodes this file already
-    // verifies — labelling a lone N "N1 specification" puts the plate at odds
-    // with _decodeBNR32SubGrade, which identifies N1 from "ZN" followed by a
-    // blank and matches the published 245-car total exactly. They stay unnamed.
-    9: {
-      L: { text: 'Series 1 specification', verified: true },
-      A: { text: 'Series 2 specification', verified: true },
-      7: { text: 'Series 3 specification, 16-inch wheels', reported: true },
-      8: { text: 'V-Spec II tyre specification (245/45R17)', verified: true }
-    },
-    // mc[10] — factory equipment
-    10: {
-      A: { text: 'Standard equipment', verified: true },
-      M: { text: 'Full Auto A/C + Active Sound System', reported: true },
+    // The option block is NOT indexed from the left. It is a left-packed
+    // sequence: a series marker is PREPENDED to an otherwise unchanged
+    // equipment body, so the same equipment sits at different absolute
+    // indices depending on whether the marker is there. Read absolutely,
+    // "ZAA" and "7ZAA" — the same specification — decode differently, which
+    // is what this file used to do to 12,765 Series 2 and V-Spec records.
+    // See _r32SeriesPrefix for the evidence, and _r32PlateBody for the
+    // equipment characters, which are indexed from the start of the body.
+    // The body is itself left-packed, one level down: it ends in a two-character
+    // PAIR, and equipment characters are prepended to that pair. Every one of
+    // the ten distinct three-character Series 2-onward bodies is a prepend plus
+    // a pair that also occurs standalone — ZAA/NAA/TAA over AA, ZMA/NMA over MA,
+    // ZNA/NNA/TNA over NA, ZPA/NPA over PA — 10 of 10. Series 1 again writes its
+    // own vocabulary, where the prepend is mandatory (MZG, TZG, MAA, MWW) and
+    // none of its pairs occurs alone.
+    prepend: {
       Z: { text: 'Cold Weather Package (Cold Area spec)', verified: true },
-      T: { text: 'Full Auto A/C + Active Sound System + Cold Weather Package', verified: true },
-      P: { text: 'Full Auto A/C', reported: true },
-      R: { text: 'Early Series 1 equipment group', verified: true }
+      M: { text: 'Full Auto A/C + Active Sound System', reported: true }
+      // N, T and R also occur here. They had names in an earlier revision of
+      // this file, reasoned from T being the rarer twin of M in Series 1 and so
+      // "M plus Z". That does not survive the structure above: T is a peer of Z
+      // and N in the prepend slot, and ZMA — Z and M on the same car — occurs
+      // separately from TAA. The composite reading was wrong, so they are
+      // unnamed until something confirms them.
     },
-    // mc[11]/mc[12] — trailing pair. "ZG" is the one this archive can speak to:
-    // 16,428 records carry it as a pair and never apart.
-    11: {
-      Z: { text: 'Rear wiper, GT-R specification', reported: true, pairsWith: 12 },
-      A: { text: 'Rear wiper and rear spoiler', reported: true }
-    },
-    12: {
-      G: { text: 'GT-R specification', reported: true, partOfPair: true },
-      A: { text: 'Standard GT-R trim level', reported: true }
+    // The trailing pair. Two of these the archive can speak to directly.
+    pair: {
+      // Confirmed outside this archive: an owner's FAST lookup of
+      // KBNR32RXFS7AA reports GT-R標準車 / メーカーオプション無し, and that car's
+      // body is exactly this pair behind a Series 3 marker. 22,828 records.
+      AA: { text: 'No factory options', verified: true },
+      // 245 records, which is the published BNR32 N1 total to the car, and the
+      // same set _decodeBNR32SubGrade reaches from the opposite direction.
+      ZN: { text: 'N1 specification', verified: true },
+      // 16,428 Series 1 records carry ZG and never carry Z or G apart from it.
+      ZG: { text: 'Rear wiper and GT-R specification', reported: true },
+      // 560 records, and they sit inside 1989-12 to 1990-03 and nowhere else —
+      // four months at the very start of production, against a run that lasted
+      // to 1994-11. Named for that confinement, not from any outside table.
+      RA: { text: 'Early Series 1 equipment group', verified: true }
     }
+    // Still unnamed here, and left that way deliberately: prepend T (1,068
+    // records), prepend N (293), and pairs MA (608), NA (212), WW (100),
+    // PA (31), Y1 (14), ZH and RN (1 each).
+    //
+    // One caveat on the split above. That the body is [prepends][terminal] is
+    // settled; that the terminal is two characters rather than one is not. A
+    // one-character terminal fits the same 10-of-10 family evidence, and the
+    // two readings disagree about whether "MA" is an atomic pair or an M
+    // carrying the same meaning it has as a prepend. The two-character reading
+    // is used because it takes ZN as a unit, and ZN as a unit is 245 records —
+    // the published N1 total exactly, and the same set _decodeBNR32SubGrade
+    // reaches independently. Anything that would name MA, NA or PA needs that
+    // question settled first, so they stay unnamed rather than inheriting a
+    // prepend's meaning on an assumption.
+  },
+
+  // The head of the R32 option block is a series/specification marker, not
+  // equipment, and it is prepended rather than written at a fixed index.
+  //
+  // Every one of the 22 distinct 7- and 8-headed BNR32 codes has a bare twin
+  // carrying an identical body — AA/7AA/8AA, ZAA/7ZAA/8ZAA, MA/7MA/8MA,
+  // NA/7NA/8NA and so on, 22 of 22. No L-headed code has one, because Series 1
+  // writes its own equipment vocabulary (MZG/TZG/MAA/RA/MWW against the later
+  // AA/ZAA/MA/NAA/ZN), exactly the way FASTOP redefines letters per date
+  // window on the R33.
+  //
+  // The marker carries no equipment information of its own: it is fixed by
+  // grade and build date for 99.28% of the 43,895 records. Its boundaries are
+  // the published series changes — L stops at 1991-07 against a documented
+  // 1991-08-20 Series 2 change, 7 appears in 1993-01 at 98% of grade-X cars
+  // against a documented 1993-02-03 Series 3 change, and 8 appears 1994-02,
+  // the V-Spec II launch. This is why the widely circulated tables that name
+  // this position "Sunroof" or "Projector Headlamps" cannot be right: an
+  // option does not partition the production run in time.
+  _r32SeriesPrefix: {
+    L: 'Series 1 specification',
+    7: 'Series 3 specification',
+    8: 'V-Spec II specification'
   },
   // BNR32 alone. The other R32 chassis write a shorter chassis prefix into the
   // model code — "CR32GAELQKB" and "R32GAEAA" against BNR32's "BNR32RXFSLMZG" —
@@ -2154,21 +2212,53 @@ const JDM_DATABASE = {
     // their characters shown in order, unnumbered and unnamed, which beats the
     // nothing at all they showed before.
     const isGtr = modelId === 'BNR32';
-    const table = isGtr ? this._r32Plate : {};
-    for (let idx = L.optionsFrom; idx < L.end; idx++) {
+    let idx = L.optionsFrom;
+
+    // Strip the prepended series marker before indexing anything, or every
+    // equipment character on a car that has no marker is read one slot early.
+    // BNR32 only: the marker set is demonstrated on the GT-R (see
+    // _r32SeriesPrefix) and the other R32 chassis carry an L in this slot that
+    // does NOT track the series — it oscillates month to month on HCR32 and
+    // HR32 instead of partitioning the run — so it is not treated as one.
+    if (isGtr && idx < L.end && this._r32SeriesPrefix[mc[idx]]) {
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: mc[idx],
+                  field: 'Series', text: this._r32SeriesPrefix[mc[idx]], verified: true });
+      idx++;
+    }
+
+    if (!isGtr) {
+      // No table for these chassis, and their prefixes are a different length,
+      // so the characters are shown in order, unnumbered and unnamed.
+      for (; idx < L.end; idx++) {
+        const ch = mc[idx];
+        if (!ch || ch === '-' || ch === ' ') continue;
+        opts.push({ pos: idx, platePos: null, char: ch, text: null, undecoded: true });
+      }
+      return opts;
+    }
+
+    // The body ends in a two-character pair; anything ahead of it is prepended
+    // equipment. Read the prepends first, then the pair as one field — ZN means
+    // N1 as a pair and nothing established as two separate letters.
+    const pairAt = L.end - 2;
+    for (; idx < pairAt; idx++) {
       const ch = mc[idx];
       if (!ch || ch === '-' || ch === ' ') continue;
-      const def = (table[idx] || {})[ch];
-      if (!def) {
-        // A character that's really there but has no confirmed meaning is
-        // shown as itself rather than dropped, same as everywhere else here.
-        opts.push({ pos: idx, platePos: isGtr ? this.platePos(idx) : null,
-                    char: ch, text: null, undecoded: true });
-        continue;
-      }
-      if (def.partOfPair) continue;          // already reported by its partner
+      const def = this._r32Plate.prepend[ch];
+      // A character that's really there but has no confirmed meaning is shown
+      // as itself rather than dropped, same as everywhere else here.
       opts.push({ pos: idx, platePos: this.platePos(idx), char: ch,
-                  text: def.text, verified: !!def.verified, reported: !!def.reported });
+                  text: def ? def.text : null,
+                  verified: !!(def && def.verified), reported: !!(def && def.reported),
+                  undecoded: !def });
+    }
+    if (pairAt >= L.optionsFrom && pairAt < L.end) {
+      const pair = mc.slice(pairAt, L.end);
+      const def = this._r32Plate.pair[pair];
+      opts.push({ pos: pairAt, platePos: this.platePos(pairAt), char: pair,
+                  text: def ? def.text : null,
+                  verified: !!(def && def.verified), reported: !!(def && def.reported),
+                  undecoded: !def });
     }
     return opts;
   },
