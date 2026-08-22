@@ -2015,17 +2015,39 @@ const JDM_DATABASE = {
   // chassis — see the note in _decodeR32Plate — so this table is not applied
   // to them, and their plate characters are shown positioned but unnamed.
   _r32Plate: {
+    // mc[5..8] — the fixed block before the options. Published R32 breakdowns
+    // put body / grade / gearbox / induction here, and this archive confirms
+    // all four independently: mc[5] is R on every one of the 43,895 records
+    // (BNR32 was coupe-only), mc[7] is F on every one (manual-only), mc[8] is
+    // S on every one (RB26DETT), and mc[6] splits X/B exactly along the V-Spec
+    // line that _decodeBNR32SubGrade arrives at from the opposite direction —
+    // X covers Standard/N1/Police, B covers V-Spec, V-Spec II and their N1s,
+    // with no exceptions in either set.
+    5: {
+      R: { text: '2-door coupe', verified: true }
+    },
+    6: {
+      X: { text: 'GT-R (standard, non V-Spec)', verified: true },
+      B: { text: 'GT-R V-Spec family', verified: true }
+    },
+    7: {
+      F: { text: '5-speed manual', verified: true }
+    },
+    8: {
+      S: { text: 'RB26DETT twin-turbo, intercooled', verified: true }
+    },
     // mc[9] — series / specification marker
+    // Only the four letters whose series mapping this archive can actually
+    // demonstrate. Z, N, M, T and P also appear here, and outside charts offer
+    // names for them, but those names contradict decodes this file already
+    // verifies — labelling a lone N "N1 specification" puts the plate at odds
+    // with _decodeBNR32SubGrade, which identifies N1 from "ZN" followed by a
+    // blank and matches the published 245-car total exactly. They stay unnamed.
     9: {
       L: { text: 'Series 1 specification', verified: true },
       A: { text: 'Series 2 specification', verified: true },
       7: { text: 'Series 3 specification, 16-inch wheels', reported: true },
-      8: { text: 'V-Spec II tyre specification (245/45R17)', verified: true },
-      Z: { text: 'Cold Weather Package (Cold Area spec)', reported: true },
-      N: { text: 'N1 specification', reported: true },
-      M: { text: 'Full Auto A/C + Active Sound System', reported: true },
-      T: { text: 'Full Auto A/C + Active Sound System + Cold Weather Package', reported: true },
-      P: { text: 'Full Auto A/C', reported: true }
+      8: { text: 'V-Spec II tyre specification (245/45R17)', verified: true }
     },
     // mc[10] — factory equipment
     10: {
@@ -2034,7 +2056,6 @@ const JDM_DATABASE = {
       Z: { text: 'Cold Weather Package (Cold Area spec)', verified: true },
       T: { text: 'Full Auto A/C + Active Sound System + Cold Weather Package', verified: true },
       P: { text: 'Full Auto A/C', reported: true },
-      N: { text: 'N1 specification', reported: true },
       R: { text: 'Early Series 1 equipment group', verified: true }
     },
     // mc[11]/mc[12] — trailing pair. "ZG" is the one this archive can speak to:
@@ -2085,7 +2106,12 @@ const JDM_DATABASE = {
     // other R32 chassis therefore get their plate characters shown at the right
     // positions with no meaning attached, which is the true state of things.
     const table = modelId === 'BNR32' ? this._r32Plate : {};
-    for (const idx of [9, 10, 11, 12]) {
+    // Plate numbering here follows the reading owners actually use, where the
+    // first option character on a BNR32 is position 11. Some published charts
+    // count a collapsed blank in the chassis prefix and number the same
+    // character 12; the offset is a convention, not a disagreement about which
+    // character is which.
+    for (const idx of [5, 6, 7, 8, 9, 10, 11, 12]) {
       const ch = mc[idx];
       if (!ch || ch === '-' || ch === ' ') continue;
       const def = (table[idx] || {})[ch];
