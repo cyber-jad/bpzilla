@@ -2075,7 +2075,11 @@ const JDM_DATABASE = {
   // labelling one "(11K)" off BNR32's offset would be a wrong number stated
   // confidently. Until each prefix length is pinned down and checked, they
   // report no plate breakdown rather than a misnumbered one.
-  _r32Chassis: ['BNR32'],
+  // All five R32 chassis. Anchoring on the literal "R32" inside the model code
+  // and splitting the two prefix variants aligns the whole family, so they all
+  // get their gearbox read and their option characters shown in order. Only
+  // BNR32 has names for those characters — see _r32Plate.
+  _r32Chassis: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32'],
   // "1995-07" -> 9507; 2000s get +10000 so 2000-08 sorts after 1998-05 the
   // same way FASTOP's own YYMM windows do (9805 vs 0008 -> 9805 vs 10008).
   _yymm: function(date) {
@@ -2096,30 +2100,70 @@ const JDM_DATABASE = {
   // The R32 reads from its own table (see _r32Plate) because its layout is
   // chassis-led and variable length, not the fixed five-slot block the later
   // cars use.
+  // Where each field sits in an R32 model code.
+  //
+  // The R32 export writes a variable-length chassis prefix — "BNR32RXFSLMZG",
+  // "RCR32RGAESA", "CR32GAELQKB", "R32GAEAA" — so no fixed index works across
+  // the family. But every code contains the literal "R32", which anchors it,
+  // and each chassis appears in two variants: one carrying the body-style
+  // character and one omitting it.
+  //
+  // Split on that and the layout is identical everywhere: body (where present),
+  // grade, gearbox, induction, then the options. The gearbox slot is the
+  // check — it holds F or A and nothing else on every chassis once the
+  // variants are separated, which is what confirms the whole alignment.
+  _r32Layout: function(mc) {
+    const body = String(mc || '').replace(/\s+R32\s*$/, '');
+    const anchor = body.indexOf('R32');
+    if (anchor < 0) return null;
+    // "R32" is followed by the body character on one variant and by the grade
+    // on the other; R marks the body character.
+    const hasBody = body[anchor + 3] === 'R';
+    const grade = anchor + (hasBody ? 4 : 3);
+    return {
+      body: hasBody ? anchor + 3 : -1,
+      grade,
+      gearbox: grade + 1,
+      induction: grade + 2,
+      optionsFrom: grade + 3,
+      end: body.length
+    };
+  },
+
+  _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic', E: '5-speed automatic' },
+
   _decodeR32Plate: function(modelId, mc) {
     const opts = [];
     if (!mc) return opts;
-    // The table was derived from BNR32 and only holds there. On HCR32 the same
-    // slot-9 letter L covers block 0 (33%) and block 2 (22%) — it isn't a
-    // series marker on that chassis, so calling it "Series 1" would be wrong
-    // for a fifth of the cars. FR32 carries no slot-9 character at all. The
-    // other R32 chassis therefore get their plate characters shown at the right
-    // positions with no meaning attached, which is the true state of things.
-    const table = modelId === 'BNR32' ? this._r32Plate : {};
-    // Plate numbering here follows the reading owners actually use, where the
-    // first option character on a BNR32 is position 11. Some published charts
-    // count a collapsed blank in the chassis prefix and number the same
-    // character 12; the offset is a convention, not a disagreement about which
-    // character is which.
-    for (const idx of [5, 6, 7, 8, 9, 10, 11, 12]) {
+    const L = this._r32Layout(mc);
+    if (!L) return opts;
+
+    // The gearbox slot holds F or A on every R32 chassis once the two prefix
+    // variants are separated, which is what confirms the alignment — so it is
+    // read for the whole family, not just the GT-R.
+    const gearCh = mc[L.gearbox];
+    if (this._r32Gearbox[gearCh]) {
+      opts.push({ pos: L.gearbox, platePos: null, field: 'Gearbox', char: gearCh,
+                  text: this._r32Gearbox[gearCh], verified: true });
+    }
+
+    // Everything past the induction character. BNR32 has a table for these and
+    // a settled plate numbering; the other R32 chassis do not, and their codes
+    // omit a different number of leading characters, so numbering their slots
+    // off BNR32's offsets would be a wrong number stated confidently. They get
+    // their characters shown in order, unnumbered and unnamed, which beats the
+    // nothing at all they showed before.
+    const isGtr = modelId === 'BNR32';
+    const table = isGtr ? this._r32Plate : {};
+    for (let idx = L.optionsFrom; idx < L.end; idx++) {
       const ch = mc[idx];
       if (!ch || ch === '-' || ch === ' ') continue;
       const def = (table[idx] || {})[ch];
       if (!def) {
         // A character that's really there but has no confirmed meaning is
         // shown as itself rather than dropped, same as everywhere else here.
-        opts.push({ pos: idx, platePos: this.platePos(idx), char: ch,
-                    text: null, undecoded: true });
+        opts.push({ pos: idx, platePos: isGtr ? this.platePos(idx) : null,
+                    char: ch, text: null, undecoded: true });
         continue;
       }
       if (def.partOfPair) continue;          // already reported by its partner
