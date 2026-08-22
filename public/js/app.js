@@ -966,6 +966,25 @@ document.addEventListener('DOMContentLoaded', () => {
         optionsHTML = `<ol class="plate-opt-list">${optionsHTML}</ol>`;
       }
 
+      // Equipment that comes with the grade rather than being ordered against
+      // it. The plate does not carry this and cannot: Nissan writes a code only
+      // for what varies, and marks standard equipment 標準装備（記号不要）. Showing
+      // it beside the plate — clearly separated, and labelled as coming from the
+      // published specification rather than the record — answers the obvious
+      // question a V-Spec raises without pretending the plate said it.
+      let standardHTML = '';
+      if (rec.gradeStandard && rec.gradeStandard.length) {
+        standardHTML = `
+          <h4 class="plate-opt-title">Standard on this grade
+            <span class="plate-flag" title="Published specification for the grade, not read from this car's build plate">grade spec</span>
+          </h4>
+          <ul class="plate-opt-list plate-opt-list-plain">
+            ${rec.gradeStandard.map(t => `<li class="plate-opt"><span>${esc(t)}</span></li>`).join('')}
+          </ul>
+          <p class="plate-note">Not stamped on the plate. Nissan codes only equipment that varies, so
+          anything standard for the grade is left out of the option block.</p>`;
+      }
+
       return `
         <div class="plate-breakdown">
           <div class="plate-breakdown-head">
@@ -975,6 +994,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="plate-spec-grid">${spec}</div>
           <h4 class="plate-opt-title">Factory options, by plate position</h4>
           ${optionsHTML}
+          ${standardHTML}
         </div>`;
     },
 

@@ -1341,6 +1341,9 @@ const JDM_DATABASE = {
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
       grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
+      // Standard-for-grade equipment, which is deliberately absent from the
+      // plate — see _bnr32GradeStandard.
+      gradeStandard: this.gradeStandard(physicalId, this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)),
       options: this._decodeOptions(physicalId, col.dict.mc[col.mci[i]] || '', date),
       buildDate: date,
       colorCode: code,
@@ -1692,6 +1695,95 @@ const JDM_DATABASE = {
   //     check above one character to the right. 1,306 V-Spec II (exact)
   //     and 1,395 V-Spec (real: 1,396, same 1-record variance seen
   //     throughout this archive) once N1/Police are pulled out.
+  // What a grade includes as standard, which the build plate deliberately does
+  // NOT tell you.
+  //
+  // Nissan's own convention, printed in the OPTION CODE LIST legend: a code is
+  // emitted only for equipment that varies. Standard equipment is marked
+  // ●標準装備（記号不要）— "standard equipment, no code required" — and nothing is
+  // written for it. So a V-Spec's Brembo brakes never appear in the option
+  // block; what makes it a V-Spec is the 車両仕様 character, which the legend
+  // labels for this chassis as 「GT-R 17インチホイール装着車」. The option block only
+  // ever carries what was ordered on top of the grade.
+  //
+  // That is correct but unhelpful on its own — a reader looking at a V-Spec
+  // wants to know what a V-Spec is. This table supplies that, and it is kept
+  // separate from the plate decode and flagged, because unlike everything in
+  // _r32Legend it is NOT read out of Nissan's data files. It is the published
+  // specification, and it describes the grade rather than the individual car.
+  // Everything here is the PUBLISHED SPECIFICATION for a grade, not a decode of
+  // any individual car's record, and it is flagged that way in the UI. It is
+  // deliberately short: only the equipment that actually distinguishes the
+  // grade, because a longer list would start guessing.
+  _gradeStandard: {
+    BNR32: {
+      'V-Spec': [
+        'ATTESA E-TS Pro (retuned torque-split AWD)',
+        'Brembo brakes, 324 mm front / 300 mm rear',
+        '17-inch BBS wheels, 225/45R17'
+      ],
+      'V-Spec II': [
+        'ATTESA E-TS Pro (retuned torque-split AWD)',
+        'Brembo brakes, 324 mm front / 300 mm rear',
+        '17-inch BBS wheels, 245/45R17 — wider than V-Spec'
+      ]
+    },
+    BCNR33: {
+      'V-Spec': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        '17-inch wheels'
+      ],
+      'V-Spec LM': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        'Le Mans commemorative edition, Championship Blue'
+      ],
+      'Autech GT-R': [
+        'Four-door GT-R converted by Autech Japan'
+      ]
+    },
+    BNR34: {
+      'V-Spec': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        'Carbon-fibre rear diffuser',
+        'Stiffened suspension'
+      ],
+      'V-Spec II': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        'Carbon-fibre bonnet with NACA duct',
+        'Stiffer suspension than V-Spec'
+      ],
+      'V-Spec II Nür': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        'Carbon-fibre bonnet with NACA duct',
+        'N1-specification RB26DETT with larger turbochargers',
+        'Nür instrumentation, 300 km/h speedometer'
+      ],
+      'M-Spec Nür': [
+        'ATTESA E-TS Pro with Active LSD (A-LSD)',
+        'Ripple-control dampers and stiffer rear anti-roll bar',
+        'Aluminium bonnet, leather interior',
+        'N1-specification RB26DETT with larger turbochargers',
+        'Nür instrumentation, 300 km/h speedometer'
+      ]
+    }
+  },
+  // The N1 is a deletion specification rather than an addition one, so it is
+  // described rather than itemised, and it layers on top of whatever base grade
+  // the car carries.
+  _n1Standard: [
+    'N1-specification RB26DETT — revised turbochargers, uprated oil and water cooling',
+    'Air conditioning, audio, rear wiper and ABS deleted'
+  ],
+  gradeStandard: function(modelId, grade) {
+    if (!grade) return null;
+    const isN1 = / N1$/.test(grade);
+    const base = String(grade).replace(/ N1$| \(Police\)$/, '');
+    const table = this._gradeStandard[modelId] || {};
+    const list = (table[base] || []).slice();
+    if (isN1) for (const t of this._n1Standard) if (!list.includes(t)) list.push(t);
+    return list.length ? list : null;
+  },
+
   _decodeBNR32SubGrade: function(modelId, mc) {
     if (modelId !== 'BNR32') return null;
     const base = mc[6];
