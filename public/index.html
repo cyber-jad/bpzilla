@@ -9,7 +9,7 @@
        crawlers: opt out of training use where the crawler respects this —
        it does not block indexing or search visibility. -->
   <meta name="robots" content="index, follow, noai, noimageai">
-  <link rel="stylesheet" href="/css/style.css?v=88f43e47">
+  <link rel="stylesheet" href="/css/style.css?v=99205688">
   <link rel="stylesheet" href="/css/components.css?v=c0f48232">
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -101,6 +101,34 @@
           <h1>SKYLINE FACTORY RECORDS</h1>
         </div>
       </div>
+      <script>
+        /* One deployment answers to both bpzilla.com and gtr-registry.org, and
+           the wordmark is the only thing that differs. The worker swaps it at
+           the edge (withGtrBrand in src/index.js), which is what a crawler
+           sees — but "/" is served straight from the asset store before the
+           worker is consulted, so the homepage would keep the wrong mark.
+
+           This is deliberately parser-blocking and sits immediately after the
+           badge: the element it edits has just been parsed and cannot have
+           been painted yet, so there is no flash of the other brand. It is a
+           no-op when the edge already did the swap. */
+        (function () {
+          if (!/(^|\.)gtr-registry\.org$/i.test(location.hostname)) return;
+          var badge = document.querySelector('.brand-logo-badge');
+          if (!badge || badge.classList.contains('brand-gtr')) return;
+          badge.classList.add('brand-gtr');
+          badge.setAttribute('aria-label', 'GTR Registry');
+          var dorsal = badge.querySelector('.brand-dorsal');
+          if (dorsal) dorsal.remove();
+          var emblem = badge.querySelector('.plate-emblem');
+          if (emblem) emblem.innerHTML = 'GT<span class="gtr-r">R</span>';
+          var tag = badge.querySelector('.plate-tag');
+          if (tag) tag.textContent = 'REGISTRY';
+          /* Godzilla is BPZILLA's mark, not a registry's. */
+          var avatar = document.getElementById('godzilla-avatar-btn');
+          if (avatar) avatar.remove();
+        })();
+      </script>
 
       <!-- Quick Global Search -->
       <div class="header-search-wrap">

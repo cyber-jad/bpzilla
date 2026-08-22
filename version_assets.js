@@ -41,11 +41,26 @@ const PAGES = ['index.html', '404.html'];
 // left alone, which is what we want since we cannot hash what we do not serve.
 const REF = /(href|src)="(\/(?:css|js)\/[^"?]+)(\?v=[^"]*)?"/g;
 
+// Hash the file's CONTENT, with line endings normalised to LF first.
+//
+// Not a detail. git here stores LF and checks out CRLF, so a file git considers
+// untouched can have different bytes in the working copy than in the repo — a
+// `git checkout` of an unmodified file was enough to change its raw hash and
+// restamp a URL that had not actually changed. Worse, the build that deploys
+// this checks out on Linux and gets LF, so a raw hash computed on Windows
+// describes bytes the server never sees, and --check would report stale on a
+// fresh clone.
+//
+// Normalising makes the stamp a property of the content rather than of whoever
+// checked it out. It does not need to match the hash of the file as served —
+// nothing verifies it — it only has to change when, and only when, the content
+// does.
 function hashOf(urlPath) {
   const file = path.join(ROOT, urlPath.replace(/^\//, ''));
   if (!fs.existsSync(file)) return null;
+  const normalised = fs.readFileSync(file, 'utf8').replace(/\r\n/g, '\n');
   return crypto.createHash('sha256')
-    .update(fs.readFileSync(file))
+    .update(normalised, 'utf8')
     .digest('hex')
     .slice(0, 8);
 }

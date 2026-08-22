@@ -53,7 +53,21 @@ const VIEW_ROUTES = {
   '/legends':  { view: 'legends-view',      title: 'Silvia, 180SX, Stagea & 300ZX records' }
 };
 
+// The canonical host — what every page tells a search engine it really is.
+//
+// gtr-registry.org is intended to become primary: it describes the content far
+// better than bpzilla does, and .org suits a registry. It is NOT flipped here
+// yet, and the order matters. A canonical pointing at a host that does not
+// resolve tells search engines to drop the pages that do work, so this changes
+// only once the domain is confirmed serving. Both domains then canonical here,
+// which is what makes them one site rather than two competing copies.
 const SITE = 'https://bpzilla.com';
+
+// Hosts that wear the GTR Registry mark instead of the BPZILLA one. Same
+// worker, same assets, same records — one deployment answering to both names,
+// because maintaining a second copy of a 1.25M-record archive to change a logo
+// would be absurd. Everything else about the page is identical by design.
+const GTR_HOSTS = new Set(['gtr-registry.org', 'www.gtr-registry.org']);
 
 // ---------------------------------------------------------------------------
 // /data/ gate
@@ -263,6 +277,38 @@ function withMetadata(response, route) {
     .transform(response);
 }
 
+/**
+ * Wear the GTR Registry mark instead of the BPZILLA one.
+ *
+ * Rewritten at the edge rather than swapped by script on load, so the correct
+ * mark is in the HTML that arrives: a client-side swap would paint the wrong
+ * logo first and visibly flip it, on every page load, forever.
+ *
+ * The Godzilla portrait goes with it. It is BPZILLA's mark — the site is named
+ * for what the press called the R32 — and it means nothing next to a registry
+ * wordmark, so it is removed rather than left as decoration. The dorsal crest
+ * on the plate goes for the same reason.
+ */
+function withGtrBrand(response) {
+  return new HTMLRewriter()
+    .on('#godzilla-avatar-btn', { element(el) { el.remove(); } })
+    .on('.brand-dorsal', { element(el) { el.remove(); } })
+    .on('.brand-logo-badge', {
+      element(el) {
+        el.setAttribute('class', 'brand-logo-badge brand-gtr');
+        el.setAttribute('aria-label', 'GTR Registry');
+      }
+    })
+    // The R is the whole point of the mark, so it is its own element and takes
+    // the GT-R red. aria-label above carries the readable name, which is why
+    // splitting the letters up here costs nothing to a screen reader.
+    .on('.plate-emblem', {
+      element(el) { el.setInnerContent('GT<span class="gtr-r">R</span>', { html: true }); }
+    })
+    .on('.plate-tag', { element(el) { el.setInnerContent('REGISTRY'); } })
+    .transform(response);
+}
+
 // ---------------------------------------------------------------------------
 
 export default {
@@ -291,7 +337,12 @@ export default {
       if (page.ok) {
         const res = new Response(page.body, page);
         res.headers.set('Cache-Control', 'public, max-age=300');
-        return withMetadata(res, route);
+        // Two hosts share this document, and the response now depends on which
+        // one asked. Without Vary, a cache that saw one host can serve that
+        // copy to the other and put the wrong wordmark on the page.
+        res.headers.set('Vary', 'Host');
+        const withMeta = withMetadata(res, route);
+        return GTR_HOSTS.has(url.hostname) ? withGtrBrand(withMeta) : withMeta;
       }
     }
 
