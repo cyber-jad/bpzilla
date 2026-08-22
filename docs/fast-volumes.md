@@ -67,3 +67,52 @@ models and are not alphabetical relative to the first block.
 154 K12   155 SA0   156 E51   157 Z33   159 Z11   160 J31   162 U31
 163 AM35  166 PF50  167 GZ1   169 MA0   176 Z50   177 C11   215 R35
 ```
+
+## R31 (volume 078) — work in progress
+
+The VS記号 table is complete and verified. The パック記号 tables are not.
+
+**VS記号** (page 2), and it accounts for every VS character in all 182,351
+records with nothing left over:
+
+| code | meaning | records |
+|---|---|---|
+| D | electric retractable door mirrors | 86,297 |
+| I | manual folding door mirrors | 60,016 |
+| L | electric retractable door mirrors + projector headlamps | 29,325 |
+| Z | cold region | 11,773 |
+| M | manual folding door mirrors + projector headlamps | 5,259 |
+| B | fender mirrors | 1,397 |
+| P | asymmetric mirrors | 56 |
+
+**Model code**: `[車体形状][エンジン][サスペンション] R31 [ドア][車両仕様][変速機][燃料装置][VS記号][パック記号]`,
+with 車体形状 the character the export drops. 車両仕様 is H/Y/G/V/J, 変速機 F/A,
+燃料装置 blank/E/T/S. The tail is one to two VS characters then a
+two-character pack code.
+
+**What is done**: pages 2-9, the sedan / 4-door hardtop / wagon pack tables
+for [8508-8708]. Extracted to `docs/wip/r31-packs-8508-8708.json`, machine-read
+with fast_matrix.js. Covers 40.7% of records.
+
+**One thing that looked like a contradiction and was not.** Code WS is defined
+twice, on page 6 (sunroof, urethane 2-spoke wheel, 195/60R15 alloys) and again
+on page 8 (power steering, premium stereo, 4-speaker radio, foot selector) —
+same window, same body styles. The pages carry the note 「パック記号 HL〜WX は、
+86年9月以降より追加されます」, and the records settle it: WS runs 1985-03 to
+1985-11, then stops completely, then resumes 1986-10 to 1987-07. The code was
+retired and reissued with a new meaning. So the [8508-8708] window is really
+two, split at 1986-09, and the JSON above is keyed E / L accordingly.
+
+**What remains**, and why it is not wired in yet:
+
+- Pages 14-21 are the [8708-8904] tables. Our R31 records run to 1989-04, so
+  these hold the codes behind most of the unnamed packs — PG (14,207 records),
+  P5 (7,958), XF (5,378), P3 (4,755), Z4 (2,921), CU (2,722), XM, Z1, XX.
+- Pages 22-25 are a separate 2ドア スポーツクーペ set (KA-KP, KR-W3), which is
+  where the unnamed KJ, KQ and LG come from.
+- That second point is the blocker. The later pages are organised by GRADE
+  COLUMN (RB20E GTパサージュ, RB20ET GT, GTS) and by body style, so the pack code
+  alone no longer identifies the equipment — body style has to be read from the
+  model code first. The current parser does not separate 2-door from sedan, and
+  applying a sedan table to a coupe would be wrong rather than merely missing.
+  That axis needs handling before any of this goes live.
