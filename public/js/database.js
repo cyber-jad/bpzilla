@@ -2100,10 +2100,16 @@ const JDM_DATABASE = {
     // Walk the columns and collect only the matching indices, so a filtered
     // view over the archive never allocates one object per record up front.
     const matches = [];
+    const exactMatches = [];   // positions in `matches` that matched exactly
     for (const id of ids) {
       const resolved = this._resolvePhysical(id);
       if (!resolved) continue;
       const { col, physicalId, filterChar } = resolved;
+      // Search has to build the same identifier the rows display, which is the
+      // stamped prefix — the same for both only until a model like KPS13 runs
+      // its own numbering inside another chassis's file. Hoisted out of the row
+      // loop: every row reached here already belongs to this one model.
+      const stamp = (this.models[id] && this.models[id].chassisStamp) || physicalId;
       for (let i = 0; i < col.n; i++) {
         if (!this._rowMatches(col, i, filterChar)) continue;
         if (colorFilter !== 'ALL' && col.dict.c[col.ci[i]] !== colorFilter) continue;
@@ -2132,13 +2138,22 @@ const JDM_DATABASE = {
           } else {
             const block = col.dict.b[col.blk[i]] || '0';
             const serial = String(col.ser[i]).padStart(6, '0');
-            const fastKey = `${physicalId}${block}-${serial}`;   // BNR340-000055
-            const plate = `${physicalId}-${serial}`;             // BNR34-000055
+            const fastKey = `${stamp}${block}-${serial}`;   // BNR340-000055
+            const plate = `${stamp}-${serial}`;             // BNR34-000055
             const mc = (col.dict.mc[col.mci[i]] || '').toUpperCase();
             if (!fastKey.includes(q) && !plate.includes(q) &&
                 !fastKey.replace(/-/g, '').includes(qBare) &&
                 !plate.replace(/-/g, '').includes(qBare) &&
                 !code.includes(q) && !name.includes(q) && !mc.includes(q)) continue;
+            // Typing a whole chassis number should land on that car. Substring
+            // matching is what makes partial searches useful, but it also means
+            // "BNR34-000101" matches BNR34-001010 through -001019, since those
+            // strings contain it once the dashes come out. Exact hits are
+            // flagged here and, if any exist, everything else is dropped below.
+            if (fastKey === q || plate === q ||
+                fastKey.replace(/-/g, '') === qBare || plate.replace(/-/g, '') === qBare) {
+              exactMatches.push(matches.length);
+            }
           }
         }
         // The sort key is captured here rather than looked up later: `col` is
@@ -2148,18 +2163,25 @@ const JDM_DATABASE = {
       }
     }
 
+    // A query that exactly matched a chassis number answers with those cars
+    // only. Two can legitimately survive — the same serial in two series
+    // blocks is a real pair of different cars — but the near-misses go.
+    const hits = exactMatches.length
+      ? exactMatches.map(k => matches[k])
+      : matches;
+
     if (sortKey) {
       const dir = sortAsc ? 1 : -1;
-      matches.sort((a, b) => (a[2] < b[2] ? -dir : a[2] > b[2] ? dir : 0));
+      hits.sort((a, b) => (a[2] < b[2] ? -dir : a[2] > b[2] ? dir : 0));
     }
 
-    const total = matches.length;
+    const total = hits.length;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const safePage = Math.min(Math.max(1, page), totalPages);
     const start = (safePage - 1) * pageSize;
 
-    const records = matches.slice(start, start + pageSize)
-                           .map(([id, i]) => this._materialize(id, i));
+    const records = hits.slice(start, start + pageSize)
+                        .map(([id, i]) => this._materialize(id, i));
 
     return { records, totalRecords: total, page: safePage, totalPages };
   },
