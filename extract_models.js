@@ -29,10 +29,17 @@ const OUT = path.join(DATA, 'models.json');
 function loadDatabase() {
   const src = fs.readFileSync(path.join(REPO, 'public', 'js', 'database.js'), 'utf8');
 
-  // The loader calls fetch('data/<file>') — serve those off the disk so the
+  // The loader calls fetch('/data/<file>') — serve those off the disk so the
   // real load path runs unchanged.
+  //
+  // Accepts the path with or without a leading slash. It used to strip only
+  // "data/", and when the loader moved to the absolute "/data/..." every file
+  // resolved to the wrong place and 404'd. The generator still exited 0 with an
+  // empty index, so nothing failed loudly — models.json simply stopped being
+  // regenerated, and went stale enough to keep serving /model/ pages for a
+  // chassis that had been removed from the site.
   const fetchStub = async (url) => {
-    const file = path.join(DATA, String(url).replace(/^data\//, ''));
+    const file = path.join(DATA, String(url).replace(/^\/?data\//, ''));
     if (!fs.existsSync(file)) return { ok: false, status: 404, text: async () => '' };
     return { ok: true, status: 200, text: async () => fs.readFileSync(file, 'utf8') };
   };
@@ -40,6 +47,10 @@ function loadDatabase() {
   const sandbox = {
     window: {}, document: {}, console,
     fetch: fetchStub,
+    // database.js checks location.protocol when a load fails, to tell a real
+    // error from someone opening index.html off the filesystem. Anything
+    // non-"file:" keeps that check on the ordinary path.
+    location: { protocol: 'https:', hostname: 'gtr-registry.org' },
     performance: { now: () => 0 },
     setTimeout, clearTimeout
   };
@@ -51,6 +62,24 @@ function loadDatabase() {
 async function main() {
   const DB = loadDatabase();
   await DB.loadFastData();
+
+  // Refuse to write an index built from nothing.
+  //
+  // This script used to fail silently: when the loader's data path changed,
+  // every file 404'd, it wrote an index of zero-count models and exited 0.
+  // Nothing downstream noticed, so the LAST GOOD models.json stayed deployed
+  // and the worker kept serving /model/ pages from it — including pages for a
+  // chassis that had since been removed from the site. A generator that can
+  // quietly produce a wrong-but-valid file is worse than one that crashes.
+  const loaded = Object.keys(DB.models).reduce((sum, key) => {
+    const s = DB.getModelStats(key);
+    return sum + (s ? s.totalCount : 0);
+  }, 0);
+  if (!loaded) {
+    console.error('Refusing to write: loaded 0 records. The data files did not ' +
+                  'load — check the fetch stub against the path database.js uses.');
+    process.exit(1);
+  }
 
   const out = { generated: new Date().toISOString().slice(0, 10), total: 0, models: {} };
 
