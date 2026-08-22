@@ -1,0 +1,100 @@
+// fast_matrix.js - read the option-code matrices off a FAST legend page.
+//
+// The legend pages are feature-by-code tables with a circle in a cell when that
+// code includes that feature. Transcribing them by eye is the weak link: the
+// pages render around 1280px wide, a circle is ~12px across, and a table can be
+// 13 features by 24 codes. Misreading one cell ships a wrong fact.
+//
+// So: read the ROW LABELS and COLUMN HEADERS by eye - they are large text and
+// unambiguous - and let this find the circles. It returns which (row, column)
+// cells are marked, which is the part a person is bad at and a computer is good
+// at.
+//
+// Method, deliberately simple so it fails loudly rather than quietly:
+//   1. Find the table's ruling lines by looking for rows and columns of the
+//      bitmap that are mostly black. Those give the cell grid.
+//   2. For each cell, count dark pixels in its interior.
+//   3. A cell holding a circle has a dark-pixel count in a distinct band well
+//      above an empty cell. Report the counts so the caller can see the
+//      separation rather than trust a hardcoded threshold.
+//
+// It does NOT try to read the text. That is the point.
+
+'use strict';
+const { decodeG4 } = require('./fast_image.js');
+
+// rows/cols of the page that are mostly ink = ruling lines
+function findLines(rows, width, axis, minFrac) {
+  const n = axis === 'h' ? rows.length : width;
+  const m = axis === 'h' ? width : rows.length;
+  const hits = [];
+  for (let i = 0; i < n; i++) {
+    let dark = 0;
+    for (let j = 0; j < m; j++) {
+      const v = axis === 'h' ? rows[i][j] : rows[j][i];
+      if (v < 128) dark++;
+    }
+    if (dark / m >= minFrac) hits.push(i);
+  }
+  // collapse runs of adjacent lines to their midpoint
+  const out = [];
+  let start = null, prev = null;
+  for (const i of hits) {
+    if (start === null) { start = prev = i; continue; }
+    if (i - prev <= 2) { prev = i; continue; }
+    out.push(Math.round((start + prev) / 2)); start = prev = i;
+  }
+  if (start !== null) out.push(Math.round((start + prev) / 2));
+  return out;
+}
+
+function darkCount(rows, x0, y0, x1, y1, inset) {
+  let d = 0;
+  for (let y = y0 + inset; y < y1 - inset; y++) {
+    const r = rows[y]; if (!r) continue;
+    for (let x = x0 + inset; x < x1 - inset; x++) if (r[x] < 128) d++;
+  }
+  return d;
+}
+
+/**
+ * @param {Buffer} stream  raw G4 stream for the page
+ * @param {object} opt     { width, minRowFrac, minColFrac, inset }
+ * @returns {{ grid, cells, rowLines, colLines }}
+ *   cells[r][c] = dark pixel count for that cell interior
+ */
+function readMatrix(stream, opt = {}) {
+  const width = opt.width || 1280;
+  const { rows } = decodeG4(stream, width, opt.maxRows || 5000);
+  const rowLines = findLines(rows, width, 'h', opt.minRowFrac || 0.45);
+  const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.30);
+  const cells = [];
+  for (let r = 0; r + 1 < rowLines.length; r++) {
+    const line = [];
+    for (let c = 0; c + 1 < colLines.length; c++) {
+      line.push(darkCount(rows, colLines[c], rowLines[r], colLines[c + 1], rowLines[r + 1], opt.inset || 2));
+    }
+    cells.push(line);
+  }
+  return { rows, cells, rowLines, colLines };
+}
+
+// Render a cell-count grid as a picture, so the separation between "circle" and
+// "empty" can be eyeballed before any threshold is chosen.
+function describe(cells, threshold) {
+  const flat = cells.flat().filter(v => v > 0).sort((a, b) => a - b);
+  const out = [];
+  out.push('cells ' + cells.length + ' x ' + (cells[0] || []).length);
+  if (flat.length) {
+    const q = p => flat[Math.min(flat.length - 1, Math.floor(p * flat.length))];
+    out.push('nonzero counts: min ' + flat[0] + '  p25 ' + q(.25) + '  median ' + q(.5) +
+             '  p75 ' + q(.75) + '  max ' + flat[flat.length - 1]);
+  }
+  if (threshold != null) {
+    out.push('with threshold ' + threshold + ':');
+    for (const row of cells) out.push('  ' + row.map(v => v >= threshold ? 'O' : '.').join(''));
+  }
+  return out.join('\n');
+}
+
+module.exports = { readMatrix, describe, findLines };
