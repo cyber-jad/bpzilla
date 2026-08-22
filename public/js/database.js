@@ -6,11 +6,20 @@
  * the 20-character factory model code. Verified byte-for-byte against that
  * source on 2026-08-18 (see the R31/R30 note below for what changed since).
  *
- * 1,284,067 factory records across 34 FAST chassis files, 1987–2007, in
- * five families (the site's own totals; each family is the sum of its
+ * 1,253,580 factory records, 1987–2007. Three different counts describe this
+ * archive and they are easy to confuse, so all three are spelled out:
+ *   40  fast_*.json files exist in public/data
+ *   34  of them are fetched (six are out of scope — see the note below)
+ *   30  chassis entries after _mergeExportGroups folds the six Z32 export
+ *       files into two, which is what `_cols` ends up holding
+ *   35  browsable models in models{}
+ * "30 chassis" is the post-merge figure this header has always quoted; it read
+ * 34 while 38 files were being fetched, which was right under that definition.
+ *
+ * Five families (the site's own totals; each family is the sum of its
  * loaded files, and the five sum exactly to the figure above):
  *   Skyline R32/R33/R34   543,299     Silvia / 180SX S13-S14   414,207
- *   Stagea C34 / M35      163,895     300ZX Z32 export          97,800
+ *   Stagea C34            133,408     300ZX Z32 export          97,800
  *   Fairlady Z Z32 (JDM)   64,866
  * Largest single files: S13 165,864, HCR32 144,097, PS13 112,312,
  * S14 81,023, HR32 73,321, ECR33 64,256, HR33 63,726, WGNC34 63,436.
@@ -20,10 +29,19 @@
  * is why it survived so long in the site copy after the Silvia, Stagea and
  * Z32 families were added — it just stopped being the whole archive.)
  *
- * R31 (HR31, 182,351 records — the single largest chassis) and R30 (DR30,
- * 44,439 records) are intentionally out of scope and not loaded. Both counts
- * were verified against the real FAST source and were not a bug, they were
- * just judged out of scope for this site and dropped by request.
+ * R31 (HR31, 182,351 records — the single largest chassis), R30 (DR30,
+ * 44,439 records) and the M35 Stagea (NM35 25,281, PNM35 1,849, HM35 1,682,
+ * PM35 1,675 — 30,487 together) are intentionally out of scope and not
+ * loaded. All of these counts were verified against the real FAST source and
+ * were not a bug, they were just judged out of scope for this site and
+ * dropped by request.
+ *
+ * Out of scope means UNLOADED, NOT DELETED. Every one of those files is still
+ * in public/data, and must stay there: the fast_*.json exports have no
+ * extractor in this repo, so re-creating one would mean re-deriving it from
+ * the FAST binaries from scratch. Dropping a chassis from the site costs
+ * nothing; deleting its file costs the data. To bring one back, add its
+ * prefix to `prefixes` in loadFastData and give it an entry in models{}.
  *
  * Several chassis share a single FAST file across more than one real car, so
  * they're presented here as more than one browsable model even though they
@@ -568,69 +586,8 @@ const JDM_DATABASE = {
       description: 'Autech\'s complete R33 GT-R RB26DETT/ATTESA E-TS Pro drivetrain swap into a standard WGNC34 Stagea body — 1,734 built, all recorded here under one identical factory model code. The GT-R-grade drivetrain is why this carries the GT-R badge style rather than the standard Stagea one.'
     },
 
-    // =========================================================
-    // NISSAN LEGENDS — M35 GENERATION STAGEA (2001 – 2007)
-    // =========================================================
-    // Four real chassis codes, all cleanly single-source in the binary (no
-    // cross-file marker mixing the way Silvia's PS13/RS13 needed sorting
-    // out). Drivetrain is stated with slightly less certainty than the
-    // engine displacement — see each description.
-    'NM35': {
-      id: 'NM35', chassisPrefix: 'NM35',
-      generation: 'M35 (Stagea)',
-      name: 'Nissan Stagea 25RS Four (NM35)',
-      shortName: 'Stagea 25 (M35)',
-      chassisCode: 'GH-NM35',
-      bodyStyle: '5-Door Wagon',
-      years: '2001 – 2007',
-      engine: 'VQ25DD 2.5L NA V6 / VQ25DET 2.5L Turbo V6 (grade dependent)',
-      transmission: '5-Speed Auto',
-      drivetrain: 'ATTESA E-TS AWD',
-      badgeClass: 'badge-nissan',
-      description: 'The 2.5L second-generation Stagea, carried through the entire M35 production run.'
-    },
-    'HM35': {
-      id: 'HM35', chassisPrefix: 'HM35',
-      generation: 'M35 (Stagea)',
-      name: 'Nissan Stagea 300RX (HM35)',
-      shortName: 'Stagea 300RX',
-      chassisCode: 'GH-HM35',
-      bodyStyle: '5-Door Wagon',
-      years: '2001 – 2004',
-      engine: 'VQ30DD 3.0L NA V6',
-      transmission: '5-Speed Auto',
-      drivetrain: 'RWD',
-      badgeClass: 'badge-nissan',
-      description: 'The 3.0L grade that opened the M35 range, produced until the 3.5L PM35/PNM35 replaced it in 2004 — real record dates here run 2001 to mid-2004, matching that changeover.'
-    },
-    'PM35': {
-      id: 'PM35', chassisPrefix: 'PM35',
-      generation: 'M35 (Stagea)',
-      name: 'Nissan Stagea 350RX (PM35)',
-      shortName: 'Stagea 350RX',
-      chassisCode: 'CBA-PM35',
-      bodyStyle: '5-Door Wagon',
-      years: '2004 – 2007',
-      engine: 'VQ35DE 3.5L NA V6',
-      transmission: '5-Speed Auto',
-      drivetrain: 'RWD',
-      badgeClass: 'badge-nissan',
-      description: 'The 3.5L grade introduced in 2004 — believed rear-wheel-drive, distinguished in the FAST data from the AWD PNM35 by a separate chassis code.'
-    },
-    'PNM35': {
-      id: 'PNM35', chassisPrefix: 'PNM35',
-      generation: 'M35 (Stagea)',
-      name: 'Nissan Stagea 350RX Four (PNM35)',
-      shortName: 'Stagea 350RX (4WD)',
-      chassisCode: 'CBA-PNM35',
-      bodyStyle: '5-Door Wagon',
-      years: '2004 – 2007',
-      engine: 'VQ35DE 3.5L NA V6',
-      transmission: '5-Speed Auto',
-      drivetrain: 'ATTESA E-TS AWD',
-      badgeClass: 'badge-nissan',
-      description: 'The all-wheel-drive counterpart to PM35, same 3.5L VQ35DE.'
-    },
+    // M35 Stagea (NM35, HM35, PM35, PNM35) is intentionally not included —
+    // see the file header note. The Stagea on this site is the C34 only.
 
     // =========================================================
     // NISSAN LEGENDS — Z32 GENERATION 300ZX / FAIRLADY Z (1989 – 2000)
@@ -804,7 +761,7 @@ const JDM_DATABASE = {
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
     'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'S14', 'CS14',
-    'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS', 'NM35', 'HM35', 'PM35', 'PNM35',
+    'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_EXPORT', 'GZ32_EXPORT'
   ],
@@ -1079,7 +1036,10 @@ const JDM_DATABASE = {
       'ecr33','er33','enr33','hr33',
       'bnr32','hcr32','hnr32','hr32','fr32',
       's13','ps13','ks13','rs13','s14','cs14',
-      'wgc34','whc34','wgnc34','nm35','hm35','pm35','pnm35',
+      // M35 Stagea (nm35, hm35, pm35, pnm35) is deliberately not listed —
+      // see the scope note in the file header. The four files stay in
+      // public/data; they are simply not fetched.
+      'wgc34','whc34','wgnc34',
       'z32','gz32','cz32','hz32','gcz32',
       'z32_us','gz32_us','z32_ca','gz32_ca','gz32_el','gz32_er'
     ];
@@ -1888,7 +1848,7 @@ const JDM_DATABASE = {
   // HICAS-less GTS25-t variant, but this letter is the 65-100% majority on
   // three different chassis — wrong scale entirely, so it stays an honest
   // unnamed "Grade E"/"Grade G" rather than a wrong name.
-  _noRealGradeSplit: ['ENR33', 'ENR34', 'HR34', 'HM35', 'PM35'],
+  _noRealGradeSplit: ['ENR33', 'ENR34', 'HR34'],
 
   gradeCodes: {
     'BCNR33': { 'Q': 'Standard GT-R', 'W': 'V-Spec' },
@@ -1976,9 +1936,8 @@ const JDM_DATABASE = {
   //   which fits their real-world positioning as the family-wagon grades.
   //   WGNC34 (the AWD/turbo grade Autech used as the 260RS base) is the one
   //   Stagea chassis with a genuine F/A split, consistent with being the
-  //   enthusiast-oriented grade. The newer M35-generation Stagea (NM35 and
-  //   siblings) use a visibly different code scheme at this position — not
-  //   guessed at, left undecoded.
+  //   enthusiast-oriented grade. (The M35-generation Stagea is no longer
+  //   loaded — see the file header — so C34 is the whole Stagea range here.)
   //   Z32 (300ZX) — checked, no clean signal found in the option string;
   //   also left undecoded rather than forced.
   // KPS13 (the K-prefixed "KS13..." minority inside the physical PS13 file)

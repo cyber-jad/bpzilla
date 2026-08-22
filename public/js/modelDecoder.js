@@ -11,7 +11,7 @@
  *   R33 / R34   GJPRQFR33ZDA-J---R33     positional option string, dash filler
  *   R32         BNR32RXFSLMZG    R32     chassis code first, space filler
  *
- * So the meanings here are derived at runtime from all 1,284,067 records. For a
+ * So the meanings here are derived at runtime from all 1,253,580 records. For a
  * given character at a given position, we look at which chassis actually carry
  * it, and if every one of those chassis shares the same engine, drivetrain or
  * body style, that is reported as the meaning — with the evidence attached.
@@ -31,12 +31,14 @@ const MODEL_DECODER = {
     'S13': 'chassis-led',
     'RS1': 'chassis-led',
     'S14': 'positional',
-    // Stagea's suffix carries the chassis fragment ("WC3" for the C34
-    // generation, "M35" for the M35 generation) embedded mid-code, same
-    // shape as R33/R34 — option string first, chassis marker in the
-    // middle, not chassis-first the way R32/Silvia/Z32 are.
+    // Stagea's suffix carries the chassis fragment ("WC3") embedded
+    // mid-code, same shape as R33/R34 — option string first, chassis marker
+    // in the middle, not chassis-first the way R32/Silvia/Z32 are.
+    // (An 'M35' rule sat here for the M35-generation Stagea. That chassis is
+    // no longer loaded — see the scope note in database.js — and since these
+    // meanings are derived at runtime from the loaded records, the rule had
+    // nothing left to derive from. Restore it alongside the data.)
     'WC3': 'positional',
-    'M35': 'positional',
     // Z32's codes open with the chassis fragment itself (e.g. "RZ32JA...",
     // "RGZ32JA...") the same way R32's do.
     'Z32': 'chassis-led'

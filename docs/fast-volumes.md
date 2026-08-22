@@ -25,6 +25,11 @@ are the authority where the two disagree.
 
 ## Chassis this site holds
 
+R30, R31 and the M35 Stagea are listed here because their data files exist and
+are kept, but they are out of scope for the site and not loaded. The files stay
+in `public/data` — there is no extractor in this repo, so the export is the only
+copy short of re-deriving it from the FAST binaries.
+
 | chassis | volume | front-matter pages | records | option decode |
 |---|---|---|---|---|
 | R30 (DR30)   | 077 | 16 | 44,439  | none yet |
@@ -38,7 +43,7 @@ are the authority where the two disagree.
 | S14          | 088 | 15 |  84,826 | partial, from FASTOP |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
 | Z32          | 132 | 12 | 162,666 | none yet |
-| M35          | 153 | 22 |  30,487 | none yet |
+| M35          | 153 | 22 |  30,487 | out of scope — not loaded |
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
 
 Note on S13: the S13, PS13, KS13 and RS13 files in `public/data` share one model

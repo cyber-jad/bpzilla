@@ -569,9 +569,9 @@ html { scroll-behavior: smooth; }
       </ol>
     </nav>
     <div class="rail-foot">
-      REV 2026-08-21<br>
-      1,284,067 RECORDS<br>
-      34 CHASSIS FILES<br>
+      REV 2026-08-22<br>
+      1,253,580 RECORDS<br>
+      30 CHASSIS &middot; 34 FILES<br>
       39 BROWSABLE MODELS
     </div>
   </aside>
@@ -584,11 +584,11 @@ html { scroll-behavior: smooth; }
       <h1 class="wordmark">BPZILLA<br><em>Technical Dossier</em></h1>
       <p class="subline">Nissan Factory Record Archive &middot; Architecture &amp; Data Provenance</p>
       <dl class="plate-grid">
-        <div class="plate-cell"><dt>Records</dt><dd>1,284,067<small>genuine FAST rows</small></dd></div>
-        <div class="plate-cell"><dt>Chassis</dt><dd>34<small>39 browsable models</small></dd></div>
-        <div class="plate-cell"><dt>Payload</dt><dd>27.8 MB<small>decoded, 40 requests</small></dd></div>
+        <div class="plate-cell"><dt>Records</dt><dd>1,253,580<small>genuine FAST rows</small></dd></div>
+        <div class="plate-cell"><dt>Chassis</dt><dd>30<small>34 files, 35 models</small></dd></div>
+        <div class="plate-cell"><dt>Payload</dt><dd>25.7 MB<small>decoded, 34 requests</small></dd></div>
         <div class="plate-cell"><dt>Heap</dt><dd>38 MB<small>14.7 MB typed arrays</small></dd></div>
-        <div class="plate-cell"><dt>Paint Named</dt><dd>100.00%<small>1,284,016 of 1,284,067</small></dd></div>
+        <div class="plate-cell"><dt>Paint Named</dt><dd>100.00%<small>1,253,529 of 1,253,580</small></dd></div>
       </dl>
     </div>
 
@@ -602,7 +602,7 @@ html { scroll-behavior: smooth; }
 
       <p>Every row in BPZILLA came off a Nissan FAST disc — the same parts-catalogue system a Nissan dealer's counter used. It is not a community-compiled spreadsheet, not scraped from auction listings, and not estimated from production totals. That distinction is the product: it is the reason a number here can be cited.</p>
 
-      <p>The archive covers 1,284,067 build records across 34 chassis files, presented as 39 browsable models. For any given car it answers three questions: what exactly did the factory build, how many were built like it, and how do we know.</p>
+      <p>The archive covers 1,253,580 build records across 30 chassis (34 data files, six of which are the Z32 export markets merged into two), presented as 35 browsable models. For any given car it answers three questions: what exactly did the factory build, how many were built like it, and how do we know.</p>
 
       <h3>What the site does</h3>
       <ul>
@@ -837,7 +837,6 @@ html { scroll-behavior: smooth; }
             <tr><td class="m">S13 family (S13, PS13, KPS13, KS13, RS13, KRS13)</td><td>Yes — Q's, K's, J's, Club, Type I/II</td><td>Yes — with KPS13 offset</td><td>No — predates FASTOP</td></tr>
             <tr><td class="m">S14 (S14, CS14)</td><td>Yes — K's, Q's</td><td>Yes</td><td>Yes — 70 definitions</td></tr>
             <tr><td class="m">C34 Stagea (WGC34, WHC34, WGNC34, 260RS)</td><td>Yes</td><td>Yes — WGC34/WHC34 automatic-only</td><td>Yes — 76 definitions</td></tr>
-            <tr><td class="m">M35 Stagea (NM35, HM35, PM35, PNM35)</td><td>Partial</td><td>No — different code scheme, not guessed</td><td>No</td></tr>
             <tr><td class="m">Z32 300ZX (JDM + export)</td><td>No — no clean signal found</td><td>No</td><td>No</td></tr>
           </tbody>
         </table>
@@ -900,7 +899,7 @@ html { scroll-behavior: smooth; }
             <tr><td>Unnamed</td><td class="n">8</td><td>51 records total. Shown as the raw code.</td></tr>
           </tbody>
         </table>
-        <caption>Overrides are applied conservatively. KY0 is "Z-tune Silver" only on the Nismo Z-tune — every KY0 car in this archive is an M35 Stagea, so it keeps the disc's plain "Silver (Metallic)". AN0 is "Wine Red" on R32 but "Super Clear Red" on R33; every AN0 record here is R33-family or S14, so the R33 name is the correct one.</caption>
+        <caption>Overrides are applied conservatively. KY0 is "Z-tune Silver" only on the Nismo Z-tune — KY0 appeared only on the M35 Stagea, which is no longer loaded, so no record in the archive now carries it; the override stays in place, unchanged, against the data returning. AN0 is "Wine Red" on R32 but "Super Clear Red" on R33; every AN0 record here is R33-family or S14, so the R33 name is the correct one.</caption>
       </div>
     </section>
 
@@ -911,6 +910,7 @@ html { scroll-behavior: smooth; }
       <div class="rule"></div>
 
       <p>A full sweep of all 39 models and 1,284,067 records, plus a layout pass at four viewport widths, run 21 August 2026. Eight defects found and fixed. Every finding below was verified against the data before being treated as a bug, and the fixes were verified after.</p>
+      <p class="note">These sweep figures are left exactly as measured on the day. They predate the removal of the M35 Stagea on 22 August 2026, which is why they count 39 models and 1,284,067 records against the 35 and 1,253,580 stated above. The M35 data files were not deleted, only unloaded.</p>
 
       <div class="finding crit">
         <div class="finding-head">
@@ -1078,11 +1078,6 @@ layout, all 6 views at 320 / 375 / 768 / 1280
               <td>Named from corroborated community sources plus internal date-span evidence, not from a disc. Lower confidence than every other name in the table.</td>
             </tr>
             <tr>
-              <td><strong>M35 Stagea grade and transmission</strong>.</td>
-              <td class="n">30,487 records</td>
-              <td>Visibly different code scheme. Not guessed at.</td>
-            </tr>
-            <tr>
               <td><strong>Z32 grade split</strong>.</td>
               <td class="n">162,666 records</td>
               <td>No clean signal found. A previous "Version S" decode was retracted.</td>
@@ -1228,9 +1223,9 @@ pwsh -File extract_fastop.ps1 <span class="c">// -> public/data/factoryOptions.j
       </ul>
 
       <div class="doc-foot">
-        BPZILLA TECHNICAL DOSSIER &middot; REVISION 2026-08-21<br>
+        BPZILLA TECHNICAL DOSSIER &middot; REVISION 2026-08-22<br>
         SOURCE: NISSAN FAST MICROFICHE &middot; H:\AR-JP\JP, H:\NISSAN\{US,CA,EL,ER,GL,GR}<br>
-        ARCHIVE STATE: 1,284,067 RECORDS &middot; 34 CHASSIS FILES &middot; 39 BROWSABLE MODELS<br>
+        ARCHIVE STATE: 1,253,580 RECORDS &middot; 30 CHASSIS &middot; 34 FILES &middot; 35 BROWSABLE MODELS<br>
         ALL FIGURES IN THIS DOCUMENT WERE MEASURED AGAINST THE LOADED ARCHIVE, NOT ESTIMATED.
       </div>
     </section>
