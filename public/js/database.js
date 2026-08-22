@@ -6,28 +6,36 @@
  * the 20-character factory model code. Verified byte-for-byte against that
  * source on 2026-08-18 (see the R31/R30 note below for what changed since).
  *
- * 1,253,580 factory records, 1987–2007. Three different counts describe this
+ * 1,271,066 factory records, 1987–2007. Three different counts describe this
  * archive and they are easy to confuse, so all three are spelled out:
- *   40  fast_*.json files exist in public/data
- *   34  of them are fetched (six are out of scope — see the note below)
- *   30  chassis entries after _mergeExportGroups folds the six Z32 export
+ *   42  fast_*.json files exist in public/data
+ *   36  of them are fetched (six are out of scope — see the note below)
+ *   32  chassis entries after _mergeExportGroups folds the six Z32 export
  *       files into two, which is what `_cols` ends up holding
- *   35  browsable models in models{}
- * "30 chassis" is the post-merge figure this header has always quoted; it read
+ *   37  browsable models in models{}
+ * "32 chassis" is the post-merge figure this header has always quoted; it read
  * 34 while 38 files were being fetched, which was right under that definition.
  *
  * Five families (the site's own totals; each family is the sum of its
  * loaded files, and the five sum exactly to the figure above):
- *   Skyline R32/R33/R34   543,299     Silvia / 180SX S13-S14   414,207
+ *   Skyline R32/R33/R34   560,785     Silvia / 180SX S13-S14   414,207
  *   Stagea C34            133,408     300ZX Z32 export          97,800
  *   Fairlady Z Z32 (JDM)   64,866
  * Largest single files: S13 165,864, HCR32 144,097, PS13 112,312,
  * S14 81,023, HR32 73,321, ECR33 64,256, HR33 63,726, WGNC34 63,436.
  *
  * (543,299 was this file's headline number back when the archive was
- * Skyline-only. It is still exactly right as the Skyline subtotal, which
- * is why it survived so long in the site copy after the Silvia, Stagea and
- * Z32 families were added — it just stopped being the whole archive.)
+ * Skyline-only, and it stayed exactly right as the Skyline subtotal long
+ * after the Silvia, Stagea and Z32 families were added — which is why it
+ * survived so long in the site copy. It is no longer either figure: adding
+ * ECR32 and ER32 below took the Skylines to 560,785.)
+ *
+ * ECR32 (15,475) and ER32 (2,011) were added on 2026-08-22 — the RB25DE
+ * GTS25 cars, present in the FAST source from the start and never extracted,
+ * so a real chassis like ECR32-007552 came back "not found". They were pulled
+ * with extract_vindat.js, which earns its trust by re-deriving the five R32
+ * chassis this file already shipped and reproducing all five exactly: same
+ * counts, same dictionaries in the same order, same rows.
  *
  * R31 (HR31, 182,351 records — the single largest chassis), R30 (DR30,
  * 44,439 records) and the M35 Stagea (NM35 25,281, PNM35 1,849, HM35 1,682,
@@ -320,6 +328,53 @@ const JDM_DATABASE = {
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
       description: 'Naturally aspirated R32 GTS.'
+    },
+    // ECR32 and ER32 — the RB25DE cars, added 2026-08-22.
+    //
+    // Both were in the FAST source all along and neither had ever been
+    // extracted, so ECR32-007552 came back "not found" for a car that exists.
+    // Everything below is read off Nissan's own legend for the [9108-9411]
+    // window (volume 079 front matter, page 2), which is the window that first
+    // lists E at all — the [8905-9108] page knows only F, H, R and B:
+    //
+    //   E = RB25DE            C = スーパーハイキャス付の2WD (Super HICAS, 2WD)
+    //   車両仕様 G = GTE, GTS, GTS-T, GTS 25, GTS-4
+    //   変速機 Y = オートマチック5速, F = マニュアル5速
+    //
+    // So ECR32 is the RB25DE with Super HICAS and ER32 the RB25DE without,
+    // both the GTS25 grade. That page's own worked example is "K E C R32 R",
+    // this exact chassis. Model codes parse straight through it:
+    // ECR32RGYELAA = E·C·R32·R(2door)·G(GTS25)·Y(5sp auto)·E(EGI) + L + pack AA.
+    //
+    // Body styles and the transmission split are counted from the records
+    // rather than assumed — see each description.
+    'ECR32': {
+      id: 'ECR32', chassisPrefix: 'ECR32',
+      generation: 'R32 (8th Gen)',
+      name: 'Skyline GTS25 (ECR32)',
+      shortName: 'R32 GTS25',
+      chassisCode: 'E-ECR32',
+      bodyStyle: '4-Door Sedan & 2-Door Hardtop',
+      years: '1991 – 1993',
+      engine: 'RB25DE 2.5L NA DOHC I6',
+      transmission: '5-Speed Auto / 5-Speed Manual',
+      drivetrain: 'RWD + Super HICAS',
+      badgeClass: 'badge-nissan',
+      description: 'The 2.5-litre RB25DE Skyline with Super HICAS four-wheel steering, introduced at the August 1991 minor change — volume production starts 1991-07 here, with 33 pre-launch cars from 1990-10. 9,175 of these records are the 4-door sedan and 6,300 the 2-door hardtop; 10,704 carry the 5-speed automatic against 4,771 manuals.'
+    },
+    'ER32': {
+      id: 'ER32', chassisPrefix: 'ER32',
+      generation: 'R32 (8th Gen)',
+      name: 'Skyline GTS25 (ER32)',
+      shortName: 'R32 GTS25 (no HICAS)',
+      chassisCode: 'E-ER32',
+      bodyStyle: '4-Door Sedan',
+      years: '1991 – 1993',
+      engine: 'RB25DE 2.5L NA DOHC I6',
+      transmission: '5-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The same RB25DE GTS25 without Super HICAS — the suspension character is simply absent from its model code, which is the whole difference from ECR32. Much the rarer of the two at 2,011 records against 15,475, and unusually uniform: every one is a 4-door sedan and every one is the 5-speed automatic.'
     },
     'FR32': {
       id: 'FR32', chassisPrefix: 'FR32',
@@ -1034,7 +1089,7 @@ const JDM_DATABASE = {
     const prefixes = [
       'bcnr33','bnr34','er34','enr34','hr34',
       'ecr33','er33','enr33','hr33',
-      'bnr32','hcr32','hnr32','hr32','fr32',
+      'bnr32','hcr32','hnr32','hr32','fr32','ecr32','er32',
       's13','ps13','ks13','rs13','s14','cs14',
       // M35 Stagea (nm35, hm35, pm35, pnm35) is deliberately not listed —
       // see the scope note in the file header. The four files stay in
@@ -1951,7 +2006,7 @@ const JDM_DATABASE = {
     'S13': 3, 'PS13': 4, 'KS13': 3, 'RS13': 4, 'S14': 5, 'CS14': 5,
     'WGC34': 5, 'WHC34': 5, 'WGNC34': 5
   },
-  transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32'],
+  transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32', 'ECR32', 'ER32'],
   // 'F'/'A' are confirmed on every chassis in transmissionPositions/
   // transmissionR32Models. 'Y' is BNR34-only (its distinct 6-speed Getrag) —
   // kept out of the shared table so an unrelated model that happens to reuse
@@ -1962,7 +2017,13 @@ const JDM_DATABASE = {
     'A': '4-Speed Automatic'
   },
   transmissionCodesByModel: {
-    'BNR34': { 'Y': '6-Speed Manual' }
+    'BNR34': { 'Y': '6-Speed Manual' },
+    // The RB25DE cars use Y for a 5-speed automatic — 「Y オートマチック5速」in
+    // the [9108-9411] legend. Exactly the collision the note above warns about:
+    // the same letter is a 6-speed manual on BNR34 and something else again on
+    // PS13, so it stays out of the shared table and is named per model.
+    'ECR32': { 'Y': '5-Speed Automatic' },
+    'ER32':  { 'Y': '5-Speed Automatic' }
   },
   _decodeTransmission: function(modelId, mc) {
     if (!mc) return '';
@@ -2902,11 +2963,17 @@ const JDM_DATABASE = {
   // labelling one "(11K)" off BNR32's offset would be a wrong number stated
   // confidently. Until each prefix length is pinned down and checked, they
   // report no plate breakdown rather than a misnumbered one.
-  // All five R32 chassis. Anchoring on the literal "R32" inside the model code
+  // All seven R32 chassis. Anchoring on the literal "R32" inside the model code
   // and splitting the two prefix variants aligns the whole family, so they all
   // get their gearbox read and their option characters shown in order. Only
   // BNR32 has names for those characters — see _r32Plate.
-  _r32Chassis: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32'],
+  //
+  // ECR32 and ER32 belong here for the same reason as the rest: same volume,
+  // same VS記号 and パック記号 tables, and they carry both prefix variants
+  // themselves ("ECR32RGFELBC" with the body character written, "CR32GYEAA"
+  // without), which the anchor already handles. Their records sit almost
+  // entirely in the [9108-9411] window, which the legend covers.
+  _r32Chassis: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32', 'ECR32', 'ER32'],
   // "1995-07" -> 9507; 2000s get +10000 so 2000-08 sorts after 1998-05 the
   // same way FASTOP's own YYMM windows do (9805 vs 0008 -> 9805 vs 10008).
   _yymm: function(date) {
@@ -2964,12 +3031,20 @@ const JDM_DATABASE = {
     };
   },
 
-  // Nissan's own 変速機 legend (新型車解説書 A7, 型式記号の説明) lists exactly two:
-  // F = 手動5速, A = 自動4速. This archive agrees — the gearbox slot holds F or A
-  // and nothing else on all 295,861 R32 records. An earlier E = "5-speed
-  // automatic" entry here never fired: E does occur on the R32, but in the
-  // induction slot (HR32 100%, HCR32 22.7%), one place further along.
-  _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic' },
+  // 変速機. The [8905-9108] legend lists exactly two — F = 5段フロア,
+  // A = フロアトルコン — and that held for as long as this archive was the
+  // five original R32 chassis: F or A and nothing else across all 295,861.
+  //
+  // The [9108-9411] legend adds a third, Y = オートマチック5速, and it is not
+  // hypothetical: adding ECR32 and ER32 brought in 12,715 records carrying it
+  // (every one of ER32's 2,011, and 10,704 of ECR32's 15,475). Without Y here
+  // those records fell through to the model's blanket transmission string
+  // instead of reading their own plate.
+  //
+  // An earlier E = "5-speed automatic" entry never fired and is still absent:
+  // E does occur on the R32, but in the induction slot (HR32 100%, HCR32
+  // 22.7%), one place further along.
+  _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic', Y: '5-speed automatic' },
 
   _decodeR32Plate: function(modelId, mc, date) {
     const opts = [];

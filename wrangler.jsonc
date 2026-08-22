@@ -59,7 +59,7 @@
   // counted per address.
   //
   // 300 requests/minute is deliberately far above real use — a visitor pulls
-  // 34 files once per page load, so this allows roughly eight full reloads a
+  // 36 files once per page load, so this allows roughly eight full reloads a
   // minute before anything happens. A scraper walking the archive repeatedly
   // is the only thing that reaches it.
   "unsafe": {

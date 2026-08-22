@@ -1,6 +1,6 @@
 {
  "generated": "2026-08-22",
- "total": 1253580,
+ "total": 1271066,
  "models": {
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
@@ -166,6 +166,28 @@
    "stamp": "HR32",
    "legend": false,
    "count": 73321
+  },
+  "ECR32": {
+   "name": "Skyline GTS25 (ECR32)",
+   "short": "R32 GTS25",
+   "code": "E-ECR32",
+   "years": "1991 – 1993",
+   "engine": "RB25DE 2.5L NA DOHC I6",
+   "body": "4-Door Sedan & 2-Door Hardtop",
+   "stamp": "ECR32",
+   "legend": false,
+   "count": 15475
+  },
+  "ER32": {
+   "name": "Skyline GTS25 (ER32)",
+   "short": "R32 GTS25 (no HICAS)",
+   "code": "E-ER32",
+   "years": "1991 – 1993",
+   "engine": "RB25DE 2.5L NA DOHC I6",
+   "body": "4-Door Sedan",
+   "stamp": "ER32",
+   "legend": false,
+   "count": 2011
   },
   "FR32": {
    "name": "Skyline GTE (FR32)",
