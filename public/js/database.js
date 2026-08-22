@@ -2146,12 +2146,64 @@ const JDM_DATABASE = {
         W: 'Active sound system + cold-region spec',                             // Q+Z
         T: 'Electronic active full-auto air conditioning + active sound system + cold-region spec' // P+Q+Z
       },
-      // パック記号（2ドア系）, pages 6-7. Only the two the GT-R actually uses are
-      // marked for it in the legend; the rest of that table is 4-door and other
-      // 2-door grades and is not reproduced here.
+      // パック記号 1桁目 / 2桁目, page 3. The two digits carry their own
+      // alphabets, so most codes decode compositionally. The atomic list below
+      // is checked first and agrees with this wherever both apply — BD is
+      // "4WAS + viscous LSD" either way (B = 4輪アンチスキッド, D = ビスカスLSD),
+      // as are AB, AC, BA, BC, DB, DC, GA, GC, EB, HA and HC.
+      pack1: {
+        A: 'standard', B: '4-wheel anti-skid', C: 'sunroof',
+        D: 'GT auto spoiler (front only)', E: 'GT auto spoiler and rear spoiler',
+        F: '4-wheel anti-skid + sunroof',
+        G: '4-wheel anti-skid + GT auto spoiler (front only)',
+        H: '4-wheel anti-skid + GT auto spoiler and rear spoiler',
+        I: 'sunroof + GT auto spoiler (front only)',
+        J: 'sunroof + GT auto spoiler and rear spoiler',
+        K: '4-wheel anti-skid + sunroof + GT auto spoiler (front only)',
+        L: '4-wheel anti-skid + sunroof + GT auto spoiler and rear spoiler'
+      },
+      pack2: {
+        A: 'standard', B: 'GT-R steering wheel', C: 'Type M specification',
+        D: 'viscous LSD', E: 'GT-R steering wheel + viscous LSD',
+        F: 'Urban Road', G: 'Urban Road',
+        J: 'GTE special seats', K: 'GTE special seats + viscous LSD'
+      },
+      // Atomic パック記号, pages 4-5 (4ドア系 1/2 and 2/2) and 6-7 (2ドア系).
+      // These are the codes that carry a non-zero パーソナルコード — wheels,
+      // mirrors, tyres, rear wiper — which the two-digit alphabets above do not
+      // reach. The 2-door and 4-door tables agree wherever they overlap, so
+      // they are merged here.
       pack: {
         AA: 'No factory options (standard car)',
-        ZG: 'Rear wiper (GT-R standard car)'
+        ZA: 'Electric retractable mirrors',
+        ZB: '185/70SR14 tyres, 14-inch full wheel covers',
+        ZJ: 'Electric retractable mirrors, 185/70SR14 tyres, 14-inch full wheel covers',
+        ZD: 'GT auto spoiler, 205/60R15 tyres, 15-inch alloys',
+        ZE: 'GT auto spoiler, 15-inch alloys',
+        ZF: 'GT auto spoiler, 15-inch alloys',
+        ZG: 'Rear wiper (GT-R standard car)',
+        ZK: 'Viscous LSD, 205/60R15 tyres, 15-inch alloys',
+        ZL: 'Viscous LSD, 15-inch alloys',
+        BA: '4WAS',
+        BC: 'Type M specification, 4WAS',
+        BD: '4WAS, viscous LSD',
+        AB: 'GT-R steering wheel (4WD standard car)',
+        AC: 'Type M specification (Type M standard car)',
+        DB: 'GT-R steering wheel, GT auto spoiler',
+        DC: 'Type M specification, GT auto spoiler',
+        GA: 'GT auto spoiler, 4WAS',
+        GC: 'Type M specification, 4WAS, GT auto spoiler',
+        SA: '15-inch alloys, GT-R steering wheel (Type S standard car)',
+        SB: '15-inch alloys, GT-R steering wheel, GT auto spoiler',
+        SD: '15-inch alloys, GT-R steering wheel, 4WS, viscous LSD',
+        SE: '15-inch alloys, GT-R steering wheel, GT auto spoiler, 4WAS, viscous LSD',
+        SF: 'GT auto spoiler and rear spoiler',
+        SG: '15-inch alloys, GT-R steering wheel, GT auto spoiler and rear spoiler, 4WAS, viscous LSD',
+        SH: '15-inch alloys, GT-R steering wheel, viscous LSD',
+        HA: 'GT auto spoiler and rear spoiler, 4WAS',
+        HC: 'Type M specification, 4WAS, GT auto spoiler and rear spoiler',
+        EB: 'GT-R steering wheel, GT auto spoiler and rear spoiler',
+        SS: '"V Selection" special limited edition'
       }
     },
     {
@@ -2193,7 +2245,46 @@ const JDM_DATABASE = {
         // exactly those boundaries, and gtr-registry's independently compiled
         // figures are 118 GT-R N1, 64 V-Spec N1, 63 V-Spec II N1.
         ZN: 'N1 specification',
-        SS: 'V-Spec II limited edition'
+        SS: '"V Selection II" limited edition',
+        // The 限定車 codes, pages 13-16. Each family is a base limited edition
+        // plus the same two options against it, ABS and viscous LSD, so they
+        // are written out rather than composed — the digit is not an alphabet,
+        // it is an index into the family. The 4-door pages (13, 14) and 2-door
+        // pages (15, 16) agree on every code they share.
+        S1: '15-inch alloys, rear spoiler with high-mount stop lamp, leather-wrapped sports steering wheel',
+        S2: '15-inch alloys, rear spoiler with high-mount stop lamp, leather-wrapped sports steering wheel + ABS',
+        Q1: '"GTE Type X,V" limited edition',
+        Q2: '"GTE Type X,V" limited edition + ABS',
+        Q3: '"GTE Type X,V" limited edition + viscous LSD',
+        Q4: '"GTE Type X,V" limited edition + ABS + viscous LSD',
+        Q5: '"GTE V Selection 60th Anniversary" limited edition',
+        Q6: '"GTE V Selection 60th Anniversary" limited edition + ABS',
+        Q7: '"GTE V Selection 60th Anniversary" limited edition + viscous LSD',
+        Q8: '"GTE V Selection 60th Anniversary" limited edition + ABS + viscous LSD',
+        T1: '"GTS Type J 60th Anniversary" limited edition',
+        T2: '"GTS Type J 60th Anniversary" limited edition + ABS',
+        T3: '"GTS Type J 60th Anniversary" limited edition + viscous LSD',
+        T4: '"GTS Type J 60th Anniversary" limited edition + ABS + viscous LSD',
+        T5: '"GTS V Selection 60th Anniversary" limited edition',
+        T6: '"GTS V Selection 60th Anniversary" limited edition + ABS',
+        T7: '"GTS V Selection 60th Anniversary" limited edition + viscous LSD',
+        T8: '"GTS V Selection 60th Anniversary" limited edition + ABS + viscous LSD',
+        U1: '"GTS-t Type M 60th Anniversary" limited edition, viscous LSD standard',
+        U2: '"GTS-t Type M 60th Anniversary" limited edition + ABS',
+        U3: '"GTS-t Type M 60th Anniversary" limited edition + leather seats',
+        U4: '"GTS-t Type M 60th Anniversary" limited edition + ABS + leather seats',
+        V1: '"GTS SV" limited edition',
+        V2: '"GTS SV" limited edition + ABS',
+        V3: '"GTS SV" limited edition + viscous LSD',
+        V4: '"GTS SV" limited edition + ABS + viscous LSD',
+        W1: '"GTS25 SV" limited edition',
+        W2: '"GTS25 SV" limited edition + ABS',
+        W3: '"GTS25 SV" limited edition + viscous LSD',
+        W4: '"GTS25 SV" limited edition + ABS + viscous LSD',
+        X1: '"GTE SV" limited edition',
+        X2: '"GTE SV" limited edition + ABS',
+        X3: '"GTE SV" limited edition + viscous LSD',
+        X4: '"GTE SV" limited edition + ABS + viscous LSD'
       }
     }
   ],
@@ -2209,10 +2300,19 @@ const JDM_DATABASE = {
     RA: { text: 'Nismo (Group A homologation special)', verified: true }
   },
 
-  // Pick the legend window a car's build date falls in.
+  // Pick the legend window a car's build date falls in, clamping at both ends.
+  // The windows record when Nissan maintained each table, and they are narrower
+  // than production: HCR32 records start 1989-02 against a legend that begins
+  // 8905. Falling through to "no window" there dropped the tail entirely on a
+  // few hundred of the earliest cars, so the nearest window is used instead —
+  // the same argument this file already applies to the FASTOP windows.
   _r32Window: function(date) {
     const d = String(date || '');
+    if (!d) return null;
     for (const w of this._r32Legend) if (d >= w.from && d <= w.to) return w;
+    const first = this._r32Legend[0], last = this._r32Legend[this._r32Legend.length - 1];
+    if (d < first.from) return first;
+    if (d > last.to) return last;
     return null;
   },
 
@@ -2300,12 +2400,19 @@ const JDM_DATABASE = {
     // on the other; R marks the body character.
     const hasBody = body[anchor + 3] === 'R';
     const grade = anchor + (hasBody ? 4 : 3);
+    // 燃料装置 (E = EGI, I = SPI, S = intercooler turbo) is written on every
+    // engine except the CA18i, whose codes are just FR32DF / FR32DA — engine,
+    // R32, 車両仕様, 変速機 and straight into the options. D is the CA18i GXi
+    // and the only 車両仕様 that omits the field, so it is the test. Reading a
+    // fuel character that is not there cost FR32 one slot on all 16,881 of its
+    // records and left them decoding at 10.8%.
+    const hasFuel = body[grade] !== 'D';
     return {
       body: hasBody ? anchor + 3 : -1,
       grade,
       gearbox: grade + 1,
-      induction: grade + 2,
-      optionsFrom: grade + 3,
+      induction: hasFuel ? grade + 2 : -1,
+      optionsFrom: grade + (hasFuel ? 3 : 2),
       end: body.length
     };
   },
@@ -2338,22 +2445,21 @@ const JDM_DATABASE = {
     // off BNR32's offsets would be a wrong number stated confidently. They get
     // their characters shown in order, unnumbered and unnamed, which beats the
     // nothing at all they showed before.
-    const isGtr = modelId === 'BNR32';
-    const tail = mc.slice(L.optionsFrom, L.end).replace(/[-\s]/g, '');
-
-    if (!isGtr) {
-      // The legend's VS記号 and パック記号 tables are per-grade, and the columns
-      // for the other R32 chassis have not been read across yet, so their
-      // characters are shown in order, unnumbered and unnamed.
-      let idx = L.optionsFrom;
-      for (const ch of tail) {
-        opts.push({ pos: idx++, platePos: null, char: ch, text: null, undecoded: true });
-      }
-      return opts;
-    }
-
     // VS記号 characters, then the two-character パック記号, per the window the
-    // car was built in.
+    // car was built in. This runs for every R32 chassis: the legend's tables
+    // are one set of codes with per-grade availability columns, not a different
+    // scheme per model, and the 2-door and 4-door pages agree wherever they
+    // overlap (VS 2桁目 and 3桁目 are identical on pages 8 and 10; the pack
+    // 1桁目/2桁目 alphabets are identical on pages 11 and 12).
+    //
+    // Plate positions are given for all five now. An earlier revision withheld
+    // them from the non-GT-R chassis, reasoning that those codes "omit a
+    // different number of leading characters" so numbering off BNR32's offsets
+    // would be wrong. Checked against the raw MDLCODE strings, that is not what
+    // happens: the export drops exactly one leading character on every chassis
+    // — KBNR32RXFS→BNR32RXFS, RCR32GAEL→CR32GAEL, HR32GAE→R32GAE, FR32DA→R32DA
+    // — so mc index + 2 is the plate position throughout.
+    const tail = mc.slice(L.optionsFrom, L.end).replace(/[-\s]/g, '');
     let idx = L.optionsFrom;
     for (const part of this._r32Tail(tail, this._r32Window(date))) {
       opts.push({ pos: idx, platePos: this.platePos(idx), char: part.char,
