@@ -21,7 +21,16 @@ const RARITY_CALCULATOR = {
 
     // Find trim (FAST "grade") data. Many models carry no grade field, in
     // which case the whole model is one bucket.
-    const grades = (stats.gradeBreakdown && stats.gradeBreakdown.length)
+    //
+    // That bucket is a DISPLAY label and must never be used as a filter. It was:
+    // "Standard" went into countMatching below, no record anywhere carries that
+    // string, so every car on a chassis without decoded grades matched zero
+    // records and was reported "1 of 0 in the FAST records — No Record of This
+    // Build". That is every HCR32, HR32, HNR32, FR32, ECR32 and ER32 — around
+    // 270,000 real cars told they did not exist, on a page whose whole job is
+    // saying how many were built like this one.
+    const hasRealGrades = !!(stats.gradeBreakdown && stats.gradeBreakdown.length);
+    const grades = hasRealGrades
       ? stats.gradeBreakdown
       : [{ grade: 'Standard', count: totalProd, percent: '100.0' }];
     const gradeObj = grades.find(g => g.grade === trim) || grades[0];
@@ -46,7 +55,10 @@ const RARITY_CALCULATOR = {
     // Every record is already in memory, so the combination is counted.
     const optionTexts = (options || []).filter(Boolean);
     const match = JDM_DATABASE.countMatching(modelId, {
-      grade: trimObj.trim,
+      // null, not the placeholder — countMatching skips the grade filter
+      // entirely when it is null, which is exactly right for a chassis whose
+      // grades this archive cannot read.
+      grade: hasRealGrades ? trimObj.trim : null,
       colorCode: colorObj.code,
       options: optionTexts
     });
@@ -111,9 +123,13 @@ const RARITY_CALCULATOR = {
       tierName: tierName,
       tierBadge: tierBadge,
       tierDescription: tierDescription,
-      oneOfXText: matchingUnits === 1
-        ? `The only one in the FAST records`
-        : `1 of ${matchingUnits.toLocaleString()} in the FAST records`,
+      // "1 of 0" is not a sentence. Zero is a real answer — a combination the
+      // factory never built — but it has to read as one.
+      oneOfXText: matchingUnits === 0
+        ? `No car in the FAST records was built to this exact specification`
+        : matchingUnits === 1
+          ? `The only one in the FAST records`
+          : `1 of ${matchingUnits.toLocaleString()} in the FAST records`,
       optionsApplied: options
     };
   },
