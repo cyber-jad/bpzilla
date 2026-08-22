@@ -116,3 +116,46 @@ two, split at 1986-09, and the JSON above is keyed E / L accordingly.
   model code first. The current parser does not separate 2-door from sedan, and
   applying a sedan table to a coupe would be wrong rather than merely missing.
   That axis needs handling before any of this goes live.
+
+## Z32 (volume 132) — work in progress
+
+**Model code**, from pages 1-3, which give three windows:
+
+```
+[ルーフ][エンジン][シーター] Z32 [車格][変速機][過給][VS記号][パック記号]
+ルーフ    スペース 標準ルーフ / K Tバールーフ / C コンバーチブル (from 9208)
+エンジン   R VG30DE系      シーター スペース 2シーター / G 2+2シーター
+車格 J GL   変速機 スペース MT / A AT   過給 スペース ノンターボ / S ツインターボ
+```
+
+The layout diagrams stop at VS記号 and do not draw a パック記号 box, but pages
+5-12 are パック記号 tables and the records carry both — `RGZ32JASHE7` is
+VS `H` then pack `E7`, and `RGZ32JAE7` is the same pack with no VS at all.
+
+**VS記号** (page 4), two windows, and the later one uses two-character codes:
+
+```
+[8907-9208]  B BOSE audio · H 4WAS (ABS) · P BOSE + leather · W leather · Z cold region
+[9208-    ]  H ABS · D ABS+BOSE · L ABS+leather · R ABS+BOSE+leather
+             HT/DT/LT/RT are those four plus airbag
+             B BOSE · W leather · P BOSE+leather · T airbag · BT · TW · PT · Z cold region
+```
+
+**Pack windows**: [8907-9309] pages 5-6, [9309-9410] page 7, [9410-9701] pages
+8-9, [9701-9810] page 10, [9810- ] pages 11-12. Five, more than any other
+chassis here.
+
+**Two things checked and settled.** Codes E1-E8 and F1-F8 look like they belong
+to the [9810- ] window because page 12 lists them, but page 5 lists them too:
+they are original 1989 codes that ran the whole way through, which is why E7
+appears on 36,245 records dated 1989-01 to 1999-12. And the three table symbols
+are not decoration — ◎標準, ○オプション, △レスオプション — so fast_matrix.js was
+taught to tell them apart before any of this was read.
+
+**What blocks it.** The pack tables are keyed by more than the code. Page 5 is
+split 車型タイプ (300ZX non-turbo) then トランスミッション MT / AT, and the same
+code appears under both with different marks. Both axes ARE recoverable from the
+model code — 過給 and 変速機 are characters in it — so this is solvable, but the
+multi-level header defeats the column detector in fast_matrix.js, which reads
+page 5 as having zero columns. The detector needs to handle a header spanning
+several rows before these pages can be read reliably.
