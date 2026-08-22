@@ -309,6 +309,17 @@ function withGtrBrand(response) {
       element(el) { el.setInnerContent('GT<span class="gtr-r">R</span>', { html: true }); }
     })
     .on('.plate-tag', { element(el) { el.setInnerContent('REGISTRY'); } })
+    // Tab icon. The .ico and the 32px .png are both the BPZILLA mark, so both
+    // are pointed at the GTR SVG rather than one being left to win the race —
+    // browsers choose among whatever icon links they are given, and leaving a
+    // stale one in the list invites the wrong mark on some of them.
+    .on('link[rel="icon"]', {
+      element(el) {
+        el.setAttribute('href', '/assets/gtr-registry-favicon.svg');
+        el.setAttribute('type', 'image/svg+xml');
+        el.removeAttribute('sizes');
+      }
+    })
     .transform(response);
 }
 
