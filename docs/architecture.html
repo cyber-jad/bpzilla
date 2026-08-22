@@ -625,7 +625,9 @@ html { scroll-behavior: smooth; }
       <h2>System Architecture</h2>
       <div class="rule"></div>
 
-      <p>BPZILLA is a static site with no backend, no database server and no API. The entire archive is shipped to the browser as compressed JSON on first load and queried in memory from then on. There is nothing to scale, nothing to keep running, and no request path that can be slow for one visitor and fast for another.</p>
+      <p>BPZILLA is a static site with no database server and no API. The entire archive is shipped to the browser as compressed JSON on first load and queried in memory from then on. There is nothing to scale, nothing to keep running, and no request path that can be slow for one visitor and fast for another.</p>
+
+      <p>One piece of server-side logic exists: a Worker script that runs ahead of static-asset serving for <code>/data/</code> and refuses requests that don't carry a same-origin signal. Everything else — the page, the styles, the scripts, the images — is served straight from the edge without the script running at all. See <a href="#scraping">Bulk-copy protection</a>.</p>
 
       <h4>Runtime topology</h4>
       <div class="flow">
@@ -1106,6 +1108,7 @@ layout, all 6 views at 320 / 375 / 768 / 1280
       <ul>
         <li><strong>No CSP.</strong> Deliberate — two CDN scripts and inline styles throughout mean any policy strict enough to be worthwhile would need <code>unsafe-inline</code>. Revisit if the CDN dependencies are vendored.</li>
         <li><strong>Two external CDNs with no fallback</strong> — the site's main availability risk.</li>
+        <li><strong>The archive can still be copied by anyone willing to target it.</strong> The <code>/data/</code> gate stops stock tooling, not a spoofed header or a headless browser. Closing it properly means not shipping the corpus — see <a href="#scraping">Bulk-copy protection</a>.</li>
         <li><strong>Tabs do not survive a refresh</strong> and cannot be linked to; hash-based routing is not implemented.</li>
         <li><strong>Whole-archive queries are linear scans.</strong> Fine at 1.28 M rows in a typed array; would need indexing well before 10 M.</li>
       </ul>
@@ -1152,6 +1155,21 @@ layout, all 6 views at 320 / 375 / 768 / 1280
         <span class="note-label">Outstanding action</span>
         <p>DMARC is currently <code>p=none</code>, which monitors without enforcing — the right setting while sending is being established. Once mail from <code>contact@bpzilla.com</code> has delivered cleanly for a week or two, tighten to <code>p=quarantine</code> so the policy actually protects the domain against spoofing.</p>
       </div>
+
+      <h3 id="scraping">Bulk-copy protection</h3>
+
+      <p>The record files are the site's substance, and until this was added they were a public bulk download: <code>curl https://bpzilla.com/data/fast_hcr32.json</code> returned 144,097 records in 0.41 seconds with no browser, no referer and no session. Forty such requests is the entire archive in a few seconds. <code>robots.txt</code> disallows <code>/data/</code>, but robots.txt is a request rather than a control, and the crawlers worth worrying about are the ones that ignore it.</p>
+
+      <p><code>src/index.js</code> now runs ahead of asset serving for <code>/data/</code> and refuses anything without a same-origin signal — <code>Sec-Fetch-Site: same-origin</code>, a same-origin <code>Referer</code>, or a matching <code>Origin</code>. Any one of the three is accepted, because none is universal: Sec-Fetch-Site is absent before Safari 16.4, and Referer can be stripped by a privacy extension.</p>
+
+      <div class="note warn">
+        <span class="note-label">What this does and does not do</span>
+        <p>It does not make the data uncopyable, and nothing at this layer can. The archive is queried in the visitor's browser, so the browser must receive all of it — and anything a browser can receive, a headless browser can receive too.</p>
+        <p>It also does not resist a targeted scraper: <strong>a single spoofed header defeats it</strong>. Verified — <code>curl -H 'Referer: https://bpzilla.com/'</code> passes.</p>
+        <p>What it removes is the free option. Generic crawlers, <code>wget</code>, <code>python-requests</code>, archivers and AI scrapers using stock HTTP libraries all send none of these headers and are refused. Copying the archive stops being one shell command and starts requiring someone to deliberately target this site — which is also the point at which edge rate limiting starts to bite, because that is IP- and behaviour-based and does not care what headers are sent.</p>
+      </div>
+
+      <p>The layer above this is Cloudflare configuration rather than code: a rate-limiting rule on <code>/data/*</code>, and Bot Fight Mode with the verified-bot allowlist so search crawlers stay unaffected. The layer below is architectural — serving query results instead of the corpus, which would end bulk copying outright at the cost of the in-browser querying the whole design is built on.</p>
 
       <h3>Regenerating derived data</h3>
       <p>Both extractors need the FAST discs mounted at <code>H:</code>. Neither touches the record files — only the derived tables.</p>

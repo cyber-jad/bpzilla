@@ -3,8 +3,21 @@
   // dashboard ("old-night-b2a3") — Workers Builds fails otherwise.
   "name": "old-night-b2a3",
   "compatibility_date": "2026-08-19",
+  // The site was pure static assets until /data/ needed gating against bulk
+  // scraping. This script runs first on every request, waves everything
+  // through to the assets binding below, and only makes a decision about
+  // /data/ — see src/index.js.
+  "main": "src/index.js",
   "assets": {
     "directory": "./public",
+    // Named so the script can hand a request back to static-asset serving.
+    "binding": "ASSETS",
+    // Static assets are normally served straight from the edge without the
+    // script running at all, which is what you want for the css, the images
+    // and the page itself — and which silently meant the /data/ gate was
+    // never consulted on a GET. These paths go to the script first; it
+    // decides, then hands them back to the assets binding.
+    "run_worker_first": ["/data/*"],
     // Without this an unknown path returns a zero-byte 404 with no markup at
     // all — a blank white page. Serves public/404.html instead. Deliberately
     // NOT "single-page-application": that would answer every unknown path
