@@ -1,0 +1,1182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>BPZILLA Technical Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+   BPZILLA — Technical Dossier
+   Visual language borrowed from the object the whole product
+   decodes: a Nissan build plate. Stamped field labels, fixed
+   positions, monospace values, hairline rules.
+   ============================================================ */
+
+:root {
+  --ground:      #F4F6F9;
+  --surface:     #FFFFFF;
+  --surface-2:   #EDF0F5;
+  --ink:         #131721;
+  --ink-soft:    #4A5263;
+  /* Field labels are set small and uppercase, which needs more contrast than
+     body text, not less — this clears 4.5:1 on both --surface and --surface-2. */
+  --ink-faint:   #656D7C;
+  --hairline:    #D9DEE7;
+  --hairline-2:  #C3CAD6;
+  --accent:      #0B3C8D;
+  --accent-lift: #1E6FD9;
+  --accent-wash: #E6EDF9;
+  --ok:          #1B6E46;
+  --ok-wash:     #E2F1EA;
+  --warn:        #8A5A07;
+  --warn-wash:   #F7EEDC;
+  --crit:        #9C2A2A;
+  --crit-wash:   #F7E5E5;
+  --shadow:      0 1px 2px rgba(19,23,33,.05), 0 8px 24px -16px rgba(19,23,33,.25);
+
+  --f-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --f-body:    "Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-mono:    "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --rail: 268px;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:     #0E1116;
+    --surface:    #151A21;
+    --surface-2:  #1B212A;
+    --ink:        #E7EBF2;
+    --ink-soft:   #9AA3B2;
+    --ink-faint:  #98A1B0;
+    --hairline:   #262D38;
+    --hairline-2: #333C49;
+    --accent:     #7FB0F7;
+    --accent-lift:#A6CBFF;
+    --accent-wash:#16233A;
+    --ok:         #56C08C;
+    --ok-wash:    #12291F;
+    --warn:       #DFA744;
+    --warn-wash:  #2A2113;
+    --crit:       #F0908F;
+    --crit-wash:  #2E1717;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:     #0E1116;
+  --surface:    #151A21;
+  --surface-2:  #1B212A;
+  --ink:        #E7EBF2;
+  --ink-soft:   #9AA3B2;
+  --ink-faint:  #98A1B0;
+  --hairline:   #262D38;
+  --hairline-2: #333C49;
+  --accent:     #7FB0F7;
+  --accent-lift:#A6CBFF;
+  --accent-wash:#16233A;
+  --ok:         #56C08C;
+  --ok-wash:    #12291F;
+  --warn:       #DFA744;
+  --warn-wash:  #2A2113;
+  --crit:       #F0908F;
+  --crit-wash:  #2E1717;
+  --shadow:     0 1px 2px rgba(0,0,0,.4), 0 10px 28px -18px rgba(0,0,0,.8);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- shell ---------------------------------------- */
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail) minmax(0, 1fr);
+  gap: 0;
+  max-width: 1240px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 40px 28px 48px 24px;
+  border-right: 1px solid var(--hairline);
+}
+
+.main {
+  padding: 40px 40px 120px 44px;
+  min-width: 0;
+}
+
+/* ---------- masthead ------------------------------------- */
+
+.plate {
+  border: 1px solid var(--hairline-2);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 26px 28px 24px;
+  margin-bottom: 40px;
+}
+
+.plate-rivets {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.plate-rivets span {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--hairline-2);
+}
+
+.wordmark {
+  font-family: var(--f-display);
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6vw, 4.1rem);
+  line-height: .92;
+  letter-spacing: -.02em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.wordmark em {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.subline {
+  font-family: var(--f-mono);
+  font-size: .74rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 22px;
+}
+
+.plate-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(146px, 1fr));
+  gap: 1px;
+  background: var(--hairline);
+  border: 1px solid var(--hairline);
+}
+.plate-cell {
+  background: var(--surface);
+  padding: 12px 14px 13px;
+}
+.plate-cell dt {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 5px;
+}
+.plate-cell dd {
+  margin: 0;
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: 1.32rem;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
+}
+.plate-cell dd small {
+  display: block;
+  font-family: var(--f-body);
+  font-weight: 400;
+  font-size: .78rem;
+  color: var(--ink-soft);
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
+/* ---------- contents rail -------------------------------- */
+
+.rail-head {
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.rail nav ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: sec;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rail nav a {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 6px 8px 6px 0;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-family: var(--f-display);
+  font-size: .87rem;
+  font-weight: 500;
+  line-height: 1.35;
+  border-left: 2px solid transparent;
+  padding-left: 10px;
+  transition: color .15s, border-color .15s;
+}
+.rail nav li { counter-increment: sec; }
+.rail nav a::before {
+  content: counter(sec, decimal-leading-zero);
+  font-family: var(--f-mono);
+  font-size: .66rem;
+  color: var(--ink-faint);
+  flex: none;
+}
+.rail nav a:hover,
+.rail nav a:focus-visible {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+.rail nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.rail-foot {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+  font-family: var(--f-mono);
+  font-size: .66rem;
+  line-height: 1.7;
+  color: var(--ink-faint);
+}
+
+/* ---------- sections ------------------------------------- */
+
+section { margin-bottom: 66px; scroll-margin-top: 24px; }
+
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 8px;
+}
+
+h2 {
+  font-family: var(--f-display);
+  font-weight: 700;
+  font-size: clamp(1.6rem, 3vw, 2.05rem);
+  letter-spacing: -.018em;
+  line-height: 1.12;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+
+h3 {
+  font-family: var(--f-display);
+  font-weight: 600;
+  font-size: 1.13rem;
+  letter-spacing: -.005em;
+  margin: 34px 0 10px;
+  text-wrap: balance;
+}
+
+h4 {
+  font-family: var(--f-mono);
+  font-size: .68rem;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 26px 0 10px;
+  font-weight: 600;
+}
+
+.rule {
+  height: 1px;
+  background: var(--hairline);
+  margin: 14px 0 22px;
+}
+
+p, li { max-width: var(--measure); }
+p { margin: 0 0 15px; }
+
+ul, ol.prose { padding-left: 1.15em; margin: 0 0 15px; }
+li { margin-bottom: 7px; }
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+strong { font-weight: 600; }
+
+code {
+  font-family: var(--f-mono);
+  font-size: .855em;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+.lede {
+  font-size: 1.12rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 62ch;
+}
+
+/* ---------- tables --------------------------------------- */
+
+.tw { overflow-x: auto; margin: 0 0 18px; border: 1px solid var(--hairline); background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .87rem; }
+caption {
+  caption-side: bottom;
+  text-align: left;
+  font-size: .78rem;
+  color: var(--ink-faint);
+  padding: 9px 14px 0;
+  max-width: var(--measure);
+}
+th {
+  font-family: var(--f-mono);
+  font-size: .63rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--hairline-2);
+  white-space: nowrap;
+  background: var(--surface-2);
+}
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: top;
+  font-family: var(--f-body);
+}
+tbody tr:last-child td { border-bottom: none; }
+td.m, th.m { font-family: var(--f-mono); font-size: .8rem; white-space: nowrap; }
+td.n { font-variant-numeric: tabular-nums; text-align: right; font-family: var(--f-mono); font-size: .8rem; }
+
+/* ---------- findings ------------------------------------- */
+
+.finding {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-left: 3px solid var(--hairline-2);
+  padding: 16px 18px 15px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.finding.crit { border-left-color: var(--crit); }
+.finding.high { border-left-color: var(--warn); }
+.finding.med  { border-left-color: var(--accent); }
+
+.finding-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+.finding-head h3 { margin: 0; font-size: 1.02rem; }
+
+.chip {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border: 1px solid currentColor;
+  border-radius: 2px;
+  flex: none;
+  font-weight: 600;
+}
+.chip.crit { color: var(--crit); background: var(--crit-wash); }
+.chip.high { color: var(--warn); background: var(--warn-wash); }
+.chip.med  { color: var(--accent); background: var(--accent-wash); }
+.chip.fixed{ color: var(--ok);   background: var(--ok-wash); }
+.chip.open { color: var(--ink-faint); background: var(--surface-2); }
+
+.finding p { margin: 0 0 9px; font-size: .93rem; }
+.finding p:last-child { margin-bottom: 0; }
+
+.evidence {
+  font-family: var(--f-mono);
+  font-size: .76rem;
+  line-height: 1.6;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  padding: 9px 12px;
+  margin: 9px 0 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink-soft);
+}
+
+/* ---------- callout -------------------------------------- */
+
+.note {
+  border: 1px solid var(--hairline);
+  border-top: 2px solid var(--accent);
+  background: var(--surface);
+  padding: 15px 18px;
+  margin: 0 0 18px;
+  max-width: var(--measure);
+}
+.note.warn { border-top-color: var(--warn); }
+.note p { margin: 0; font-size: .93rem; }
+.note p + p { margin-top: 9px; }
+.note-label {
+  font-family: var(--f-mono);
+  font-size: .62rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ---------- flow diagram --------------------------------- */
+
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 20px;
+  border: 1px solid var(--hairline);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.stage {
+  flex: 1 1 150px;
+  min-width: 150px;
+  padding: 14px 16px;
+  border-right: 1px solid var(--hairline);
+}
+.stage:last-child { border-right: none; }
+.stage b {
+  display: block;
+  font-family: var(--f-display);
+  font-size: .93rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.stage span {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: .64rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+.stage p { font-size: .82rem; margin: 0; color: var(--ink-soft); line-height: 1.5; }
+
+/* ---------- schema block --------------------------------- */
+
+.schema {
+  font-family: var(--f-mono);
+  font-size: .79rem;
+  line-height: 1.7;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  padding: 15px 17px;
+  margin: 0 0 18px;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+}
+.schema .c { color: var(--ink-faint); }
+.schema .k { color: var(--accent); }
+
+/* ---------- footer --------------------------------------- */
+
+.doc-foot {
+  border-top: 1px solid var(--hairline);
+  padding-top: 20px;
+  font-family: var(--f-mono);
+  font-size: .7rem;
+  color: var(--ink-faint);
+  line-height: 1.8;
+  max-width: var(--measure);
+}
+
+/* ---------- responsive ----------------------------------- */
+
+@media (max-width: 900px) {
+  .shell { grid-template-columns: 1fr; }
+  .rail {
+    position: static;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid var(--hairline);
+    padding: 24px 22px;
+  }
+  .rail nav ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 12px; }
+  .main { padding: 30px 22px 90px; }
+  body { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+html { scroll-behavior: smooth; }
+</style>
+
+</head>
+<body>
+<div class="shell">
+
+  <aside class="rail">
+    <div class="rail-head">Contents</div>
+    <nav aria-label="Document sections">
+      <ol>
+        <li><a href="#overview">What BPZILLA Is</a></li>
+        <li><a href="#architecture">System Architecture</a></li>
+        <li><a href="#pipeline">Data Pipeline</a></li>
+        <li><a href="#model">Data Model</a></li>
+        <li><a href="#decode">Decode Reference</a></li>
+        <li><a href="#provenance">Provenance &amp; Verification</a></li>
+        <li><a href="#audit">Audit Report</a></li>
+        <li><a href="#limits">Known Limits &amp; Open Questions</a></li>
+        <li><a href="#ops">Operations Runbook</a></li>
+        <li><a href="#roadmap">Roadmap</a></li>
+      </ol>
+    </nav>
+    <div class="rail-foot">
+      REV 2026-08-21<br>
+      1,284,067 RECORDS<br>
+      34 CHASSIS FILES<br>
+      39 BROWSABLE MODELS
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- ============ MASTHEAD ============ -->
+    <div class="plate">
+      <div class="plate-rivets"><span></span><span></span><span></span><span></span></div>
+      <h1 class="wordmark">BPZILLA<br><em>Technical Dossier</em></h1>
+      <p class="subline">Nissan Factory Record Archive &middot; Architecture &amp; Data Provenance</p>
+      <dl class="plate-grid">
+        <div class="plate-cell"><dt>Records</dt><dd>1,284,067<small>genuine FAST rows</small></dd></div>
+        <div class="plate-cell"><dt>Chassis</dt><dd>34<small>39 browsable models</small></dd></div>
+        <div class="plate-cell"><dt>Payload</dt><dd>27.8 MB<small>decoded, 40 requests</small></dd></div>
+        <div class="plate-cell"><dt>Heap</dt><dd>38 MB<small>14.7 MB typed arrays</small></dd></div>
+        <div class="plate-cell"><dt>Paint Named</dt><dd>100.00%<small>1,284,016 of 1,284,067</small></dd></div>
+      </dl>
+    </div>
+
+    <!-- ============ 1. OVERVIEW ============ -->
+    <section id="overview">
+      <p class="eyebrow">01 — Product</p>
+      <h2>What BPZILLA Is</h2>
+      <div class="rule"></div>
+
+      <p class="lede">A searchable archive of genuine Nissan factory production records, decoded from original FAST parts-catalogue microfiche and served as a static site that runs entirely in the visitor's browser.</p>
+
+      <p>Every row in BPZILLA came off a Nissan FAST disc — the same parts-catalogue system a Nissan dealer's counter used. It is not a community-compiled spreadsheet, not scraped from auction listings, and not estimated from production totals. That distinction is the product: it is the reason a number here can be cited.</p>
+
+      <p>The archive covers 1,284,067 build records across 34 chassis files, presented as 39 browsable models. For any given car it answers three questions: what exactly did the factory build, how many were built like it, and how do we know.</p>
+
+      <h3>What the site does</h3>
+      <ul>
+        <li><strong>VIN Archive</strong> — search and filter the full record set by chassis number, paint, grade, year, series or transmission.</li>
+        <li><strong>Plate Decoder</strong> — paste a chassis number and get the build plate read back field by field, with each factory option named.</li>
+        <li><strong>Stats &amp; Rarity</strong> — per-model breakdowns and a grade-by-paint production matrix.</li>
+        <li><strong>Rarity Calculator</strong> — the exact number of cars built to a chosen grade, paint and option combination.</li>
+        <li><strong>History &amp; Legends</strong> — editorial context for the Skyline line and the non-Skyline chassis (Silvia, 180SX, Stagea, 300ZX).</li>
+      </ul>
+
+      <div class="note">
+        <span class="note-label">Design principle</span>
+        <p>The archive never fills a gap with a plausible guess. Where a code's meaning is not confirmed, the site shows the raw code and says it is undecoded. Every count that appears as a number is counted from records, not modelled from proportions — a rule this codebase has had to be corrected against more than once.</p>
+      </div>
+    </section>
+
+    <!-- ============ 2. ARCHITECTURE ============ -->
+    <section id="architecture">
+      <p class="eyebrow">02 — System</p>
+      <h2>System Architecture</h2>
+      <div class="rule"></div>
+
+      <p>BPZILLA is a static site with no backend, no database server and no API. The entire archive is shipped to the browser as compressed JSON on first load and queried in memory from then on. There is nothing to scale, nothing to keep running, and no request path that can be slow for one visitor and fast for another.</p>
+
+      <h4>Runtime topology</h4>
+      <div class="flow">
+        <div class="stage">
+          <span>Edge</span>
+          <b>Cloudflare Worker</b>
+          <p>Serves <code>./public</code> as static assets. Redirect rules handle www and HTTPS before origin lookup.</p>
+        </div>
+        <div class="stage">
+          <span>Transport</span>
+          <b>40 JSON files</b>
+          <p>27.8 MB decoded, cached one day. Fetched in parallel on load.</p>
+        </div>
+        <div class="stage">
+          <span>Memory</span>
+          <b>Columnar store</b>
+          <p>Typed arrays plus interned dictionaries. 14.7 MB of arrays, 38 MB heap.</p>
+        </div>
+        <div class="stage">
+          <span>Query</span>
+          <b>In-browser scans</b>
+          <p>Filters and aggregates run as linear passes; chassis lookup binary-searches.</p>
+        </div>
+        <div class="stage">
+          <span>View</span>
+          <b>Vanilla JS SPA</b>
+          <p>Tab views render only the rows on screen.</p>
+        </div>
+      </div>
+
+      <h3>Modules</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr><th>File</th><th class="m">Size</th><th>Responsibility</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="m">js/database.js</td><td class="n">124 KB</td><td>The archive itself. Model registry, columnar store, loading, all decode logic (grade, series, transmission, options), aggregates, cross-tabs, chassis lookup.</td></tr>
+            <tr><td class="m">js/app.js</td><td class="n">92 KB</td><td>UI layer. Tab routing, table virtualisation, filters, compare tool, chart rendering, calculator wiring.</td></tr>
+            <tr><td class="m">js/modelDecoder.js</td><td class="n">30 KB</td><td>Plate narration — turns a record into a field-by-field explanation and a plain-English sentence.</td></tr>
+            <tr><td class="m">js/rarityCalculator.js</td><td class="n">10 KB</td><td>Combination counting and certificate rendering.</td></tr>
+            <tr><td class="m">js/paintIndex.js</td><td class="n">6 KB</td><td>Paint reference view.</td></tr>
+            <tr><td class="m">index.html</td><td class="n">67 KB</td><td>Single document, all views. SEO metadata and JSON-LD.</td></tr>
+          </tbody>
+        </table>
+        <caption>All application code is hand-written vanilla JavaScript. There is no build step, no bundler and no framework — the files served are the files in the repository.</caption>
+      </div>
+
+      <h3>External dependencies</h3>
+      <p>Two, both CDN script tags: <strong>Lucide</strong> (icons, unpkg) and <strong>Chart.js</strong> (charts, jsDelivr). Both are non-essential to the data — if either fails the archive still loads and queries — but the page will lose its icons or its charts. This is the site's only third-party runtime dependency and its main availability risk.</p>
+
+      <h3>Performance profile</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Measure</th><th class="m">Value</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>DOMContentLoaded</td><td class="n">144 ms</td><td>Shell is interactive before data arrives.</td></tr>
+            <tr><td>Last data response</td><td class="n">1,204 ms</td><td>All 40 files, local server, warm cache.</td></tr>
+            <tr><td>Typed arrays</td><td class="n">14.69 MB</td><td>Six arrays per chassis.</td></tr>
+            <tr><td>Dictionary entries</td><td class="n">55,358</td><td>Interned strings across all chassis.</td></tr>
+            <tr><td>JS heap</td><td class="n">38.1 MB</td><td>For 1.28 M records fully queryable.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 3. PIPELINE ============ -->
+    <section id="pipeline">
+      <p class="eyebrow">03 — Ingest</p>
+      <h2>Data Pipeline</h2>
+      <div class="rule"></div>
+
+      <p>The source is a set of Nissan FAST discs held locally: <code>H:\AR-JP\JP</code> holds 196 numbered Japanese-market model directories, and <code>H:\NISSAN\{US,CA,EL,ER,GL,GR}</code> hold the export-market equivalents. These are binary microfiche exports in Shift-JIS (CP932), not documents.</p>
+
+      <h4>Source files that matter</h4>
+      <div class="tw">
+        <table>
+          <thead><tr><th class="m">File</th><th>Format</th><th>Used for</th></tr></thead>
+          <tbody>
+            <tr><td class="m">VINDAT3–8</td><td>Fixed-width binary</td><td>The production records themselves — chassis, block, serial, date, colour field, trim, model code.</td></tr>
+            <tr><td class="m">ABBREV.nnn<br>ABBR.TXT</td><td>Categorised 15+40 char records</td><td>Nissan's abbreviation master. Category <code>C</code> records are the <strong>exterior colour master</strong>; categories <code>1</code> and <code>2</code> carry more on some discs.</td></tr>
+            <tr><td class="m">FASTOP</td><td>63-byte records</td><td>Factory option definitions, keyed by chassis and plate position.</td></tr>
+            <tr><td class="m">SPECDSC.*</td><td>51-byte records<br>(11-char code + 40-char text)</td><td>English spec/option glossary, used to corroborate option decodes.</td></tr>
+            <tr><td class="m">MDLCODE</td><td>27-byte records</td><td>Model-code reference.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Extraction scripts</h3>
+      <p>Two committed extractors regenerate the derived data files. Both are deterministic and re-runnable against the discs.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th class="m">Script</th><th class="m">Output</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="m">extract_fastop.ps1</td>
+              <td class="m">factoryOptions.json</td>
+              <td>Parses FASTOP's 63-byte records, merges continuations, decodes Shift-JIS and translates with a longest-first phrase map. <strong>Throws if any untranslated non-ASCII residue survives</strong>, so a silent half-translation cannot ship. Produces 462 definitions (R33 258, R34 58, S14 70, WC34 76).</td>
+            </tr>
+            <tr>
+              <td class="m">extract_paint.js</td>
+              <td class="m">paint.json</td>
+              <td>Harvests colour names from all 906 ABBREV tables across every disc, folds date-qualified spellings together, expands finish suffixes (<code>M</code>, <code>P</code>, <code>PM</code>, <code>3P</code>, <code>S</code>) and applies a small curated override layer. Produces 117 names covering 100.00% of records.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>Record file shape</h4>
+      <div class="schema"><span class="c">// public/data/fast_&lt;chassis&gt;.json — dictionary-encoded, one file per chassis</span>
+{
+  <span class="k">"m"</span>:  <span class="c">"BNR34"</span>,              <span class="c">// chassis id</span>
+  <span class="k">"n"</span>:  11474,                  <span class="c">// record count</span>
+  <span class="k">"b"</span>:  ["0","1", ...],         <span class="c">// series block dictionary</span>
+  <span class="k">"d"</span>:  ["1999-01", ...],       <span class="c">// build date dictionary</span>
+  <span class="k">"c"</span>:  ["QM1","TV2", ...],     <span class="c">// colour field dictionary (trim char + paint code)</span>
+  <span class="k">"t"</span>:  ["5", ...],             <span class="c">// interior/trim dictionary</span>
+  <span class="k">"mc"</span>: ["GJPRWYR34ZDA...", ...],<span class="c">// factory model code dictionary</span>
+  <span class="k">"r"</span>:  [[blk, ser, di, ci, ti, mci], ...]  <span class="c">// rows as dictionary indices</span>
+}</div>
+
+      <p>Export-market Z32 files carry two extra keys: <code>vin</code>, a reconstructed per-record VIN, and <code>exportInfo</code>, which records how many of those VINs pass NHTSA check-digit validation.</p>
+    </section>
+
+    <!-- ============ 4. DATA MODEL ============ -->
+    <section id="model">
+      <p class="eyebrow">04 — Storage</p>
+      <h2>Data Model</h2>
+      <div class="rule"></div>
+
+      <p>A record-per-object model at this scale costs hundreds of megabytes in the browser. Instead each chassis is held as a set of parallel typed arrays, with every repeated string interned once per file. Record objects are materialised only for rows actually displayed.</p>
+
+      <div class="schema"><span class="c">// in-memory column, one per physical chassis file</span>
+{
+  n:      11474,                <span class="c">// rows</span>
+  blk:    Uint8Array,           <span class="c">// series block  -> dict.b</span>
+  ser:    Int32Array,           <span class="c">// serial number (the real integer)</span>
+  di:     Uint16Array,          <span class="c">// build date    -> dict.d</span>
+  ci:     Uint16Array,          <span class="c">// paint code    -> dict.c   |  trim char -> dict.ctr</span>
+  ti:     Uint8Array,           <span class="c">// interior      -> dict.t</span>
+  mci:    Uint16Array,          <span class="c">// model code    -> dict.mc</span>
+  dict:   { b, d, c, ctr, t, mc },
+  ranges: { blockIdx: [firstRow, lastRow] }   <span class="c">// for binary search</span>
+}</div>
+
+      <h3>The colour field split</h3>
+      <p>A Nissan build plate records body colour as a <strong>three-character exterior paint code preceded by a one-character interior trim code</strong>. On the older JDM discs that trim character is often blank, which is why the same paint arrives as <code>KH3</code> on some records and <code>GKH3</code> on others.</p>
+      <p>At load, <code>_splitColorDict</code> separates them once at the dictionary level: <code>dict.c</code> becomes the paint code and <code>dict.ctr</code> the trim character at the same index. Nothing is discarded and no per-record storage is added, and every consumer — breakdowns, filters, matrix, rarity, search — is corrected at the same time.</p>
+
+      <h3>Physical files versus browsable models</h3>
+      <p>34 files present as 39 models, in both directions.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Mechanism</th><th class="m">Field</th><th>Cases</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>One file, several models</strong><br>A file holds more than one real car, separated by a character in the model code.</td>
+              <td class="m">gradeFilter</td>
+              <td class="m">ER34 → ER34_GT / ER34_GTT<br>ECR33 → ECR33 / ECR33_V<br>PS13 → PS13 / KPS13<br>RS13 → RS13 / KRS13<br>WGNC34 → WGNC34 / _260RS</td>
+            </tr>
+            <tr>
+              <td><strong>Several files, one model</strong><br>Six country-specific Z32 export files merge into two browsable models.</td>
+              <td class="m">_mergeExportGroups</td>
+              <td class="m">Z32_EXPORT — 60,775<br>GZ32_EXPORT — 37,025</td>
+            </tr>
+            <tr>
+              <td><strong>Own stamped prefix</strong><br>A split model that runs its own serial sequence and cannot share a printed chassis prefix.</td>
+              <td class="m">chassisStamp</td>
+              <td class="m">KPS13 only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note">
+        <span class="note-label">Why KPS13 is the exception</span>
+        <p>Whether two split models share a chassis prefix is decidable from the data, not a matter of opinion. If they share one factory numbering sequence their serials are disjoint; if they are separate sequences the serials collide. Measured across all five splits: ER34, RS13, WGNC34 and ECR33 overlap on <strong>0%</strong> of records — one sequence each, so sharing the prefix is correct. PS13/KPS13 overlap on <strong>99.90%</strong> — 12,185 of KPS13's 12,197 records — so they are two sequences and must be stamped separately.</p>
+      </div>
+
+      <h3>Chassis lookup</h3>
+      <p>Rows are stored sorted by series block then serial, so a chassis number resolves by binary search inside that block's recorded span rather than a lookup map. Two guards matter: files that arrive out of order are sorted at load and their ranges rebuilt, and the search walks out across equal serials, because one file holding two numbering sequences can legitimately contain the same serial twice.</p>
+    </section>
+
+    <!-- ============ 5. DECODE REFERENCE ============ -->
+    <section id="decode">
+      <p class="eyebrow">05 — Interpretation</p>
+      <h2>Decode Reference</h2>
+      <div class="rule"></div>
+
+      <p>The factory model code — the <code>mc</code> field, twenty characters like <code>GJPRWYR34ZDA--L--R34</code> — is where grade, transmission and factory options are read from.</p>
+
+      <div class="note warn">
+        <span class="note-label">Critical alignment fact</span>
+        <p>A real build plate's MODEL string carries <strong>one extra leading body-style character</strong> that the FAST <code>mc</code> export drops. Published per-position plate decodes therefore map onto this data at exactly <strong>−1</strong>. This offset is confirmed against photographed plates for BNR32, BCNR33, BNR34 and ER34. Getting it wrong shifts every option by one field.</p>
+      </div>
+
+      <h3>What is decoded, per chassis family</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Family</th><th>Grade</th><th>Transmission</th><th>Options</th></tr></thead>
+          <tbody>
+            <tr><td class="m">R34 (BNR34, ER34, ENR34, HR34)</td><td>Yes — full sub-grade split incl. N1, M-Spec, Nür</td><td>Yes — F/A, plus <code>Y</code> 6-speed on BNR34</td><td>Yes — 58 definitions</td></tr>
+            <tr><td class="m">R33 (BCNR33, ECR33, ER33, ENR33, HR33)</td><td>Yes — incl. Autech, V-Spec LM, N1 by series</td><td>Partial — <code>N</code> on early cars undecoded</td><td>Yes — 258 definitions</td></tr>
+            <tr><td class="m">R32 (BNR32, HCR32, HNR32, HR32, FR32)</td><td>Yes — V-Spec, V-Spec II, N1, Police</td><td>Yes — chassis-led position</td><td>No — predates FASTOP</td></tr>
+            <tr><td class="m">S13 family (S13, PS13, KPS13, KS13, RS13, KRS13)</td><td>Yes — Q's, K's, J's, Club, Type I/II</td><td>Yes — with KPS13 offset</td><td>No — predates FASTOP</td></tr>
+            <tr><td class="m">S14 (S14, CS14)</td><td>Yes — K's, Q's</td><td>Yes</td><td>Yes — 70 definitions</td></tr>
+            <tr><td class="m">C34 Stagea (WGC34, WHC34, WGNC34, 260RS)</td><td>Yes</td><td>Yes — WGC34/WHC34 automatic-only</td><td>Yes — 76 definitions</td></tr>
+            <tr><td class="m">M35 Stagea (NM35, HM35, PM35, PNM35)</td><td>Partial</td><td>No — different code scheme, not guessed</td><td>No</td></tr>
+            <tr><td class="m">Z32 300ZX (JDM + export)</td><td>No — no clean signal found</td><td>No</td><td>No</td></tr>
+          </tbody>
+        </table>
+        <caption>Blank cells are deliberate. A decode is only shipped when its distribution survives a boundary check and, where possible, matches an independently published production total.</caption>
+      </div>
+
+      <h3>Verified sub-grade counts</h3>
+      <p>Several GT-R sub-grades were decoded and then checked against published production figures. These matched exactly or within one unit, which is what justified shipping them:</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Grade</th><th class="m">Archive</th><th class="m">Published</th><th>Result</th></tr></thead>
+          <tbody>
+            <tr><td>BNR34 V-Spec II Nür</td><td class="n">718</td><td class="n">718</td><td>Exact</td></tr>
+            <tr><td>BNR34 M-Spec</td><td class="n">366</td><td class="n">366</td><td>Exact</td></tr>
+            <tr><td>BNR34 M-Spec Nür</td><td class="n">284</td><td class="n">285</td><td>−1</td></tr>
+            <tr><td>BNR34 V-Spec II N1</td><td class="n">18</td><td class="n">18</td><td>Exact</td></tr>
+            <tr><td>BNR32 N1 (all)</td><td class="n">245</td><td class="n">245</td><td>Exact</td></tr>
+            <tr><td>BNR32 Police</td><td class="n">14</td><td class="n">14</td><td>Exact</td></tr>
+            <tr><td>BCNR33 Autech</td><td class="n">416</td><td class="n">416</td><td>Exact</td></tr>
+            <tr><td>BCNR33 V-Spec LM</td><td class="n">102</td><td class="n">102</td><td>Exact</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 6. PROVENANCE ============ -->
+    <section id="provenance">
+      <p class="eyebrow">06 — Method</p>
+      <h2>Provenance &amp; Verification</h2>
+      <div class="rule"></div>
+
+      <p>The archive's value rests entirely on the discipline behind what it is willing to claim. These are the working rules.</p>
+
+      <h3>Source hierarchy</h3>
+      <ol class="prose">
+        <li><strong>The FAST discs themselves.</strong> Nissan's own tables beat any secondary source, because they are per-disc, era-correct and match the exact codes present in the records.</li>
+        <li><strong>Independently published production figures.</strong> Used to validate a decode, never to generate one.</li>
+        <li><strong>Corroborated community sources.</strong> Two or more independent published sources in agreement, and only where the archive's own data supports the claim.</li>
+      </ol>
+
+      <h4>Worked example — naming paint code 1N3</h4>
+      <p>No disc in the set names <code>1N3</code>. Owner-forum sources describe it as a two-tone finish limited to Series 1 R33 GTS cars. That alone would be weak. But every one of the 5,485 <code>1N3</code> records in the archive falls between 1993-02 and 1994-11 — precisely the Series 1 window — which is independent corroboration from a source the forums had no access to. It is named on that basis and flagged as lower-confidence below.</p>
+
+      <h3>Rules the project holds to</h3>
+      <ul>
+        <li><strong>Never name a letter off a coincidence.</strong> A "Type G" decode was rejected because the real Type G is roughly 850 units while the candidate letter covered 65–100% of the model.</li>
+        <li><strong>Retract on discovery.</strong> A Z32 "Version S" decode was shipped and then withdrawn: Version S launched October 1994, but the letter appears from 1989. The code now returns nothing and carries a comment explaining why.</li>
+        <li><strong>Date boundaries are evidence.</strong> A running change that starts or stops cleanly is real; a letter smeared across the whole production run is not a variant.</li>
+        <li><strong>Undecoded is a legitimate answer</strong> and is shown as one, rather than being hidden by dropping the rows.</li>
+      </ul>
+
+      <h3>Paint naming coverage</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Source</th><th class="m">Codes</th><th>Basis</th></tr></thead>
+          <tbody>
+            <tr><td>FAST disc colour master</td><td class="n">63</td><td>Category <code>C</code> records in ABBREV, harvested from 906 tables across every disc.</td></tr>
+            <tr><td>Curated override</td><td class="n">25</td><td>Well-established Nissan marketing names confirmed by two independent published sources, applied only where the code's use in this archive is confined to models those sources cover.</td></tr>
+            <tr><td>Web-corroborated two-tone</td><td class="n">2</td><td><code>1N3</code>, <code>1N4</code> — forum consensus plus internal date-span corroboration.</td></tr>
+            <tr><td>Unnamed</td><td class="n">8</td><td>51 records total. Shown as the raw code.</td></tr>
+          </tbody>
+        </table>
+        <caption>Overrides are applied conservatively. KY0 is "Z-tune Silver" only on the Nismo Z-tune — every KY0 car in this archive is an M35 Stagea, so it keeps the disc's plain "Silver (Metallic)". AN0 is "Wine Red" on R32 but "Super Clear Red" on R33; every AN0 record here is R33-family or S14, so the R33 name is the correct one.</caption>
+      </div>
+    </section>
+
+    <!-- ============ 7. AUDIT ============ -->
+    <section id="audit">
+      <p class="eyebrow">07 — Quality</p>
+      <h2>Audit Report</h2>
+      <div class="rule"></div>
+
+      <p>A full sweep of all 39 models and 1,284,067 records, run 21 August 2026. Seven defects found and fixed. Every finding below was verified against the data before being treated as a bug, and the fixes were verified after.</p>
+
+      <div class="finding crit">
+        <div class="finding-head">
+          <h3>Rarity figures were modelled, not counted</h3>
+          <span class="chip crit">Critical</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>The rarity calculator multiplied grade share by colour share by a table of invented per-option coefficients — cold weather 0.18, leather 0.08, and so on, numbers with no source behind them. The result was printed onto a "Certificate of Authenticity" as though counted.</p>
+        <div class="evidence">BNR34 V-Spec II Nür in Bayside Blue (TV2)
+  reported   1 of 178
+  actual     1 of 119   (grade x colour cross-tab)
+  error      +50%</div>
+        <p><strong>Fix:</strong> the combination is now counted directly from the loaded records, verified against a brute-force pass over 108 grade/colour pairs with zero disagreement. The option checkboxes are built from each chassis's own decoded build plates, so every box offered is something the archive can really count. A combination that was never built now reports zero rather than being rounded up to one.</p>
+      </div>
+
+      <div class="finding crit">
+        <div class="finding-head">
+          <h3>KPS13 records carried duplicate chassis numbers and could not be found</h3>
+          <span class="chip crit">Critical</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>KPS13's 12,197 records were stamped with PS13's chassis prefix. Because the two run separate factory numbering sequences, this generated 12,185 chassis numbers that collided with real PS13 cars — and not one KPS13 record could be retrieved by its own displayed identifier.</p>
+        <div class="evidence">serial overlap between split siblings
+  ER34_GT / ER34_GTT        0.00%   -> one sequence, share prefix
+  RS13 / KRS13              0.00%   -> one sequence, share prefix
+  WGNC34 / WGNC34_260RS     0.00%   -> one sequence, share prefix
+  ECR33 / ECR33_V           0.00%   -> one sequence, share prefix
+  PS13 / KPS13             99.90%   -> two sequences, must differ</div>
+        <p><strong>Fix:</strong> KPS13 now carries its own stamped prefix, matching the <code>E-KPS13</code> type designation already recorded against it. Lookup and search resolve the stamp rather than the file id.</p>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-head">
+          <h3>Colour codes were read whole, fragmenting every paint</h3>
+          <span class="chip high">High</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>The colour field is a trim character plus a paint code, but was being treated as one opaque string. One paint therefore counted as several, and every per-colour count, percentage and rarity denominator was computed against a fragment of the true total.</p>
+        <div class="evidence">colours displayed vs. real paints
+  NM35 Stagea      33  ->  10
+  GCZ32            42  ->  25
+  Z32              31  ->  22
+  S13              23  ->  14
+  WGC34            22  ->  14
+
+records showing a raw code instead of a name
+  before      612,424   (48% of the archive)
+  after            51   (0.004%)</div>
+        <p><strong>Fix:</strong> the field is split once at dictionary level, correcting all consumers together. The trim character is preserved and shown as its own field, so the full plate string is still visible.</p>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-head">
+          <h3>The paint table covered a fraction of the archive</h3>
+          <span class="chip high">High</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>75 hand-maintained names against 98 codes actually in use, and several were wrong or era-mismatched. <code>TV2</code> — Bayside Blue, the single most recognisable colour in the archive — read simply "Blue".</p>
+        <p><strong>Fix:</strong> <code>paint.json</code> is now generated from Nissan's own colour master on the discs, giving 117 names and 100.00% record coverage. A small curated layer supplies established marketing names where two independent sources agree.</p>
+      </div>
+
+      <div class="finding high">
+        <div class="finding-head">
+          <h3>PS13 broke the sort invariant chassis lookup depends on</h3>
+          <span class="chip high">High</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>Lookup binary-searches within a block's recorded row span, which is only valid while rows are grouped by block and ascending by serial. In PS13 the KPS13 rows sit after the block-1 rows as a second block-0 run, so block 0's span covered the entire file and the serials inside it were not monotonic.</p>
+        <div class="evidence">PS13 col.ranges["0"] = [0, 112311]   spans all 112,312 rows
+  foreign rows inside span     1,350
+  non-monotonic steps              2
+all 33 other chassis files      clean</div>
+        <p><strong>Fix:</strong> files arriving out of order are sorted at load and their ranges rebuilt. Verified by 2,700 randomised round-trips across the affected models with zero failures.</p>
+      </div>
+
+      <div class="finding med">
+        <div class="finding-head">
+          <h3>Breakdowns silently dropped rows they could not decode</h3>
+          <span class="chip med">Medium</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>Grade and transmission breakdowns skipped any record whose code did not decode, so their percentages summed to less than 100% and the rows did not reconcile against the model total — 54 records on S14, 40 on PS13, 11 on S13, 2 on BNR32, and 65% of ER33's transmission column.</p>
+        <p><strong>Fix:</strong> undecodable rows get a labelled "Not decoded" bucket. The wording is deliberate — ER33 records <em>do</em> carry a value at that position (a literal <code>N</code> on early production); we simply cannot say what it meant, and claiming the plate was blank would be a different and wrong statement.</p>
+      </div>
+
+      <div class="finding med">
+        <div class="finding-head">
+          <h3>A full chassis number returned near-misses</h3>
+          <span class="chip med">Medium</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>Substring matching meant searching <code>BNR34-000101</code> also returned <code>BNR34-001010</code> through <code>-001019</code>, whose dash-stripped forms contain the query.</p>
+        <p><strong>Fix:</strong> an exact hit answers with that car alone; partial queries keep matching as before. Two results can still be correct — the same serial in two series blocks is two different cars.</p>
+      </div>
+
+      <h3>Checked and found correct</h3>
+      <p>Two things that looked like defects were verified as deliberate and left alone.</p>
+      <ul>
+        <li><strong>R31 and R30 are not loaded.</strong> <code>fast_hr31.json</code> (182,351 records) and <code>fast_dr30.json</code> (44,439) sit in the data directory but are absent from the loader. Both counts were verified against the FAST source; they are out of scope by request, not a loading bug.</li>
+        <li><strong>ER33's undecoded transmission is honest.</strong> All 18,539 affected records carry <code>N</code>, and they stop cleanly at 1995-12 while F/A coverage ramps up — the signature of a field that only began being populated properly, not a third gearbox.</li>
+      </ul>
+
+      <h4>Post-fix verification</h4>
+      <div class="evidence">all 39 models · 1,284,067 records
+  colour sums reconcile to model total        PASS
+  grade sums reconcile to model total         PASS
+  transmission sums reconcile                 PASS
+  grade x colour matrix totals reconcile      PASS
+  page totals match stats totals              PASS
+  chassis round-trip (117 + 2,700 random)     PASS
+  search finds every sampled record           PASS
+  rarity vs brute force (108 combinations)    PASS
+  exceptions thrown                           NONE</div>
+    </section>
+
+    <!-- ============ 8. LIMITS ============ -->
+    <section id="limits">
+      <p class="eyebrow">08 — Candour</p>
+      <h2>Known Limits &amp; Open Questions</h2>
+      <div class="rule"></div>
+
+      <p>Published deliberately. A reader who knows where the archive stops can trust the rest of it.</p>
+
+      <h3>Open decode questions</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Question</th><th class="m">Scale</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><strong>Colour-field trim character</strong> — the letters <code>G C Z J S E B</code> that precede the paint code.</td>
+              <td class="n">~400k records</td>
+              <td>Structure confirmed from Nissan's own colour master and an independent source describing the plate as paint code plus one interior trim character. The individual letters are <strong>not</strong> named anywhere on the discs, so they are shown raw.</td>
+            </tr>
+            <tr>
+              <td><strong>ER33/ECR33 <code>N</code></strong> at the transmission position.</td>
+              <td class="n">20,455 records</td>
+              <td>Real running-change boundary (1993-02 to 1995-12) but meaning unconfirmed. Reported as not decoded.</td>
+            </tr>
+            <tr>
+              <td><strong>Eight paint codes with no factory name</strong> — <code>3W9 2R8 3N1 EM3 5G9 125 4J1 6G1</code>.</td>
+              <td class="n">51 records</td>
+              <td>Absent from every description table on every disc. Shown as the raw code.</td>
+            </tr>
+            <tr>
+              <td><strong>1N3 / 1N4 naming</strong> — R33 two-tones.</td>
+              <td class="n">28,730 records</td>
+              <td>Named from corroborated community sources plus internal date-span evidence, not from a disc. Lower confidence than every other name in the table.</td>
+            </tr>
+            <tr>
+              <td><strong>M35 Stagea grade and transmission</strong>.</td>
+              <td class="n">30,487 records</td>
+              <td>Visibly different code scheme. Not guessed at.</td>
+            </tr>
+            <tr>
+              <td><strong>Z32 grade split</strong>.</td>
+              <td class="n">162,666 records</td>
+              <td>No clean signal found. A previous "Version S" decode was retracted.</td>
+            </tr>
+            <tr>
+              <td><strong>Option blocks for R32, S13 and Z32</strong>.</td>
+              <td class="n">—</td>
+              <td>These chassis predate the FASTOP definition table, so there is no authority to decode against.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Data limitations</h3>
+      <ul>
+        <li><strong>Export Z32 build dates are year-only</strong> (<code>1990</code> rather than <code>1990-05</code>). This is the granularity of the source, not a parsing loss.</li>
+        <li><strong>Export identifiers vary in confidence.</strong> US and Canada VINs are independently NHTSA check-digit validated; the EL and ER destination codes are inferred from third-party parts-catalogue listings and are not confirmed inside the dataset. Each record states which it is.</li>
+        <li><strong>Body style is not recoverable per record</strong> — coupe versus sedan would need a VINDAT→MDLCODE chain that is not yet built.</li>
+        <li><strong>Survival is not modelled.</strong> Everything here is production, not how many still exist.</li>
+      </ul>
+
+      <h3>Technical debt</h3>
+      <ul>
+        <li><strong>No CSP.</strong> Deliberate — two CDN scripts and inline styles throughout mean any policy strict enough to be worthwhile would need <code>unsafe-inline</code>. Revisit if the CDN dependencies are vendored.</li>
+        <li><strong>Two external CDNs with no fallback</strong> — the site's main availability risk.</li>
+        <li><strong>Tabs do not survive a refresh</strong> and cannot be linked to; hash-based routing is not implemented.</li>
+        <li><strong>Whole-archive queries are linear scans.</strong> Fine at 1.28 M rows in a typed array; would need indexing well before 10 M.</li>
+      </ul>
+    </section>
+
+    <!-- ============ 9. OPS ============ -->
+    <section id="ops">
+      <p class="eyebrow">09 — Operations</p>
+      <h2>Operations Runbook</h2>
+      <div class="rule"></div>
+
+      <h3>Deployment</h3>
+      <p>Push to <code>master</code> on <code>cyber-jad/bpzilla</code>. Cloudflare Workers Builds picks it up and deploys in roughly 30–90 seconds. There is no build step — the repository contents are the deployed contents.</p>
+
+      <div class="tw">
+        <table>
+          <thead><tr><th>Setting</th><th class="m">Value</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>Worker name</td><td class="m">old-night-b2a3</td><td>Must match the dashboard name exactly or Workers Builds fails.</td></tr>
+            <tr><td>Asset directory</td><td class="m">./public</td><td></td></tr>
+            <tr><td>404 handling</td><td class="m">404-page</td><td>Deliberately not <code>single-page-application</code>, which would answer every typo'd URL with a 200 and tell search engines it is a real page.</td></tr>
+            <tr><td>Apex</td><td class="m">bpzilla.com</td><td>Proxied. Returns 200.</td></tr>
+            <tr><td>www</td><td class="m">www.bpzilla.com</td><td>Edge redirect rule → apex (301). Fires before origin lookup, which is why it works without a Worker route.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Caching</h3>
+      <p>Set in <code>public/_headers</code>. <code>/data/*</code> is one day — <strong>not</strong> a year with <code>immutable</code>, which was correct when the directory held only fixed record files but became a trap once it gained derived files that get corrected as decoding improves. A returning visitor would have been stuck with a stale <code>paint.json</code> for up to a year, and a Cloudflare purge does not reach a browser cache. Assets get 30 days; CSS and JS get an hour.</p>
+
+      <h3>Email</h3>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Direction</th><th>Service</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td>Inbound</td><td>Cloudflare Email Routing</td><td>Catch-all on <code>@bpzilla.com</code> forwards to the owner's Gmail. Receive-only.</td></tr>
+            <tr><td>Outbound</td><td>Resend (SMTP)</td><td><code>contact@bpzilla.com</code> verified as a Gmail "Send mail as" alias via <code>smtp.resend.com</code>:587 TLS.</td></tr>
+            <tr><td>Authentication</td><td>DNS</td><td>SPF, DKIM (<code>resend._domainkey</code>) and DMARC all published and resolving.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="note warn">
+        <span class="note-label">Outstanding action</span>
+        <p>DMARC is currently <code>p=none</code>, which monitors without enforcing — the right setting while sending is being established. Once mail from <code>contact@bpzilla.com</code> has delivered cleanly for a week or two, tighten to <code>p=quarantine</code> so the policy actually protects the domain against spoofing.</p>
+      </div>
+
+      <h3>Regenerating derived data</h3>
+      <p>Both extractors need the FAST discs mounted at <code>H:</code>. Neither touches the record files — only the derived tables.</p>
+      <div class="schema">node extract_paint.js        <span class="c">// -> public/data/paint.json</span>
+pwsh -File extract_fastop.ps1 <span class="c">// -> public/data/factoryOptions.json (needs a UTF-8 BOM to parse)</span></div>
+
+      <h3>Local development</h3>
+      <p>Run <code>server.ps1</code> and open <code>http://localhost:5588</code>. Opening <code>index.html</code> directly from disk will not work — browsers block <code>fetch()</code> on <code>file://</code> URLs, so every data file fails. The site detects this case and says so rather than showing an empty archive.</p>
+    </section>
+
+    <!-- ============ 10. ROADMAP ============ -->
+    <section id="roadmap">
+      <p class="eyebrow">10 — Forward</p>
+      <h2>Roadmap</h2>
+      <div class="rule"></div>
+
+      <p>Ordered by value against effort, not by ambition.</p>
+
+      <h4>Near term</h4>
+      <ul>
+        <li><strong>Tighten DMARC to <code>p=quarantine</code></strong> once sending is proven.</li>
+        <li><strong>Hash-based routing</strong> so a tab, a model or a decoded chassis can be linked to and survives a refresh. This is also the single biggest SEO gain available — right now the whole archive is one URL.</li>
+        <li><strong>Vendor Lucide and Chart.js</strong>, removing the last third-party runtime dependency and making a real CSP possible.</li>
+      </ul>
+
+      <h4>Data</h4>
+      <ul>
+        <li><strong>Body style per record</strong> via the VINDAT→MDLCODE chain — would let the archive distinguish coupe from sedan on chassis where both share a file.</li>
+        <li><strong>Name the colour-field trim characters</strong> if a trim master can be located on any disc.</li>
+        <li><strong>Resolve the remaining eight paint codes</strong>, likely only possible from a disc not currently in the set.</li>
+        <li><strong>Reconsider R31 and R30.</strong> 226,790 verified records sit extracted and unused; the exclusion was a scope decision and can be revisited.</li>
+      </ul>
+
+      <h4>Product</h4>
+      <ul>
+        <li><strong>Per-record permalinks</strong> — a citable URL for a specific chassis is what turns the archive into something people link to.</li>
+        <li><strong>Downloadable certificate</strong> as a real file rather than a print view.</li>
+        <li><strong>Expose the confidence level in the UI</strong>, so a lower-confidence name like <code>1N3</code> reads as such to a visitor, not only to a reader of this document.</li>
+      </ul>
+
+      <div class="doc-foot">
+        BPZILLA TECHNICAL DOSSIER &middot; REVISION 2026-08-21<br>
+        SOURCE: NISSAN FAST MICROFICHE &middot; H:\AR-JP\JP, H:\NISSAN\{US,CA,EL,ER,GL,GR}<br>
+        ARCHIVE STATE: 1,284,067 RECORDS &middot; 34 CHASSIS FILES &middot; 39 BROWSABLE MODELS<br>
+        ALL FIGURES IN THIS DOCUMENT WERE MEASURED AGAINST THE LOADED ARCHIVE, NOT ESTIMATED.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>
