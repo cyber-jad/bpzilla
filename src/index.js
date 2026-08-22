@@ -195,7 +195,7 @@ async function describeRoute(pathname, env) {
       canonical: `${SITE}${decoded}`,
       title: `${r.title} | BPZILLA`,
       description:
-        `${r.title} across 1,253,580 Nissan factory records read from the ` +
+        `${r.title} across 1,271,066 Nissan factory records read from the ` +
         `Nissan FAST microfiche — Skyline, Silvia, Stagea and 300ZX.`
     };
   }
