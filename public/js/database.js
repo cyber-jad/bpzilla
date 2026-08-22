@@ -2473,6 +2473,283 @@ const JDM_DATABASE = {
     RA: { text: 'Nismo (Group A homologation special)', verified: true }
   },
 
+
+  // ---- S13 family: Silvia and 180SX -----------------------------------------
+  //
+  // Source: the OPTION CODE LIST volumes for these cars — H:/AR-JP/JP/087 for
+  // the Silvia (18 pages) and 084 for the 180SX (17 pages). Same programme and
+  // the same grammar as the R32: a model code whose tail is left-packed, read as
+  // VS記号 characters followed by a two-character パック記号.
+  //
+  // Model code, from page 1 of each volume:
+  //   [車体形状][エンジン種類] S13 [スペース][車格][変速機][燃料供給装置][VS記号][パック記号]
+  //
+  // Two things about the prefix matter for parsing. 車格 無記号 is J'S, so on a
+  // J's car that character is simply ABSENT and everything after it shifts left
+  // by one — reading a fixed offset put 179 records' options one slot out. And
+  // the 180SX uses its own 車格 alphabet, D = TYPE I and J = TYPE II, which is
+  // where the site's existing Type I / Type II names come from, now confirmed
+  // from Nissan rather than inferred.
+  //
+  // The pack code is two digits, and unlike the R32 the same number means
+  // different things in different date windows, so the windows are kept separate
+  // and matched on build date, with a fallback to any window that defines the
+  // code.
+  //
+  // The VS tables from the two windows are merged: they share L, W and Z with
+  // identical meanings, conflict nowhere, and letters genuinely appear either
+  // side of the boundary in this archive. Keeping them split cost 6,231 records.
+  //
+  // The pack matrices were read by fast_matrix.js rather than by eye. On these
+  // pages a circle is 56 dark pixels and an empty cell is exactly 0, so there is
+  // no threshold to misjudge.
+  //
+  // 329,381 records, 100.000% fully recognised bar a single oddity reading
+  // LS13ANS3, which fits no layout here.
+  _s13Chassis: ['S13', 'PS13', 'KS13', 'RS13'],
+
+  _s13Layout: function(mc) {
+    const body = String(mc || '').replace(/\s+R?S13?\s*$/, '').trimEnd();
+    const a = body.indexOf('13');
+    if (a < 0) return null;
+    let i = a + 2;
+    // 車格: H = Q's, J = K's on the Silvia and TYPE II on the 180SX, D = TYPE I.
+    // 無記号 = J'S, so the character is absent entirely on a J's car.
+    if ('HJD'.indexOf(body[i]) >= 0) i++;
+    if (body[i] === 'F' || body[i] === 'A') i++;   // 変速機
+    if (body[i] === 'T') i++;                      // 燃料供給装置, turbo
+    return { optionsFrom: i, end: body.length, body: body };
+  },
+
+  _s13Window: function(date) {
+    const d = String(date || '');
+    if (!d || d < '1991-01') return 'W1';
+    if (d < '1992-01') return 'W2';
+    if (d < '1992-05') return 'W3';
+    return 'W4';
+  },
+
+  _s13Legend: {
+    // VS記号, from pages 4-5 of volume 087 and pages 4/10/13 of 084, merged.
+    vs: {
+      K: 'HICAS',
+      L: 'Viscous LSD',
+      W: 'Electric sliding glass sunroof (detachable sunroof on the 180SX)',
+      X: 'Dia specification',
+      Y: 'Dia + cold-region specification',
+      Z: 'Cold-region specification',
+      B: "Digital-display auto air conditioning + silver-polish alloy wheels (Q's SC)",
+      C: 'Auto air conditioning',
+      E: 'Club Package: digital full-auto air conditioning, bright alloy wheels, CD deck, rear spoiler, triple projector headlamps, fluororesin paint',
+      M: 'Fluororesin paint',
+      P: 'Fluororesin paint + cold-region specification',
+      8: 'Fluororesin paint + Kagoshima (volcanic ash) specification',
+      9: 'Kagoshima (volcanic ash) specification'
+    },
+    // パック記号. Silvia windows first, then the 180SX's own table.
+    //
+    // On the 180SX table several codes carry identical feature sets — 11 and 18,
+    // 20 and 22, 23 and 24, 26 and 28, 31 and 33. That is what the legend
+    // prints. Its table has a single "no audio" row where the Silvia's has two
+    // audio rows, so the pairs most likely differ by audio type, which the page
+    // does not record. Stored as printed rather than given an invented
+    // distinction.
+    pack: {
+      // [8805-9101]
+      W1: {
+        10: '6JJx15 alloy road wheels',
+        11: '6JJx15 alloy road wheels + front window display + hybrid meter',
+        12: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS',
+        13: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack)',
+        14: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        15: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack) + no audio',
+        16: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS + AM/FM cassette radio + 4 heated speakers',
+        17: '6JJx15 alloy road wheels + front window display + hybrid meter + 4-wheel ABS + no audio',
+        18: '6JJx15 alloy road wheels + front window display + hybrid meter + Super Performance Pack (S-Pack)',
+        19: '6JJx15 alloy road wheels + front window display + hybrid meter + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        20: '6JJx15 alloy road wheels + front window display + hybrid meter + Super Performance Pack (S-Pack) + no audio',
+        21: '6JJx15 alloy road wheels + front window display + hybrid meter + AM/FM cassette radio + 4 heated speakers',
+        22: '6JJx15 alloy road wheels + front window display + hybrid meter + no audio',
+        23: '6JJx15 alloy road wheels + 4-wheel ABS',
+        24: '6JJx15 alloy road wheels + 4-wheel ABS + Super Performance Pack (S-Pack)',
+        25: '6JJx15 alloy road wheels + 4-wheel ABS + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        26: '6JJx15 alloy road wheels + 4-wheel ABS + Super Performance Pack (S-Pack) + no audio',
+        27: '6JJx15 alloy road wheels + 4-wheel ABS + AM/FM cassette radio + 4 heated speakers',
+        28: '6JJx15 alloy road wheels + 4-wheel ABS + no audio',
+        29: '6JJx15 alloy road wheels + Super Performance Pack (S-Pack)',
+        30: '6JJx15 alloy road wheels + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        31: '6JJx15 alloy road wheels + Super Performance Pack (S-Pack) + no audio',
+        32: '6JJx15 alloy road wheels + AM/FM cassette radio + 4 heated speakers',
+        33: '6JJx15 alloy road wheels + no audio',
+        34: 'Front window display + hybrid meter',
+        35: 'Front window display + hybrid meter + 4-wheel ABS',
+        36: 'Front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack)',
+        37: 'Front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        38: 'Front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack) + no audio',
+        39: 'Front window display + hybrid meter + 4-wheel ABS + AM/FM cassette radio + 4 heated speakers',
+        40: 'Front window display + hybrid meter + 4-wheel ABS + no audio',
+        41: 'Front window display + hybrid meter + Super Performance Pack (S-Pack)',
+        42: 'Front window display + hybrid meter + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        43: 'Front window display + hybrid meter + Super Performance Pack (S-Pack) + no audio',
+        44: 'Front window display + hybrid meter + AM/FM cassette radio + 4 heated speakers',
+        45: 'Front window display + hybrid meter + no audio',
+        46: '4-wheel ABS',
+        47: '4-wheel ABS + Super Performance Pack (S-Pack)',
+        48: '4-wheel ABS + Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        49: '4-wheel ABS + Super Performance Pack (S-Pack) + no audio',
+        50: '4-wheel ABS + AM/FM cassette radio + 4 heated speakers',
+        51: '4-wheel ABS + no audio',
+        52: 'Super Performance Pack (S-Pack)',
+        53: 'Super Performance Pack (S-Pack) + AM/FM cassette radio + 4 heated speakers',
+        54: 'Super Performance Pack (S-Pack) + no audio',
+        55: 'AM/FM cassette radio + 4 heated speakers',
+        56: 'No audio',
+        70: 'Leather specification',
+        71: 'Super Performance Pack (S-Pack) + leather specification',
+        72: 'Front window display + hybrid meter + Super Performance Pack (S-Pack) + leather specification',
+        73: '4-wheel ABS + Super Performance Pack (S-Pack) + leather specification',
+        74: 'Front window display + hybrid meter + 4-wheel ABS + Super Performance Pack (S-Pack) + leather specification'
+      },
+      // [9101-9201]
+      W2: {
+        10: '6JJx15 alloy road wheels',
+        11: '6JJx15 alloy road wheels + front window display',
+        12: '6JJx15 alloy road wheels + front window display + ABS',
+        13: '6JJx15 alloy road wheels + front window display + ABS + Dia Package',
+        14: '6JJx15 alloy road wheels + front window display + ABS + Dia Package + holographic sound system',
+        15: '6JJx15 alloy road wheels + front window display + ABS + Dia Package + no audio',
+        16: '6JJx15 alloy road wheels + front window display + ABS + holographic sound system',
+        17: '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        18: '6JJx15 alloy road wheels + front window display + Dia Package',
+        19: '6JJx15 alloy road wheels + front window display + Dia Package + holographic sound system',
+        20: '6JJx15 alloy road wheels + front window display + Dia Package + no audio',
+        21: '6JJx15 alloy road wheels + front window display + holographic sound system',
+        22: '6JJx15 alloy road wheels + front window display + no audio',
+        23: '6JJx15 alloy road wheels + ABS',
+        24: '6JJx15 alloy road wheels + ABS + Dia Package',
+        25: '6JJx15 alloy road wheels + ABS + Dia Package + holographic sound system',
+        26: '6JJx15 alloy road wheels + ABS + Dia Package + no audio',
+        27: '6JJx15 alloy road wheels + ABS + holographic sound system',
+        28: '6JJx15 alloy road wheels + ABS + no audio',
+        29: '6JJx15 alloy road wheels + Dia Package',
+        30: '6JJx15 alloy road wheels + Dia Package + holographic sound system',
+        31: '6JJx15 alloy road wheels + Dia Package + no audio',
+        32: '6JJx15 alloy road wheels + holographic sound system',
+        33: '6JJx15 alloy road wheels + no audio',
+        34: 'Front window display',
+        35: 'Front window display + ABS',
+        39: 'Front window display + ABS + holographic sound system',
+        40: 'Front window display + ABS + no audio',
+        44: 'Front window display + holographic sound system',
+        45: 'Front window display + no audio',
+        46: 'ABS',
+        50: 'ABS + holographic sound system',
+        51: 'ABS + no audio',
+        55: 'Holographic sound system',
+        56: 'No audio'
+      },
+      // [9201-9205]
+      W3: {
+        10: '6JJx15 alloy road wheels',
+        11: '6JJx15 alloy road wheels + front window display',
+        12: '6JJx15 alloy road wheels + front window display + ABS',
+        16: '6JJx15 alloy road wheels + front window display + ABS + holographic sound system',
+        17: '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        21: '6JJx15 alloy road wheels + front window display + holographic sound system',
+        22: '6JJx15 alloy road wheels + front window display + no audio',
+        23: '6JJx15 alloy road wheels + ABS',
+        27: '6JJx15 alloy road wheels + ABS + holographic sound system',
+        28: '6JJx15 alloy road wheels + ABS + no audio',
+        32: '6JJx15 alloy road wheels + holographic sound system',
+        33: '6JJx15 alloy road wheels + no audio',
+        34: 'Front window display',
+        35: 'Front window display + ABS',
+        39: 'Front window display + ABS + holographic sound system',
+        40: 'Front window display + ABS + no audio',
+        44: 'Front window display + holographic sound system',
+        45: 'Front window display + no audio',
+        46: 'ABS',
+        50: 'ABS + holographic sound system',
+        51: 'ABS + no audio',
+        55: 'Holographic sound system',
+        56: 'No audio'
+      },
+      // [9205- ]
+      W4: {
+        10: '6JJx15 alloy road wheels',
+        11: '6JJx15 alloy road wheels + front window display',
+        12: '6JJx15 alloy road wheels + front window display + ABS',
+        16: '6JJx15 alloy road wheels + front window display + ABS + holographic sound system',
+        17: '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        21: '6JJx15 alloy road wheels + front window display + holographic sound system',
+        22: '6JJx15 alloy road wheels + front window display + no audio',
+        23: '6JJx15 alloy road wheels + ABS',
+        27: '6JJx15 alloy road wheels + ABS + holographic sound system',
+        28: '6JJx15 alloy road wheels + ABS + no audio',
+        32: '6JJx15 alloy road wheels + holographic sound system',
+        33: '6JJx15 alloy road wheels + no audio',
+        34: 'Front window display',
+        35: 'Front window display + ABS',
+        39: 'Front window display + ABS + holographic sound system',
+        40: 'Front window display + ABS + no audio',
+        44: 'Front window display + holographic sound system',
+        45: 'Front window display + no audio',
+        46: 'ABS',
+        50: 'ABS + holographic sound system',
+        51: 'ABS + no audio',
+        55: 'Holographic sound system',
+        56: 'No audio',
+        88: 'Q-s Square limited edition',
+        89: 'ABS + Q-s Square limited edition'
+      }
+    },
+      RS: {
+        10: '6JJx15 alloy road wheels',
+        11: '6JJx15 alloy road wheels + front window display',
+        12: '6JJx15 alloy road wheels + front window display + ABS',
+        13: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear)',
+        15: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear) + no audio',
+        17: '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        18: '6JJx15 alloy road wheels + front window display',
+        20: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + no audio',
+        22: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + no audio',
+        23: '6JJx15 alloy road wheels + ABS',
+        24: '6JJx15 alloy road wheels + ABS',
+        26: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + no audio',
+        28: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + no audio',
+        29: '6JJx15 alloy road wheels',
+        31: '6JJx15 alloy road wheels + spoiler (front and rear) + no audio',
+        33: '6JJx15 alloy road wheels + spoiler (front and rear) + no audio',
+        34: 'Front window display',
+        35: 'Front window display + ABS',
+        36: 'Front window display + ABS',
+        38: 'Front window display + ABS + spoiler (front and rear) + no audio',
+        40: 'Front window display + ABS + spoiler (front and rear) + no audio',
+        41: 'Front window display',
+        43: 'Front window display + spoiler (front and rear) + no audio',
+        45: 'Front window display + spoiler (front and rear) + no audio',
+        46: 'ABS',
+        47: 'ABS + spoiler (front and rear)',
+        49: 'ABS + spoiler (front and rear) + no audio',
+        51: 'ABS + no audio',
+        52: 'Spoiler (front and rear)',
+        54: 'Spoiler (front and rear) + no audio',
+        56: 'No audio',
+        60: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear) + rear fog lamp [TYPE II Special Selection]',
+        61: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear) + no audio + rear fog lamp [TYPE II Special Selection]',
+        62: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + rear fog lamp [TYPE II Special Selection]',
+        63: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + no audio + rear fog lamp [TYPE II Special Selection]',
+        64: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + rear fog lamp [TYPE II Special Selection]',
+        65: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + no audio + rear fog lamp [TYPE II Special Selection]',
+        66: '6JJx15 alloy road wheels + spoiler (front and rear) + rear fog lamp [TYPE II Special Selection]',
+        67: '6JJx15 alloy road wheels + spoiler (front and rear) + no audio + rear fog lamp [TYPE II Special Selection]',
+        80: '6JJx15 alloy road wheels + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]',
+        81: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]',
+        82: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]',
+        83: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]'
+      }
+  },
+
   // Pick the legend window a car's build date falls in, clamping at both ends.
   // The windows record when Nissan maintained each table, and they are narrower
   // than production: HCR32 records start 1989-02 against a legend that begins
@@ -2643,10 +2920,51 @@ const JDM_DATABASE = {
     return opts;
   },
 
+  // VS記号 characters, then the two-digit パック記号, per the window the car was
+  // built in. Plate position is mc index + 2 here as everywhere else: the export
+  // drops exactly one leading character (S13HA29 -> 13HA29, PS13HACM29 ->
+  // S13HACM29, RS13JFT66 -> S13JFT66).
+  _decodeS13Plate: function(modelId, mc, date) {
+    const opts = [];
+    const L = this._s13Layout(mc);
+    if (!L) return opts;
+    let tail = L.body.slice(L.optionsFrom);
+    let idx = L.optionsFrom;
+
+    // The pack is two digits at the end. Anything before it is VS characters,
+    // and a car can carry VS with no pack at all.
+    let pack = null;
+    if (/\d\d$/.test(tail)) { pack = tail.slice(-2); tail = tail.slice(0, -2); }
+
+    for (const ch of tail) {
+      const t = this._s13Legend.vs[ch];
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: ch, field: 'VS',
+                  text: t || null, verified: !!t, undecoded: !t });
+      idx++;
+    }
+    if (pack !== null) {
+      let t, exact = true;
+      if (modelId === 'RS13') {
+        t = this._s13Legend.RS[pack];
+      } else {
+        t = this._s13Legend.pack[this._s13Window(date)][pack];
+        // The same number means different equipment in different windows, so an
+        // out-of-window match is reported rather than presented as confirmed.
+        if (!t) { exact = false;
+          for (const w of ['W1', 'W2', 'W3', 'W4']) { if (this._s13Legend.pack[w][pack]) { t = this._s13Legend.pack[w][pack]; break; } } }
+      }
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: pack, field: 'Pack',
+                  text: t || null, verified: !!t && exact, reported: !!t && !exact,
+                  undecoded: !t });
+    }
+    return opts;
+  },
+
   _decodeOptions: function(modelId, mc, date) {
     const opts = [];
     if (!mc) return opts;
     if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc, date);
+    if (this._s13Chassis.includes(modelId)) return this._decodeS13Plate(modelId, mc, date);
     if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
