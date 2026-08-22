@@ -130,6 +130,15 @@
           /* Godzilla is BPZILLA's mark, not a registry's. */
           var avatar = document.getElementById('godzilla-avatar-btn');
           if (avatar) avatar.remove();
+          /* Tab icon. Both existing icon links are the BPZILLA mark, so both
+             are repointed — a browser picks among whatever it is given, and a
+             stale entry left in the list shows the wrong mark on some of them. */
+          var icons = document.querySelectorAll('link[rel="icon"]');
+          for (var i = 0; i < icons.length; i++) {
+            icons[i].setAttribute('type', 'image/svg+xml');
+            icons[i].removeAttribute('sizes');
+            icons[i].setAttribute('href', '/assets/gtr-registry-favicon.svg');
+          }
         })();
       </script>
 

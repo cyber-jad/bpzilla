@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="140 59 720 720" width="720" height="720">
+  <!-- Tab icon for gtr-registry.org.
+       Built from the GT and R paths of assets/gtr-registry-logo.svg, cropped to
+       just the mark. The full lockup is not usable here: "Registry" and the URL
+       line are illegible below about 64px, and they are <text> in a Google font
+       that browsers refuse to load inside an SVG used as an image, so they would
+       silently fall back to a different face. These are paths, so nothing is
+       fetched and nothing can substitute.
+       The black plate is not decoration either - every fill in the source logo
+       is #FFFFFF on transparent, which is invisible against a light tab bar. -->
+  <rect x="140" y="59" width="720" height="720" fill="#0b0d10"/>
+  <g transform="translate(230,95)">
+    <path fill="#FFFFFF" d="M 130 0 L 34 0 C 12 0 0 12 0 34 L 0 74 C 0 96 12 108 34 108 L 130 108 C 152 108 164 96 164 74 L 164 48 L 84 48 L 84 72 L 130 72 C 130 78 126 82 120 82 L 44 82 C 38 82 34 78 34 72 L 34 36 C 34 30 38 26 44 26 L 120 26 C 126 26 130 30 130 36 L 130 40 L 164 40 L 164 34 C 164 12 152 0 130 0 Z"/>
+    <path fill="#FFFFFF" d="M 194 0 L 386 0 C 392 0 396 4 396 10 L 396 26 L 312 26 L 312 98 C 312 105 308 108 302 108 L 268 108 C 262 108 258 105 258 98 L 258 26 L 194 26 C 194 26 194 10 194 10 C 194 4 198 0 204 0 Z"/>
+  </g>
+  <g transform="translate(195,235)">
+    <path fill="#FFFFFF" fill-rule="evenodd" d="M 16 0 L 390 0 C 505 0 592 48 592 160 C 592 230 545 280 468 306 L 610 508 L 472 508 L 348 330 L 168 330 L 168 472 C 168 496 150 508 118 508 L 0 508 L 0 460 C 35 460 54 442 54 416 L 54 92 C 54 66 35 48 0 48 L 0 0 Z M 168 80 L 168 250 L 375 250 C 440 250 482 222 482 165 C 482 108 440 80 375 80 Z"/>
+    <path fill="#E51A24" fill-rule="evenodd" d="M 30 14 L 382 14 C 488 14 574 56 574 160 C 574 222 530 268 456 292 L 592 490 L 490 490 L 360 312 L 150 312 L 150 460 C 150 482 136 492 110 494 L 18 494 L 18 472 C 46 470 70 454 70 426 L 70 82 C 70 54 46 38 18 36 L 18 14 Z M 184 96 L 184 234 L 368 234 C 424 234 464 212 464 165 C 464 118 424 96 368 96 Z"/>
+  </g>
+</svg>
