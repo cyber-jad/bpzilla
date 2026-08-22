@@ -1908,7 +1908,42 @@ const JDM_DATABASE = {
     }
     return 'V-Spec';
   },
+  // 車両仕様 on the R32, for the chassis where the legend and the chassis
+  // together pin it to one grade.
+  //
+  // The legend's G bucket is shared — 「GTE、GTS、GTS-T、GTS 25、GTS-4」 — so the
+  // character alone names nothing. What resolves it is the chassis, because
+  // the chassis fixes the engine: E is RB25DE, and GTS 25 is the only 2.5 in
+  // that list. Both RB25DE chassis carry G on 100% of their records (15,475
+  // and 2,011), with nothing else in the slot.
+  //
+  // Only these two are listed. HCR32, HNR32 and HR32 are also 100% G and are
+  // probably GTS-T, GTS-4 and GTS/GTE respectively, but "probably" is how
+  // wrong labels get shipped: HR32's own records carry three different engine
+  // characters, so its G is genuinely ambiguous, and the other two are
+  // inferences rather than readings. FR32 is 100% D, which the legend calls
+  // GXI while this file has always named the model GTE — a discrepancy worth
+  // resolving before either is written into a grade field.
+  _r32GradeCodes: {
+    ECR32: { G: 'GTS25' },
+    ER32:  { G: 'GTS25' }
+  },
+
+  // The grade character does not sit at a fixed index on an R32 code: it moves
+  // depending on whether the body character was written ("ECR32RGFELBC" puts it
+  // at 6, "CR32GYEAA" at 4), which is why this cannot use gradePositions.
+  _decodeR32Grade: function(modelId, mc) {
+    const table = this._r32GradeCodes[modelId];
+    if (!table) return null;
+    const L = this._r32Layout(mc);
+    if (!L) return null;
+    const body = String(mc || '').replace(/\s+R32\s*$/, '');
+    return table[body[L.grade]] || null;
+  },
+
   _decodeGrade: function(modelId, mc, date) {
+    const r32 = this._decodeR32Grade(modelId, mc);
+    if (r32 !== null) return r32;
     const silvia = this._decodeSilviaGrade(modelId, mc);
     if (silvia !== null) return silvia;
     const z32tt = this._decodeZ32TwinTurboGrade(modelId, mc);
