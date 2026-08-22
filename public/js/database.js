@@ -1977,6 +1977,84 @@ const JDM_DATABASE = {
   ],
   _factoryOptions: null,   // loaded from data/factoryOptions.json in loadFastData
   _factoryOptionsGen: { 'R33': 'R33', 'R34': 'R34', 'S14': 'S14', 'WC3': 'WC34' },
+
+  // ---- R32 build plate ------------------------------------------------------
+  // The R32 predates FASTOP, so there is no option table for it anywhere on the
+  // discs — searched, twice, including for the exact equipment wording. What
+  // follows is built from this archive's own distributions first, with outside
+  // sources used only to name what the data had already isolated.
+  //
+  // The R32's tail is not the fixed five-slot block the R33/R34 use. It is
+  // variable length (2 to 5 characters, no padding, no internal blanks across
+  // all 58 distinct BNR32 codes), but it is still positional by absolute index —
+  // shorter codes simply stop early. Plate position = mc index + 2, the same
+  // one-character body-style offset documented at the top of this file.
+  //
+  // What the data itself settles:
+  //
+  //   mc[9] is a SERIES marker, not equipment. It maps almost one-to-one onto
+  //   the series blocks — L to blocks 0/1, A to block 2, 7 to block 3 — and its
+  //   values partition the production run in time (L ends 1991-07, 7 begins
+  //   1993-01) rather than scattering across it the way an option would. Widely
+  //   circulated tables call this position "Sunroof" or "Projector Headlamps";
+  //   neither survives that test, so neither is used here.
+  //
+  //   mc[10] carries a baseline letter per series with a small variant against
+  //   it — M vs T in Series 1 (16,364 vs 1,018), A vs Z in Series 3 (13,077 vs
+  //   980). The variant is where the real option sits, and it is Z, which is
+  //   Cold Weather in every Nissan scheme and sits at exactly the mc position 10
+  //   this file already reads cold-weather from on the R33/R34/S14/C34 chassis.
+  //   T is M plus that same Z.
+  //
+  // Anything below marked reported: true is named from outside sources (owner
+  // documentation supplied for this work, corroborated by published R32 plate
+  // guides) and has NOT been independently confirmed against this archive. It
+  // is shown to the reader flagged as such rather than presented as fact.
+  //
+  // BNR32 ONLY. The same letters mean different things on the other R32
+  // chassis — see the note in _decodeR32Plate — so this table is not applied
+  // to them, and their plate characters are shown positioned but unnamed.
+  _r32Plate: {
+    // mc[9] — series / specification marker
+    9: {
+      L: { text: 'Series 1 specification', verified: true },
+      A: { text: 'Series 2 specification', verified: true },
+      7: { text: 'Series 3 specification, 16-inch wheels', reported: true },
+      8: { text: 'V-Spec II tyre specification (245/45R17)', verified: true },
+      Z: { text: 'Cold Weather Package (Cold Area spec)', reported: true },
+      N: { text: 'N1 specification', reported: true },
+      M: { text: 'Full Auto A/C + Active Sound System', reported: true },
+      T: { text: 'Full Auto A/C + Active Sound System + Cold Weather Package', reported: true },
+      P: { text: 'Full Auto A/C', reported: true }
+    },
+    // mc[10] — factory equipment
+    10: {
+      A: { text: 'Standard equipment', verified: true },
+      M: { text: 'Full Auto A/C + Active Sound System', reported: true },
+      Z: { text: 'Cold Weather Package (Cold Area spec)', verified: true },
+      T: { text: 'Full Auto A/C + Active Sound System + Cold Weather Package', verified: true },
+      P: { text: 'Full Auto A/C', reported: true },
+      N: { text: 'N1 specification', reported: true },
+      R: { text: 'Early Series 1 equipment group', verified: true }
+    },
+    // mc[11]/mc[12] — trailing pair. "ZG" is the one this archive can speak to:
+    // 16,428 records carry it as a pair and never apart.
+    11: {
+      Z: { text: 'Rear wiper, GT-R specification', reported: true, pairsWith: 12 },
+      A: { text: 'Rear wiper and rear spoiler', reported: true }
+    },
+    12: {
+      G: { text: 'GT-R specification', reported: true, partOfPair: true },
+      A: { text: 'Standard GT-R trim level', reported: true }
+    }
+  },
+  // BNR32 alone. The other R32 chassis write a shorter chassis prefix into the
+  // model code — "CR32GAELQKB" and "R32GAEAA" against BNR32's "BNR32RXFSLMZG" —
+  // so the same mc index is a different plate position on each of them, and
+  // labelling one "(11K)" off BNR32's offset would be a wrong number stated
+  // confidently. Until each prefix length is pinned down and checked, they
+  // report no plate breakdown rather than a misnumbered one.
+  _r32Chassis: ['BNR32'],
   // "1995-07" -> 9507; 2000s get +10000 so 2000-08 sorts after 1998-05 the
   // same way FASTOP's own YYMM windows do (9805 vs 0008 -> 9805 vs 10008).
   _yymm: function(date) {
@@ -1986,11 +2064,53 @@ const JDM_DATABASE = {
     if (isNaN(yr) || isNaN(mm)) return null;
     return (yr % 100) * 100 + mm + (yr >= 2000 ? 10000 : 0);
   },
+  // Plate position for a given mc index. The plate's MODEL string carries one
+  // extra leading body-style character that the FAST export drops, so a
+  // published per-position decode lines up with this data at exactly -1 — the
+  // alignment confirmed against photographed plates and against Nissan's own
+  // numbered R33 diagram, where the option block is positions 14-18 and lands
+  // on mc 12-16.
+  platePos: function(mcIndex) { return mcIndex + 2; },
+
+  // The R32 reads from its own table (see _r32Plate) because its layout is
+  // chassis-led and variable length, not the fixed five-slot block the later
+  // cars use.
+  _decodeR32Plate: function(modelId, mc) {
+    const opts = [];
+    if (!mc) return opts;
+    // The table was derived from BNR32 and only holds there. On HCR32 the same
+    // slot-9 letter L covers block 0 (33%) and block 2 (22%) — it isn't a
+    // series marker on that chassis, so calling it "Series 1" would be wrong
+    // for a fifth of the cars. FR32 carries no slot-9 character at all. The
+    // other R32 chassis therefore get their plate characters shown at the right
+    // positions with no meaning attached, which is the true state of things.
+    const table = modelId === 'BNR32' ? this._r32Plate : {};
+    for (const idx of [9, 10, 11, 12]) {
+      const ch = mc[idx];
+      if (!ch || ch === '-' || ch === ' ') continue;
+      const def = (table[idx] || {})[ch];
+      if (!def) {
+        // A character that's really there but has no confirmed meaning is
+        // shown as itself rather than dropped, same as everywhere else here.
+        opts.push({ pos: idx, platePos: this.platePos(idx), char: ch,
+                    text: null, undecoded: true });
+        continue;
+      }
+      if (def.partOfPair) continue;          // already reported by its partner
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: ch,
+                  text: def.text, verified: !!def.verified, reported: !!def.reported });
+    }
+    return opts;
+  },
+
   _decodeOptions: function(modelId, mc, date) {
     const opts = [];
-    if (!mc || this.layoutOf(mc) !== 'positional') return opts;
+    if (!mc) return opts;
+    if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc);
+    if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
-      if (mc[10] === 'Z') opts.push({ pos: 10, char: 'Z', text: 'Cold Weather Package (Cold Area spec)' });
+      if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
+        text: 'Cold Weather Package (Cold Area spec)', verified: true });
     }
     const table = this._factoryOptions && this._factoryOptions[this._factoryOptionsGen[mc.slice(-3)]];
     if (!table) return opts;
@@ -2002,16 +2122,33 @@ const JDM_DATABASE = {
       // last window FASTOP was maintained to (table upkeep stopped before
       // production did on every chassis here), fall back to the latest
       // definition of that letter rather than dropping it.
-      let hit = null, latest = null;
+      let hit = null, latest = null, earliest = null;
       for (const e of table) {
         if (e.pos !== p || e.char !== ch) continue;
         const from = e.from < 8000 ? e.from + 10000 : e.from;
         const to = e.to < 8000 ? e.to + 10000 : e.to;
         if (d !== null && from <= d && d <= to) { hit = e; break; }
         if (!latest || to > (latest._to || 0)) { latest = e; latest._to = to; }
+        if (!earliest || from < (earliest._from || 99999)) { earliest = e; earliest._from = from; }
       }
-      const use = hit || (d !== null && latest && d > latest._to ? latest : null);
-      if (use) opts.push({ pos: 12 + p, char: ch, text: use.text });
+      // Outside every window, fall back to the nearest one in that direction.
+      // The windows record when FASTOP was maintained, not when the car was
+      // built, and they are narrower than production at both ends: the R33
+      // table starts 9308 while R33 records start 1993-02, so every car built
+      // Feb-Jul 1993 decoded to nothing at all. The tail end was already
+      // handled; this is the same argument applied to the head.
+      const use = hit
+        || (d !== null && latest && d > latest._to ? latest : null)
+        || (d !== null && earliest && d < earliest._from ? earliest : null);
+      // FASTOP is Nissan's own table, so a hit is as confirmed as this gets.
+      // A miss is still shown — the character is genuinely stamped on the car,
+      // and "position 15 reads B, meaning unconfirmed" is a more useful and more
+      // honest answer than silently omitting the field. Roughly 3% of slots
+      // across the R33/R34 chassis land here.
+      if (use) opts.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
+                           text: use.text, verified: true });
+      else opts.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
+                       text: null, undecoded: true });
     }
     return opts;
   },
