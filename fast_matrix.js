@@ -173,15 +173,44 @@ function readMarks(stream, opt = {}) {
   // a gap with nothing in it. An absolute threshold would not survive a page
   // drawn at a different size, so take the median ring as the baseline and call
   // anything a third heavier a double ring. That reads the gap wherever it is.
+  // Take the baseline from the DATA rows only. Where a table has a multi-level
+  // header — the Z32 pages stack 車型タイプ over トランスミッション over パック記号 —
+  // those rows are full of text, every cell reads as a fat "ring", and they drag
+  // the median up until real ◎ marks fall under the threshold and read as plain
+  // options. On Z32 page 5 that put the median at 73 against a true symbol ink
+  // of about 32. The caller knows where its header ends; let it say so.
+  const from = opt.dataFrom == null ? 0 : opt.dataFrom;
+  // Skip the label column too: it holds the feature names, whose ink dwarfs any
+  // symbol and stretches the spread until no gap looks significant.
+  const colFrom = opt.dataCol == null ? 1 : opt.dataCol;
   const inks = [];
-  for (const row of marks) for (const c of row) if (c.mark === 'ring') inks.push(c.ink);
+  for (let r = from; r < marks.length; r++)
+    for (let c = colFrom; c < marks[r].length; c++)
+      if (marks[r][c].mark === 'ring') inks.push(marks[r][c].ink);
+  // Split on the biggest gap in the sorted inks, not on a multiple of the
+  // median. Taking the median as the single-ring baseline assumes single rings
+  // are the majority, and on Z32 page 6 they are not — ◎ dominates, the median
+  // lands at 86 which IS the double ring, and a 1.35x threshold then finds no
+  // standard marks at all. The two populations are well separated wherever they
+  // both occur (30-34 against 45-51 on one page, 51 against 86 on another), so
+  // find the widest gap and cut there. If there is no real gap the marks are all
+  // one kind, and everything stays a plain option.
   inks.sort((a, b) => a - b);
-  const median = inks.length ? inks[Math.floor(inks.length / 2)] : 0;
-  const heavy = median * 1.35;
-  for (const row of marks) for (const c of row) {
-    if (c.mark === 'ring') c.mark = (median && c.ink >= heavy) ? 'standard' : 'option';
+  let cut = Infinity;
+  if (inks.length > 3) {
+    const lo = inks[0], hi = inks[inks.length - 1];
+    let best = 0, at = -1;
+    for (let k = 1; k < inks.length; k++) {
+      const gap = inks[k] - inks[k - 1];
+      if (gap > best) { best = gap; at = k; }
+    }
+    // A real gap is a decent fraction of the whole spread, not sampling noise.
+    if (at > 0 && hi > lo && best >= Math.max(4, (hi - lo) * 0.35)) cut = inks[at];
   }
-  return { rows, marks, rowLines, colLines, medianInk: median };
+  for (const row of marks) for (const c of row) {
+    if (c.mark === 'ring') c.mark = (c.ink >= cut) ? 'standard' : 'option';
+  }
+  return { rows, marks, rowLines, colLines, inkCut: cut === Infinity ? null : cut };
 }
 
 module.exports = { readMatrix, readMarks, describe, findLines, classify };
