@@ -66,8 +66,58 @@ const LOCATION = {
   ECR32: { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
   HCR32: { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
   HNR32: { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
-  BNR32: { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' }
+  BNR32: { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
+
+  // S13 family. Spread over four volumes, and the shipped files are unions of
+  // more than one code — see GROUPS.
+  S13:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' },
+  PS13:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  KS13:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  RS13:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  KPS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+  KRS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+  RPS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+  KRPS13: { vindat: 'VINDAT6.AB3', mdlcode: 'MDLCODE.AB3' }
 };
+
+// A shipped file is not always one chassis code.
+//
+// fast_ps13.json is PS13 followed by KPS13 (100,115 + 12,197 = 112,312) and
+// fast_rs13.json is RS13 followed by KRS13 (19,478 + 7,262 = 26,740), which is
+// the Super HICAS sibling arrangement database.js documents. The order is the
+// volume order, and it shows in the data: the shipped files' serials climb,
+// drop exactly once, and climb again.
+//
+// rps13 is new and follows the same shape — RPS13 then KRPS13, the SR20-era
+// 180SX that had never been extracted at all.
+const GROUPS = {
+  s13:   ['S13'],
+  ps13:  ['PS13', 'KPS13'],
+  ks13:  ['KS13'],
+  rs13:  ['RS13', 'KRS13'],
+  rps13: ['RPS13', 'KRPS13'],
+  ecr32: ['ECR32'],
+  er32:  ['ER32'],
+  fr32:  ['FR32'],
+  hr32:  ['HR32'],
+  hcr32: ['HCR32'],
+  hnr32: ['HNR32'],
+  bnr32: ['BNR32']
+};
+
+// Does this family's export keep the colour-trim character at [L+6]?
+//
+// It is not a global rule, and assuming it was produced a whole S13 family
+// whose every paint code was one character short. Checked against all 42
+// shipped files: every R32, R33 and R34 export is 3 characters, so the
+// character is dropped there. The S13 family, S14, C34, the JDM Z32 files and
+// M35 are 3 OR 4 - the character is kept, and the 3s are the records where it
+// was a space. The Z32 EXPORT files (us/ca/el/er) are 3, like the Skylines.
+//
+// database.js splits it back out at load: dict.c becomes the paint code and
+// dict.ctr the trim character, keyed on length 4. So keeping it where the
+// family keeps it is what makes the trim character show up on the plate at all.
+const KEEPS_COLOR_PREFIX = new Set(['s13', 'ps13', 'ks13', 'rs13', 'rps13']);
 
 const be24 = (b, o) => (b[o] << 16) | (b[o + 1] << 8) | b[o + 2];
 const be16 = (b, o) => (b[o] << 8) | b[o + 1];
@@ -115,17 +165,17 @@ function findRecords(buf, code) {
   return offsets;
 }
 
-function extract(code) {
-  const loc = LOCATION[code];
-  if (!loc) throw new Error('No source location known for ' + code);
-  const buf = fs.readFileSync(path.join(SRC, loc.vindat));
-  const mdl = fs.readFileSync(path.join(SRC, loc.mdlcode));
-  const L = code.length;
+// Build one export from an ordered list of chassis codes. A single-code file is
+// just a group of one, so there is only this path.
+function extract(name) {
+  const key = name.toLowerCase();
+  const codes = GROUPS[key] || [name.toUpperCase()];
+  const label = (GROUPS[key] ? codes[0] : name.toUpperCase());
+  const keepPrefix = KEEPS_COLOR_PREFIX.has(key);
 
-  const offsets = findRecords(buf, code);
-
-  // Dictionaries are built in first-seen order, which is what the shipped
-  // files do - row 0 of every one of them indexes 0 into each dictionary.
+  // Dictionaries are built in first-seen order across the whole concatenation,
+  // which is what the shipped files do - row 0 of every one of them indexes 0
+  // into each dictionary.
   const b = [], d = [], c = [], t = [], mc = [];
   const bi = new Map(), di = new Map(), ci = new Map(), ti = new Map(), mci = new Map();
   const intern = (arr, map, v) => {
@@ -134,28 +184,37 @@ function extract(code) {
     return k;
   };
 
-  const rows = offsets.map(o => {
-    const block = String.fromCharCode(buf[o + L]);
-    const serial = be24(buf, o + L + 1);
-    const ymm = be16(buf, o + L + 4);
-    const date = '19' + String(Math.floor(ymm / 100)).padStart(2, '0') +
-                 '-' + String(ymm % 100).padStart(2, '0');
-    // [L+6] deliberately skipped - see the note at the top of this file.
-    const paint = ascii(buf, o + L + 7, 3);
-    const interior = String.fromCharCode(buf[o + L + 14]);
-    const ptr = be24(buf, o + L + 19);
-    const model = ptr + 20 <= mdl.length ? ascii(mdl, ptr, 20) : '';
-    return [
-      intern(b, bi, block),
-      serial,
-      intern(d, di, date),
-      intern(c, ci, paint),
-      intern(t, ti, interior),
-      intern(mc, mci, model)
-    ];
-  });
+  const rows = [];
+  const parts = [];
+  for (const code of codes) {
+    const loc = LOCATION[code];
+    if (!loc) throw new Error('No source location known for ' + code);
+    const buf = fs.readFileSync(path.join(SRC, loc.vindat));
+    const mdl = fs.readFileSync(path.join(SRC, loc.mdlcode));
+    const L = code.length;
+    const offsets = findRecords(buf, code);
+    parts.push(code + ' ' + offsets.length.toLocaleString());
+    for (const o of offsets) {
+      const ymm = be16(buf, o + L + 4);
+      const ptr = be24(buf, o + L + 19);
+      rows.push([
+        intern(b, bi, String.fromCharCode(buf[o + L])),
+        be24(buf, o + L + 1),
+        intern(d, di, '19' + String(Math.floor(ymm / 100)).padStart(2, '0') +
+                      '-' + String(ymm % 100).padStart(2, '0')),
+        // [L+6] is the colour-trim character. Kept or dropped per family - see
+        // KEEPS_COLOR_PREFIX. When kept it is trimmed, so a space there yields
+        // the bare 3-character paint code, which is why those families show a
+        // mix of 3s and 4s.
+        intern(c, ci, keepPrefix ? ascii(buf, o + L + 6, 4).trim()
+                                 : ascii(buf, o + L + 7, 3)),
+        intern(t, ti, String.fromCharCode(buf[o + L + 14])),
+        intern(mc, mci, ptr + 20 <= mdl.length ? ascii(mdl, ptr, 20) : '')
+      ]);
+    }
+  }
 
-  return { m: code, n: rows.length, b, d, c, t, mc, r: rows };
+  return { m: label, n: rows.length, b, d, c, t, mc, r: rows, _parts: parts };
 }
 
 // ---------------------------------------------------------------------------
@@ -168,32 +227,49 @@ function compare(code) {
 
   const diffs = [];
   if (got.n !== want.n) diffs.push(`count ${got.n} vs ${want.n}`);
-  for (const k of ['b', 'd', 'c', 't', 'mc']) {
-    if (JSON.stringify(got[k]) !== JSON.stringify(want[k])) {
-      diffs.push(`${k}: ${got[k].length} entries vs ${want[k].length}` +
-        (got[k].length === want[k].length ? ' (same size, different order or values)' : ''));
+
+  // Compare the RECORDS, not the encoding.
+  //
+  // Dictionary indices are an implementation detail and the two do not agree
+  // on them: the original S13 extract built ONE dictionary across the whole
+  // family and wrote all 5,167 model codes into each of the four files, so
+  // fast_ks13.json carries thousands of codes none of its own rows use. This
+  // extractor interns per file. Both are correct - every row resolves to the
+  // same car - and comparing raw indices would call that a failure while
+  // missing a dictionary built in the wrong order that happened to be the
+  // same size. Resolving through each side's own dictionary tests the thing
+  // that matters.
+  const resolve = (doc, r) => [
+    doc.b[r[0]], r[1], doc.d[r[2]], doc.c[r[3]], doc.t[r[4]], doc.mc[r[5]]
+  ].join('');
+
+  let bad = 0;
+  const n = Math.min(got.r.length, want.r.length);
+  for (let i = 0; i < n; i++) {
+    if (resolve(got, got.r[i]) !== resolve(want, want.r[i])) {
+      if (bad < 3) diffs.push(`row ${i}: ${resolve(got, got.r[i])} vs ${resolve(want, want.r[i])}`);
+      bad++;
     }
   }
-  if (!diffs.length) {
-    let bad = 0;
-    for (let i = 0; i < want.r.length; i++) {
-      if (JSON.stringify(got.r[i]) !== JSON.stringify(want.r[i])) { if (bad < 3) diffs.push(`row ${i}: ${JSON.stringify(got.r[i])} vs ${JSON.stringify(want.r[i])}`); bad++; }
-    }
-    if (bad) diffs.push(`${bad} rows differ in total`);
-  }
-  return { code, status: diffs.length ? 'MISMATCH' : 'exact match', diffs, n: got.n };
+  if (bad) diffs.push(`${bad} of ${n} rows differ`);
+
+  const sameEncoding = ['b', 'd', 'c', 't', 'mc']
+    .every(k => JSON.stringify(got[k]) === JSON.stringify(want[k]));
+  const status = diffs.length ? 'MISMATCH'
+               : (sameEncoding ? 'exact match' : 'records match (leaner dictionary)');
+  return { code, status, diffs, n: got.n };
 }
 
 const args = process.argv.slice(2);
 
 if (args.includes('--verify')) {
-  const known = ['FR32', 'HR32', 'HCR32', 'HNR32', 'BNR32'];
+  const known = ['FR32', 'HR32', 'HCR32', 'HNR32', 'BNR32', 'ECR32', 'ER32', 's13', 'ps13', 'ks13', 'rs13'];
   let ok = 0;
   for (const code of known) {
     const r = compare(code);
     console.log(`${code.padEnd(6)} ${String(r.n || '').padStart(7)}  ${r.status}`);
     if (r.diffs && r.diffs.length) r.diffs.slice(0, 5).forEach(x => console.log('        ' + x));
-    if (r.status === 'exact match') ok++;
+    if (r.status !== 'MISMATCH') ok++;
   }
   console.log(`\n${ok}/${known.length} chassis reproduced exactly.`);
   process.exit(ok === known.length ? 0 : 1);
@@ -207,7 +283,13 @@ if (ci >= 0 && args[ci + 1]) {
   console.log(`  dates  ${out.d.length} (${out.d.slice().sort()[0]} .. ${out.d.slice().sort().pop()})`);
   console.log(`  paints ${out.c.length}  interiors ${out.t.length}  model codes ${out.mc.length}`);
   const sers = out.r.map(r => r[1]);
-  console.log(`  serial ${Math.min(...sers)} .. ${Math.max(...sers)}`);
+  // Reduce, not spread. Math.min(...sers) overflows the call stack somewhere
+  // above 100k arguments, and it did it on S13's 165,866 - after printing the
+  // counts and BEFORE the write, so the run looked like it had succeeded while
+  // leaving the file untouched.
+  let lo = Infinity, hi = -Infinity;
+  for (const v of sers) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  console.log(`  serial ${lo} .. ${hi}`);
   if (args.includes('--write')) {
     const file = path.join(OUT_DIR, 'fast_' + code.toLowerCase() + '.json');
     fs.writeFileSync(file, JSON.stringify(out) + '\n', 'utf8');

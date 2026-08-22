@@ -1,6 +1,6 @@
 {
  "generated": "2026-08-22",
- "total": 1271066,
+ "total": 1357633,
  "models": {
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
@@ -209,7 +209,7 @@
    "body": "2-Door Coupe",
    "stamp": "S13",
    "legend": true,
-   "count": 165864
+   "count": 165866
   },
   "PS13": {
    "name": "Nissan Silvia Turbo (PS13)",
@@ -248,8 +248,8 @@
    "name": "Nissan 180SX (RS13)",
    "short": "180SX",
    "code": "E-RS13",
-   "years": "1988 – 1993",
-   "engine": "CA18DET 1.8L Turbo / SR20DET 2.0L Turbo (model-year dependent)",
+   "years": "1988 – 1990",
+   "engine": "CA18DET 1.8L Turbo",
    "body": "3-Door Hatchback",
    "stamp": "RS13",
    "legend": true,
@@ -259,12 +259,34 @@
    "name": "Nissan 180SX Super HICAS (KRS13)",
    "short": "180SX Super HICAS",
    "code": "E-KRS13",
-   "years": "1989 – 1991",
+   "years": "1988 – 1990",
    "engine": "CA18DET 1.8L Turbo",
    "body": "3-Door Hatchback",
    "stamp": "RS13",
    "legend": true,
    "count": 7262
+  },
+  "RPS13": {
+   "name": "Nissan 180SX (RPS13)",
+   "short": "180SX (SR20)",
+   "code": "E-RPS13",
+   "years": "1990 – 1998",
+   "engine": "SR20DE 2.0L / SR20DET 2.0L Turbo",
+   "body": "3-Door Hatchback",
+   "stamp": "RPS13",
+   "legend": true,
+   "count": 74910
+  },
+  "KRPS13": {
+   "name": "Nissan 180SX Super HICAS (KRPS13)",
+   "short": "180SX SR20 HICAS",
+   "code": "E-KRPS13",
+   "years": "1990 – 1998",
+   "engine": "SR20DE 2.0L / SR20DET 2.0L Turbo",
+   "body": "3-Door Hatchback",
+   "stamp": "KRPS13",
+   "legend": true,
+   "count": 11655
   },
   "S14": {
    "name": "Nissan Silvia (S14)",

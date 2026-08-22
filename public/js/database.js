@@ -6,19 +6,19 @@
  * the 20-character factory model code. Verified byte-for-byte against that
  * source on 2026-08-18 (see the R31/R30 note below for what changed since).
  *
- * 1,271,066 factory records, 1987–2007. Three different counts describe this
+ * 1,357,633 factory records, 1987–2007. Three different counts describe this
  * archive and they are easy to confuse, so all three are spelled out:
- *   42  fast_*.json files exist in public/data
- *   36  of them are fetched (six are out of scope — see the note below)
- *   32  chassis entries after _mergeExportGroups folds the six Z32 export
+ *   43  fast_*.json files exist in public/data
+ *   37  of them are fetched (six are out of scope — see the note below)
+ *   33  chassis entries after _mergeExportGroups folds the six Z32 export
  *       files into two, which is what `_cols` ends up holding
- *   37  browsable models in models{}
- * "32 chassis" is the post-merge figure this header has always quoted; it read
+ *   39  browsable models in models{}
+ * "33 chassis" is the post-merge figure this header has always quoted; it read
  * 34 while 38 files were being fetched, which was right under that definition.
  *
  * Five families (the site's own totals; each family is the sum of its
  * loaded files, and the five sum exactly to the figure above):
- *   Skyline R32/R33/R34   560,785     Silvia / 180SX S13-S14   414,207
+ *   Skyline R32/R33/R34   560,785     Silvia / 180SX S13-S14   500,774
  *   Stagea C34            133,408     300ZX Z32 export          97,800
  *   Fairlady Z Z32 (JDM)   64,866
  * Largest single files: S13 165,864, HCR32 144,097, PS13 112,312,
@@ -36,6 +36,17 @@
  * with extract_vindat.js, which earns its trust by re-deriving the five R32
  * chassis this file already shipped and reproducing all five exactly: same
  * counts, same dictionaries in the same order, same rows.
+ *
+ * RPS13 (74,910) and KRPS13 (11,655) followed the same day, found by
+ * audit_chassis.js walking the source rather than checking a list. RS13 above
+ * is only the first two and a half years of the 180SX; everything from the end
+ * of 1990 wears RPS13, and none of it was here. The site held 24% of the
+ * 180SX records in the source while presenting RS13 as the 180SX.
+ *
+ * Two S13 records were recovered at the same time. The shipped fast_s13.json
+ * held 165,864 where the source has 165,866 — block 2 serial 7138 (1991-07)
+ * and block 6 serial 2182 (1989-05) had been dropped. Nothing was in the
+ * shipped file that the re-extract lacked, so it was a clean superset.
  *
  * R31 (HR31, 182,351 records — the single largest chassis), R30 (DR30,
  * 44,439 records) and the M35 Stagea (NM35 25,281, PNM35 1,849, HM35 1,682,
@@ -501,12 +512,12 @@ const JDM_DATABASE = {
       shortName: '180SX',
       chassisCode: 'E-RS13',
       bodyStyle: '3-Door Hatchback',
-      years: '1988 – 1993',
-      engine: 'CA18DET 1.8L Turbo / SR20DET 2.0L Turbo (model-year dependent)',
+      years: '1988 – 1990',
+      engine: 'CA18DET 1.8L Turbo',
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
-      description: 'The fixed-headlight hatchback on the S13 platform — sold as the 180SX in Japan, 200SX in Europe.'
+      description: 'The fixed-headlight hatchback on the S13 platform — sold as the 180SX in Japan, 200SX in Europe. This code covers the CA18DET years only: its records run 1988-07 to 1990-11 and stop there, at which point the SR20 car takes over as RPS13 below. The engine here previously read "CA18DET or SR20DET, model-year dependent" and the span ran to 1993, both of which were RPS13\'s life being attributed to a code that had already ended.'
     },
     'KRS13': {
       id: 'KRS13', chassisPrefix: 'RS13',
@@ -516,12 +527,61 @@ const JDM_DATABASE = {
       shortName: '180SX Super HICAS',
       chassisCode: 'E-KRS13',
       bodyStyle: '3-Door Hatchback',
-      years: '1989 – 1991',
+      years: '1988 – 1990',
       engine: 'CA18DET 1.8L Turbo',
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
       description: 'The Super HICAS (rear-wheel steering) counterpart to RS13 — same relationship KPS13 has to PS13, one physical file apart. Split out rather than left folded into RS13\'s count.'
+    },
+
+    // RPS13 and KRPS13 — the SR20 180SX, added 2026-08-22.
+    //
+    // 86,565 records that had never been extracted. RS13 above is only the
+    // first two and a half years of the 180SX: it runs 1988-07 to 1990-11 and
+    // stops. Everything after that wears the RPS13 code, and none of it was
+    // here — the site held 26,740 of the 113,305 180SX records in the source,
+    // 24%, while describing RS13 as the 180SX outright.
+    //
+    // The handover is clean and dated. RS13 ends 1990-11; RPS13 has five
+    // pre-production cars (one in 1990-03, four in 1990-11) and then goes to
+    // volume in 1990-12 with 845, which is the January 1991 SR20 car arriving.
+    //
+    // KRPS13 needs its own chassisStamp for the same reason KPS13 does, and
+    // the data says so just as plainly: its serials collide with RPS13's on
+    // 8,997 of its 11,655 records, so the two are running separate numbering
+    // sequences and cannot share a printed prefix without inventing thousands
+    // of duplicate chassis numbers. Position 1 of the model code separates
+    // them cleanly — RPS13 carries S or Z there, KRPS13 always K.
+    'RPS13': {
+      id: 'RPS13', chassisPrefix: 'RPS13',
+      gradeFilter: '1:!K',
+      generation: 'S13 (Silvia)',
+      name: 'Nissan 180SX (RPS13)',
+      shortName: '180SX (SR20)',
+      chassisCode: 'E-RPS13',
+      bodyStyle: '3-Door Hatchback',
+      years: '1990 – 1998',
+      engine: 'SR20DE 2.0L / SR20DET 2.0L Turbo',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The 180SX for most of its life — the SR20 car that replaced the CA18DET RS13 at the end of 1990 and ran to December 1998, outlasting the Silvia coupe it shares a platform with by two years. 74,910 records, nearly three times the RS13 count.'
+    },
+    'KRPS13': {
+      id: 'KRPS13', chassisPrefix: 'RPS13', chassisStamp: 'KRPS13',
+      gradeFilter: '1:K',
+      generation: 'S13 (Silvia)',
+      name: 'Nissan 180SX Super HICAS (KRPS13)',
+      shortName: '180SX SR20 HICAS',
+      chassisCode: 'E-KRPS13',
+      bodyStyle: '3-Door Hatchback',
+      years: '1990 – 1998',
+      engine: 'SR20DE 2.0L / SR20DET 2.0L Turbo',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The Super HICAS (rear-wheel steering) 180SX of the SR20 era, standing to RPS13 as KRS13 does to RS13. 11,655 records, on its own chassis numbering sequence rather than RPS13\'s.'
     },
 
     // =========================================================
@@ -815,7 +875,7 @@ const JDM_DATABASE = {
   // once, here, to be picked up everywhere this distinction matters (the
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
-    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'S14', 'CS14',
+    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'RPS13', 'KRPS13', 'S14', 'CS14',
     'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_EXPORT', 'GZ32_EXPORT'
@@ -1090,7 +1150,7 @@ const JDM_DATABASE = {
       'bcnr33','bnr34','er34','enr34','hr34',
       'ecr33','er33','enr33','hr33',
       'bnr32','hcr32','hnr32','hr32','fr32','ecr32','er32',
-      's13','ps13','ks13','rs13','s14','cs14',
+      's13','ps13','ks13','rs13','rps13','s14','cs14',
       // M35 Stagea (nm35, hm35, pm35, pnm35) is deliberately not listed —
       // see the scope note in the file header. The four files stay in
       // public/data; they are simply not fetched.
@@ -2003,7 +2063,7 @@ const JDM_DATABASE = {
   transmissionPositions: {
     'BCNR33': 5, 'ECR33': 5, 'ER33': 5, 'ENR33': 5, 'HR33': 5,
     'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5,
-    'S13': 3, 'PS13': 4, 'KS13': 3, 'RS13': 4, 'S14': 5, 'CS14': 5,
+    'S13': 3, 'PS13': 4, 'KS13': 3, 'RS13': 4, 'RPS13': 5, 'S14': 5, 'CS14': 5,
     'WGC34': 5, 'WHC34': 5, 'WGNC34': 5
   },
   transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32', 'ECR32', 'ER32'],
@@ -2033,6 +2093,13 @@ const JDM_DATABASE = {
     // character — same H/J-then-F/A shape as plain S13, just offset by 1.
     if (modelId === 'PS13' && mc[0] === 'K') {
       ch = mc[this.transmissionPositions.PS13 + 1];
+    } else if (modelId === 'RPS13' && mc[1] === 'K') {
+      // Same shape one generation on: the KRPS13 minority inside the physical
+      // RPS13 file writes "PKS13..." against RPS13's "PS13...", one character
+      // longer, so every field after it shifts by one. Verified on the codes —
+      // F/A sits at position 5 across RPS13's 74,910 and at 6 across all
+      // 11,655 of KRPS13's, with nothing else at either.
+      ch = mc[this.transmissionPositions.RPS13 + 1];
     } else if (this.transmissionPositions[modelId] !== undefined) {
       ch = mc[this.transmissionPositions[modelId]];
     } else if (this.transmissionR32Models.includes(modelId)) {
@@ -2664,7 +2731,10 @@ const JDM_DATABASE = {
   //
   // 329,381 records, 100.000% fully recognised bar a single oddity reading
   // LS13ANS3, which fits no layout here.
-  _s13Chassis: ['S13', 'PS13', 'KS13', 'RS13'],
+  // RPS13 is here too, and needed no new layout code: _s13Layout anchors on
+  // "13" inside the model code rather than on a fixed offset, so "PS13JAT" and
+  // "PKS13JAT23" walk the same fields as "S13JFTW" does.
+  _s13Chassis: ['S13', 'PS13', 'KS13', 'RS13', 'RPS13'],
 
   _s13Layout: function(mc) {
     const body = String(mc || '').replace(/\s+R?S13?\s*$/, '').trimEnd();
@@ -3116,6 +3186,21 @@ const JDM_DATABASE = {
     }
     if (pack !== null) {
       let t, exact = true;
+      // RPS13 is deliberately NOT routed here, even though it is the same car
+      // as RS13 five years on and the RS table is the 180SX's own.
+      //
+      // It was, briefly, on exactly that reasoning. The records disagree: over
+      // the same 4,042 sampled pack codes the RS table matches 72.2% and the
+      // Silvia windows below match 79.8%. Neither number proves which legend
+      // Nissan actually used for the later car — a code that matches the wrong
+      // table yields a confidently wrong label, which is worse than no label —
+      // so this stays on the path every non-RS13 chassis already used rather
+      // than moving on a hunch.
+      //
+      // What would settle it is the 180SX's own front matter in volume 084.
+      // Until then RPS13's later packs decode as "reported", not "verified":
+      // by year, 1990 is 100% confirmed, 1991 93%, and it falls to 24% by 1996
+      // as the car outlives the legend this archive holds.
       if (modelId === 'RS13') {
         t = this._s13Legend.RS[pack];
       } else {
