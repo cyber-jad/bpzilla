@@ -1081,17 +1081,38 @@ h1, h2, h3, h4, .font-display {
   /* Brand wordmark: the plate badge alone is a complete mark, so on a phone
      the "SKYLINE FACTORY RECORDS" line stays to one line instead of wrapping
      across three, and the long microfiche subtitle drops rather than
-     wrapping across five. */
+     wrapping across five.
+
+     The line used to be capped at 46vw, which on a 375px screen reserved 172px
+     for it — but the avatar, the badge and the two gaps had already spent 208px
+     of the 343px available, so the brand row came to 388px and the avatar and
+     the end of the title were both being cut off by the body's overflow clip.
+     Letting the flex items actually shrink is what sizes this correctly at any
+     width; the ellipsis then falls wherever the screen really ends. */
+  .brand-container,
+  .brand-text-group {
+    min-width: 0;
+  }
+  .brand-container {
+    max-width: 100%;
+  }
   .brand-text-group h1 {
     font-size: 0.92rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 46vw;
+    max-width: 100%;
   }
   .brand-text-group .brand-sub {
     display: none;
   }
+
+  /* 37px was under the ~44px a thumb reliably hits, and these are the primary
+     navigation for the whole site. */
+  .nav-tab-btn {
+    min-height: 44px;
+  }
+
 
   /* Fixed-column layouts set inline in the markup don't respond to a media
      query on their own — beating them here is the fix, not restyling every
@@ -1103,10 +1124,28 @@ h1, h2, h3, h4, .font-display {
     max-width: 100% !important;
     width: 100% !important;
   }
+  /* minmax(0, 1fr) rather than a bare 1fr: `1fr` is shorthand for
+     minmax(auto, 1fr), and that `auto` minimum lets a wide child push the track
+     wider than the screen instead of being made to fit inside it. */
   .stats-charts-grid,
   .rarity-calc-grid,
-  .compare-select-grid {
-    grid-template-columns: 1fr !important;
+  .compare-select-grid,
+  .decoder-start-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .stats-charts-grid > *,
+  .rarity-calc-grid > *,
+  .compare-select-grid > *,
+  .decoder-start-grid > * {
+    min-width: 0;
+  }
+
+  /* Six links in a nowrap row need 350px; a small phone offers 272. They wrap
+     onto as many rows as they need instead of running off the side. */
+  .footer-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 18px;
   }
   .godzilla-stat-grid {
     grid-template-columns: repeat(2, 1fr) !important;

@@ -1423,9 +1423,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const optionList = document.getElementById('calc-options-list');
       if (optionList) {
         const catalog = (JDM_DATABASE.getOptionCatalog(modelKey) || []).slice(0, 8);
-        optionList.innerHTML = catalog.map((o, i) => `
-          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
-            <input type="checkbox" class="calc-option" data-option-text="${this._escapeAttr(o.text)}" style="margin-top: 3px;">
+        // The row is padded so the whole line is the tap target, not just the
+        // 13px box — option names run long and are easy to miss on a phone.
+        optionList.innerHTML = catalog.map(o => `
+          <label style="display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; font-size: 0.82rem; line-height: 1.45; cursor: pointer; color: var(--text-primary);">
+            <input type="checkbox" class="calc-option" data-option-text="${this._escapeAttr(o.text)}" style="width: 17px; height: 17px; margin: 1px 0 0; flex: none;">
             <span>${this._escapeHtml(o.text)} <span style="color: var(--text-secondary);">(${o.count.toLocaleString()})</span></span>
           </label>`).join('');
         if (optionGroup) optionGroup.style.display = catalog.length ? '' : 'none';

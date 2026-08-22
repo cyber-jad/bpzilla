@@ -999,6 +999,10 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  /* A flex/grid item's default min-width:auto floors it at its content's
+     minimum width, which it then passes up to its container. Zeroing it here
+     stops one long <select> option from setting the width of the whole card. */
+  min-width: 0;
 }
 
 .form-group label {
@@ -1016,6 +1020,13 @@
   font-family: var(--font-sans);
   font-size: 0.85rem;
   outline: none;
+  /* A <select> reports its longest option as its minimum width — with paint
+     names spelled out in full ("FL0 — Light Greenish Silver (Pearl Metallic)")
+     that came to 384px, which pushed the rarity calculator 78px past the edge
+     of a phone screen and got clipped. A select truncates its own display text
+     quite happily, so let it shrink to whatever the column actually offers. */
+  min-width: 0;
+  max-width: 100%;
 }
 
 .form-control:focus {
@@ -1456,6 +1467,42 @@ textarea.form-control {
 
 @media (max-width: 720px) {
   .key-position { grid-template-columns: 1fr; gap: 6px; }
+}
+
+@media (max-width: 768px) {
+  /* 0.58rem lands at 8.7px on a phone, which is below what's comfortably
+     readable. These are the position numbers beneath each character of the
+     build plate, so they still have to stay narrow enough to track the
+     characters above them — 0.68rem is the most that does. Set here rather
+     than in style.css because components.css loads second and would otherwise
+     win the cascade at equal specificity. */
+  .plate-char-pos { font-size: 0.68rem; }
+
+  /* Controls people actually operate on a phone — search, filters, the
+     calculator's selects — were coming out at 33-37px. 42px is a comfortable
+     thumb target without inflating every button on the page. */
+  .form-control,
+  .filter-select,
+  .filter-search-input { min-height: 42px; }
+
+  /* Same min-content floor as .form-control: .filter-select carries a
+     140px min-width for desktop, but its longest option ("300ZX 2-Seat
+     (Twin Turbo) — 6,559 VINs") sets a 303px minimum that a 320px phone
+     can't hold once the row is padded. Let it shrink and truncate. */
+  .filter-select,
+  .filter-search-input {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .filter-group-left,
+  .filter-group-right,
+  .filter-bar { min-width: 0; }
+
+  /* 320px is the width at which these two columns are meant to wrap, which
+     works right up until the screen itself is 320px — then the threshold is
+     wider than the space and the column runs off the edge instead. Once
+     they've wrapped there's nothing left for it to do. */
+  .decoder-key-head > div { min-width: 0; }
 }
 .build-option-quiet { color: var(--text-muted); font-size: 0.78rem; padding-top: 6px; }
 
