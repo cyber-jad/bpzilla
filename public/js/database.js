@@ -2098,110 +2098,156 @@ const JDM_DATABASE = {
     8: {
       S: { text: 'RB26DETT twin-turbo, intercooled', verified: true }
     },
-    // The option block is NOT indexed from the left. It is a left-packed
-    // sequence: a series marker is PREPENDED to an otherwise unchanged
-    // equipment body, so the same equipment sits at different absolute
-    // indices depending on whether the marker is there. Read absolutely,
-    // "ZAA" and "7ZAA" — the same specification — decode differently, which
-    // is what this file used to do to 12,765 Series 2 and V-Spec records.
-    // See _r32SeriesPrefix for the evidence, and _r32PlateBody for the
-    // equipment characters, which are indexed from the start of the body.
-    // The body is itself left-packed, one level down: it ends in a two-character
-    // PAIR, and equipment characters are prepended to that pair. Every one of
-    // the ten distinct three-character Series 2-onward bodies is a prepend plus
-    // a pair that also occurs standalone — ZAA/NAA/TAA over AA, ZMA/NMA over MA,
-    // ZNA/NNA/TNA over NA, ZPA/NPA over PA — 10 of 10. Series 1 again writes its
-    // own vocabulary, where the prepend is mandatory (MZG, TZG, MAA, MWW) and
-    // none of its pairs occurs alone.
-    prepend: {
-      Z: { text: 'Cold Weather Package (Cold Area spec)', verified: true },
-      M: { text: 'Full Auto A/C + Active Sound System', reported: true }
-      // N, T and R also occur here. They had names in an earlier revision of
-      // this file, reasoned from T being the rarer twin of M in Series 1 and so
-      // "M plus Z". That does not survive the structure above: T is a peer of Z
-      // and N in the prepend slot, and ZMA — Z and M on the same car — occurs
-      // separately from TAA. The composite reading was wrong, so they are
-      // unnamed until something confirms them.
-    },
-    // The trailing pair. Two of these the archive can speak to directly.
-    pair: {
-      // Confirmed outside this archive: an owner's FAST lookup of
-      // KBNR32RXFS7AA reports GT-R標準車 / メーカーオプション無し, and that car's
-      // body is exactly this pair behind a Series 3 marker. 22,828 records.
-      AA: { text: 'No factory options', verified: true },
-      // 245 records, and the split matches gtr-registry's independently
-      // compiled production numbers in all three categories at once, car for
-      // car: 118 GT-R N1 (Series 2), 64 V-Spec N1, 63 V-Spec II N1. Every one
-      // of the 245 is paint 326 Crystal White, which is the only colour the N1
-      // was built in. Same set _decodeBNR32SubGrade reaches from the opposite
-      // direction.
-      ZN: { text: 'N1 specification', verified: true },
-      // 16,428 Series 1 records carry ZG and never carry Z or G apart from it.
-      ZG: { text: 'Rear wiper and GT-R specification', reported: true },
-      // The Group A homologation special. 560 records, which is the published
-      // Nismo build exactly; all 560 are Series 1; all 560 are paint KH2 Gun
-      // Grey Metallic, the only colour it was built in; and they sit inside
-      // 1989-12 to 1990-03 and nowhere else, against a run lasting to 1994-11.
-      // Count, colour, series and window all agree with gtr-registry's
-      // independently compiled figures. (An earlier revision here called this
-      // "early Series 1 equipment group", which was the date confinement read
-      // without knowing what caused it.)
-      RA: { text: 'Nismo (Group A homologation special)', verified: true }
-    }
-    // Still unnamed here, and left that way deliberately: prepend T (1,068
-    // records), prepend N (293), and pairs MA (608), NA (212), WW (100),
-    // PA (31), Y1 (14), ZH and RN (1 each).
-    //
-    // What will settle them is known, and it is not another chart. Nissan's
-    // own OPTION CODE LIST program carries an R32 series in 27 pages, and it
-    // describes this exact field — "この車両に使用しているモデル記号（モデルナンバー
-    // プレートのモデル欄）の意味" — the MODEL column of the model number plate.
-    // Two things it shows line up with what this file derived independently:
-    // it splits the R32 into date windows, page 1 covering [8905-9108], which
-    // is the L window here to the month; and it names the tail as three
-    // subfields, VS記号 then バック記号 then パーソナル記号, each with its own
-    // numbered 桁 positions — which is why a single flat position table can
-    // never fit. Page 8, "VS記号の説明 1/2" for [9108-9307], gives VS 1桁目 as
-    // 標準 / プロジェクター・ヘッドランプ＆フォグランプ / プロジェクター・ヘッドランプ
-    // and VS 2桁目 as 標準 / エアバッグ / フロントオートエアコン / 電子制御アクティブ
-    // フルオートエアコン. Projector headlamps really are in this block, which is
-    // the grain of truth under the charts that put them at a fixed position.
-    // The remaining pages of that program are the thing to read.
-    //
-    // One caveat on the split above. That the body is [prepends][terminal] is
-    // settled; that the terminal is two characters rather than one is not. A
-    // one-character terminal fits the same 10-of-10 family evidence, and the
-    // two readings disagree about whether "MA" is an atomic pair or an M
-    // carrying the same meaning it has as a prepend. The two-character reading
-    // is used because it takes ZN as a unit, and ZN as a unit is 245 records —
-    // the published N1 total exactly, and the same set _decodeBNR32SubGrade
-    // reaches independently. Anything that would name MA, NA or PA needs that
-    // question settled first, so they stay unnamed rather than inheriting a
-    // prepend's meaning on an assumption.
   },
 
-  // The head of the R32 option block is a series/specification marker, not
-  // equipment, and it is prepended rather than written at a fixed index.
+  // ---- The option tail, from Nissan's own legend ----------------------------
   //
-  // Every one of the 22 distinct 7- and 8-headed BNR32 codes has a bare twin
-  // carrying an identical body — AA/7AA/8AA, ZAA/7ZAA/8ZAA, MA/7MA/8MA,
-  // NA/7NA/8NA and so on, 22 of 22. No L-headed code has one, because Series 1
-  // writes its own equipment vocabulary (MZG/TZG/MAA/RA/MWW against the later
-  // AA/ZAA/MA/NAA/ZN), exactly the way FASTOP redefines letters per date
-  // window on the R33.
+  // Source: the OPTION CODE LIST program shipped on the FAST discs. Its R32
+  // series is 27 pages at H:\AR-JP\JP\079 (MAENOTE.079 indexes them, MAEIMG.079
+  // holds them as CCITT Group 4 images, 1280px wide). Pages 1-2 are
+  // 「モデル記号の意味」, pages 3-18 the VS記号 / パック記号 / パーソナルコード
+  // tables, pages 19-27 the 限定車 listings. The program states outright what
+  // it is describing: 「この車両に使用しているモデル記号（モデルナンバープレートの
+  // モデル欄）の意味」— the MODEL column of the model number plate, i.e. exactly
+  // this field.
   //
-  // The marker carries no equipment information of its own: it is fixed by
-  // grade and build date for 99.28% of the 43,895 records. Its boundaries are
-  // the published series changes — L stops at 1991-07 against a documented
-  // 1991-08-20 Series 2 change, 7 appears in 1993-01 at 98% of grade-X cars
-  // against a documented 1993-02-03 Series 3 change, and 8 appears 1994-02,
-  // the V-Spec II launch. This is why the widely circulated tables that name
-  // this position "Sunroof" or "Projector Headlamps" cannot be right: an
-  // option does not partition the production run in time.
-  _r32SeriesPrefix: {
-    L: 'Series 1 specification',
-    7: 'Series 3 specification',
-    8: 'V-Spec II specification'
+  // Full model code, from page 1:
+  //   [車体形状][エンジン][サスペンション] R32 [ドア][車両仕様][変速機][燃料装置]
+  //     [VS記号 1-3桁][パック記号 2桁]
+  // On the GT-R that is K B N R32 R X F S + tail — and the FAST export drops the
+  // leading 車体形状 K, which is the -1 plate offset documented at the top of
+  // this file, now confirmed from the manufacturer rather than inferred.
+  //
+  // Two things this settles that were previously derived from distributions.
+  // First, the tail really is left-packed: the legend writes 「スペース」against
+  // every 標準 row and marks codes ●標準装備（記号不要）— standard, no code
+  // emitted — so a standard field simply is not written. Second, the codes are
+  // redefined per date window, and the windows are [8905-9108] and [9108-9411],
+  // which is where this archive's own vocabulary change sits to the month.
+  //
+  // The パック記号 is always exactly two characters (「パック記号 2桁で表現」), so
+  // it is the last two characters of the tail and the VS記号 is whatever precedes
+  // it. That is the same [prepends][2-char terminal] split this file had already
+  // reached statistically, and the one-character-terminal alternative noted in an
+  // earlier revision is now ruled out.
+  _r32Legend: [
+    {
+      // 2-2. モデル記号の意味（その3）, 採用-廃止［8905-9108］
+      from: '1989-05', to: '1991-07',
+      // VS 1桁目 and 2桁目. The alphabets are disjoint, so a character decodes
+      // without needing to know which 桁 it came from.
+      vs: {
+        L: 'Projector headlamps',                    // VS1
+        P: 'Electronic active full-auto air conditioning',   // VS2
+        Q: 'Electronic active sound system',
+        Z: 'Cold-region specification',
+        M: 'Electronic active full-auto air conditioning + active sound system', // P+Q
+        V: 'Electronic active full-auto air conditioning + cold-region spec',    // P+Z
+        W: 'Active sound system + cold-region spec',                             // Q+Z
+        T: 'Electronic active full-auto air conditioning + active sound system + cold-region spec' // P+Q+Z
+      },
+      // パック記号（2ドア系）, pages 6-7. Only the two the GT-R actually uses are
+      // marked for it in the legend; the rest of that table is 4-door and other
+      // 2-door grades and is not reproduced here.
+      pack: {
+        AA: 'No factory options (standard car)',
+        ZG: 'Rear wiper (GT-R standard car)'
+      }
+    },
+    {
+      // 2-2. モデル記号の意味（その9/その12）, 採用-廃止［9108-9411］, 2ドア系
+      from: '1991-08', to: '1994-12',
+      vs: {
+        L: 'Projector headlamps + fog lamps',        // VS1
+        M: 'Projector headlamps',
+        2: 'Fluororesin paint',
+        3: 'Fluororesin paint + projector headlamps and fog lamps',   // 2+L
+        4: 'Fluororesin paint + projector headlamps',                 // 2+M
+        7: '16-inch tyre specification',
+        8: 'GT-R V-Spec II, 45R tyres',
+        N: 'Airbag',                                 // VS2
+        P: 'Full-auto air conditioning',
+        Z: 'Cold-region specification',
+        Q: 'Airbag + full-auto air conditioning',    // N+P
+        T: 'Airbag + cold-region specification',     // N+Z
+        V: 'Full-auto air conditioning + cold-region specification', // P+Z
+        W: 'Airbag + full-auto air conditioning + cold-region specification', // N+P+Z
+        9: 'Volcanic-ash countermeasure specification' // VS3
+      },
+      // パック記号（2ドア系）page 12: 1桁目 then 2桁目, each its own alphabet.
+      pack1: {
+        A: 'standard', B: 'ABS', C: 'sunroof', D: 'auto spoiler (front)',
+        E: 'auto spoiler + rear spoiler', F: 'ABS + sunroof',
+        G: 'ABS + auto spoiler (front)', H: 'ABS + auto spoiler and rear spoiler',
+        I: 'sunroof + auto spoiler (front)', J: 'sunroof + auto spoiler and rear spoiler',
+        K: 'ABS + sunroof + auto spoiler (front)',
+        L: 'ABS + sunroof + auto spoiler and rear spoiler',
+        M: 'rear wiper delete', N: 'rear spoiler delete',
+        P: 'rear wiper delete + rear spoiler delete'
+      },
+      pack2: { A: 'standard', B: 'leather seats', C: 'viscous LSD', D: 'leather seats + viscous LSD' },
+      // Two-character codes that are atomic rather than 1桁目+2桁目 (page 15).
+      pack: {
+        // The legend dates this ★[9108-9302] under GT-R and ★[9302- ] under
+        // GT-R 17インチホイール装着車. This archive splits it 118 / 64 + 63 on
+        // exactly those boundaries, and gtr-registry's independently compiled
+        // figures are 118 GT-R N1, 64 V-Spec N1, 63 V-Spec II N1.
+        ZN: 'N1 specification',
+        SS: 'V-Spec II limited edition'
+      }
+    }
+  ],
+  // Codes this archive carries that the pages above do not name: pack RA (560
+  // records) and WW (100) and ZH (1) in the first window, Y1 (14) and RN (1) in
+  // the second. RA is the Nismo — 560 records is the published Group A
+  // homologation build exactly, all Series 1, all paint KH2 Gun Grey Metallic,
+  // all built 1989-12 to 1990-03, matching gtr-registry on count, colour, series
+  // and window. Y1 and RN follow the limited-edition code shape (V1-V4, W1-W4,
+  // X1-X4, T1-T8, U1-U4 are all 限定車 on pages 13-16), so the 限定車発売車種
+  // 一覧表 on pages 19-27 is where they will be.
+  _r32PackExtra: {
+    RA: { text: 'Nismo (Group A homologation special)', verified: true }
+  },
+
+  // Pick the legend window a car's build date falls in.
+  _r32Window: function(date) {
+    const d = String(date || '');
+    for (const w of this._r32Legend) if (d >= w.from && d <= w.to) return w;
+    return null;
+  },
+
+  // Split a tail into its VS記号 characters and its two-character パック記号,
+  // and name each part. A tail shorter than two characters cannot carry a pack
+  // and is reported unsplit.
+  _r32Tail: function(tail, win) {
+    const out = [];
+    if (!tail) return out;
+    if (!win || tail.length < 2) {
+      for (const ch of tail) out.push({ char: ch, text: null, undecoded: true });
+      return out;
+    }
+    const pack = tail.slice(-2);
+    for (const ch of tail.slice(0, -2)) {
+      const t = win.vs[ch];
+      out.push({ char: ch, field: 'VS', text: t || null, verified: !!t, undecoded: !t });
+    }
+    // Atomic two-character packs first, then 1桁目 + 2桁目, then this archive's
+    // own additions, then unnamed.
+    if (win.pack && win.pack[pack]) {
+      out.push({ char: pack, field: 'Pack', text: win.pack[pack], verified: true });
+    } else if (this._r32PackExtra[pack]) {
+      const e = this._r32PackExtra[pack];
+      out.push({ char: pack, field: 'Pack', text: e.text, verified: !!e.verified });
+    } else if (win.pack1 && win.pack1[pack[0]] && win.pack2 && win.pack2[pack[1]]) {
+      const a = win.pack1[pack[0]], b = win.pack2[pack[1]];
+      const text = (a === 'standard' && b === 'standard')
+        ? 'No factory options (standard car)'
+        : (a === 'standard' ? b : (b === 'standard' ? a : a + ' + ' + b));
+      out.push({ char: pack, field: 'Pack', text: text.charAt(0).toUpperCase() + text.slice(1), verified: true });
+    } else {
+      out.push({ char: pack, field: 'Pack', text: null, undecoded: true });
+    }
+    return out;
   },
   // BNR32 alone. The other R32 chassis write a shorter chassis prefix into the
   // model code — "CR32GAELQKB" and "R32GAEAA" against BNR32's "BNR32RXFSLMZG" —
@@ -2271,7 +2317,7 @@ const JDM_DATABASE = {
   // induction slot (HR32 100%, HCR32 22.7%), one place further along.
   _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic' },
 
-  _decodeR32Plate: function(modelId, mc) {
+  _decodeR32Plate: function(modelId, mc, date) {
     const opts = [];
     if (!mc) return opts;
     const L = this._r32Layout(mc);
@@ -2293,53 +2339,27 @@ const JDM_DATABASE = {
     // their characters shown in order, unnumbered and unnamed, which beats the
     // nothing at all they showed before.
     const isGtr = modelId === 'BNR32';
-    let idx = L.optionsFrom;
-
-    // Strip the prepended series marker before indexing anything, or every
-    // equipment character on a car that has no marker is read one slot early.
-    // BNR32 only: the marker set is demonstrated on the GT-R (see
-    // _r32SeriesPrefix) and the other R32 chassis carry an L in this slot that
-    // does NOT track the series — it oscillates month to month on HCR32 and
-    // HR32 instead of partitioning the run — so it is not treated as one.
-    if (isGtr && idx < L.end && this._r32SeriesPrefix[mc[idx]]) {
-      opts.push({ pos: idx, platePos: this.platePos(idx), char: mc[idx],
-                  field: 'Series', text: this._r32SeriesPrefix[mc[idx]], verified: true });
-      idx++;
-    }
+    const tail = mc.slice(L.optionsFrom, L.end).replace(/[-\s]/g, '');
 
     if (!isGtr) {
-      // No table for these chassis, and their prefixes are a different length,
-      // so the characters are shown in order, unnumbered and unnamed.
-      for (; idx < L.end; idx++) {
-        const ch = mc[idx];
-        if (!ch || ch === '-' || ch === ' ') continue;
-        opts.push({ pos: idx, platePos: null, char: ch, text: null, undecoded: true });
+      // The legend's VS記号 and パック記号 tables are per-grade, and the columns
+      // for the other R32 chassis have not been read across yet, so their
+      // characters are shown in order, unnumbered and unnamed.
+      let idx = L.optionsFrom;
+      for (const ch of tail) {
+        opts.push({ pos: idx++, platePos: null, char: ch, text: null, undecoded: true });
       }
       return opts;
     }
 
-    // The body ends in a two-character pair; anything ahead of it is prepended
-    // equipment. Read the prepends first, then the pair as one field — ZN means
-    // N1 as a pair and nothing established as two separate letters.
-    const pairAt = L.end - 2;
-    for (; idx < pairAt; idx++) {
-      const ch = mc[idx];
-      if (!ch || ch === '-' || ch === ' ') continue;
-      const def = this._r32Plate.prepend[ch];
-      // A character that's really there but has no confirmed meaning is shown
-      // as itself rather than dropped, same as everywhere else here.
-      opts.push({ pos: idx, platePos: this.platePos(idx), char: ch,
-                  text: def ? def.text : null,
-                  verified: !!(def && def.verified), reported: !!(def && def.reported),
-                  undecoded: !def });
-    }
-    if (pairAt >= L.optionsFrom && pairAt < L.end) {
-      const pair = mc.slice(pairAt, L.end);
-      const def = this._r32Plate.pair[pair];
-      opts.push({ pos: pairAt, platePos: this.platePos(pairAt), char: pair,
-                  text: def ? def.text : null,
-                  verified: !!(def && def.verified), reported: !!(def && def.reported),
-                  undecoded: !def });
+    // VS記号 characters, then the two-character パック記号, per the window the
+    // car was built in.
+    let idx = L.optionsFrom;
+    for (const part of this._r32Tail(tail, this._r32Window(date))) {
+      opts.push({ pos: idx, platePos: this.platePos(idx), char: part.char,
+                  field: part.field, text: part.text,
+                  verified: !!part.verified, undecoded: !!part.undecoded });
+      idx += part.char.length;
     }
     return opts;
   },
@@ -2347,7 +2367,7 @@ const JDM_DATABASE = {
   _decodeOptions: function(modelId, mc, date) {
     const opts = [];
     if (!mc) return opts;
-    if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc);
+    if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc, date);
     if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
