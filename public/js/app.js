@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       step('initModals', this.initModals);
       step('renderDatabaseTable', this.renderDatabaseTable);
       // Last, so every view it might have to open already exists.
+      step('initStatsLookup', this.initStatsLookup);
       step('initRouter', this.initRouter);
 
       if (typeof lucide !== 'undefined') {
@@ -170,6 +171,49 @@ document.addEventListener('DOMContentLoaded', () => {
           this.applying = false;
         }
       }
+    },
+
+    // Chassis lookup at the top of Stats. Reads the plate for one car, and
+    // points the rest of the section at that car's model so the breakdowns
+    // below are about what was just looked up.
+    initStatsLookup: function() {
+      const input = document.getElementById('stats-vin-lookup');
+      const btn = document.getElementById('stats-vin-lookup-btn');
+      const out = document.getElementById('stats-vin-lookup-result');
+      if (!input || !btn || !out) return;
+
+      const run = () => {
+        const q = input.value.trim();
+        if (!q) { out.innerHTML = ''; return; }
+        const hits = JDM_DATABASE.findChassis(q) || [];
+        if (!hits.length) {
+          out.innerHTML = `<p class="stats-lookup-miss">No record for
+            <strong>${this._escapeHtml(q)}</strong>. Chassis numbers look like
+            BNR340-000051 — the chassis code, the series block, then the serial.</p>`;
+          return;
+        }
+        // Same serial in two series blocks is two different cars, so say so
+        // rather than silently showing the first.
+        const extra = hits.length > 1
+          ? `<p class="stats-lookup-note">${hits.length} records share this number
+             across series blocks; showing the first.</p>` : '';
+        out.innerHTML = extra +
+          `<div class="stats-plate-frame">${this.renderPlateBreakdown(hits[0])}</div>`;
+
+        const rec = hits[0];
+        const selector = document.getElementById('stats-model-selector');
+        if (selector && rec.modelId && selector.value !== rec.modelId) {
+          selector.value = rec.modelId;
+          selector.dispatchEvent(new Event('change'));
+        }
+        // Carry it into the calculator below so the two agree.
+        const calcVin = document.getElementById('calc-vin-input');
+        if (calcVin) calcVin.value = rec.chassisNumber;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      };
+
+      btn.addEventListener('click', run);
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') run(); });
     },
 
     initRouter: function() {
