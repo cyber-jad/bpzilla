@@ -1826,6 +1826,20 @@ textarea.form-control {
   margin: 0 0 8px;
 }
 .plate-opt-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+/* Grade-standard equipment. No plate position to show, so the rows carry a
+   marker instead of a code chip, and the whole block is visually quieter than
+   the option list above it — it describes the grade, not this car's record. */
+.plate-opt-list-plain .plate-opt::before {
+  content: "\2022";
+  color: var(--text-muted);
+  flex: none;
+}
+.plate-note {
+  margin: 8px 0 0;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
 .plate-opt {
   display: flex;
   gap: 10px;
