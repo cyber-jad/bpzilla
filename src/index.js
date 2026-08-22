@@ -214,6 +214,14 @@ async function describeRoute(pathname, env) {
         .sort((a, b) => b.stamp.length - a.stamp.length);
       m = stamps.find(x => id.startsWith(x.stamp)) || null;
     }
+    // A chassis-shaped string whose prefix matches no chassis in the archive is
+    // a typo, not a record. Answering 200 for it would be the soft 404 that
+    // not_found_handling: "404-page" was chosen to avoid — every mistyped URL
+    // reported to search engines as a real page. Export models are the
+    // exception: their identifier is a 17-character VIN with no chassis prefix
+    // to match, so those are let through.
+    const looksLikeVin = /^[A-HJ-NPR-Z0-9]{17}$/.test(id);
+    if (!m && !looksLikeVin) return null;
     return {
       view: m && m.legend ? 'legends-view' : 'database-view',
       chassis: id,
