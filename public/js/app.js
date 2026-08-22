@@ -1380,6 +1380,12 @@ document.addEventListener('DOMContentLoaded', () => {
         this.runRarityCalculation();
       });
 
+      // Options are rebuilt per model, so listen on the container rather than
+      // rebinding each checkbox every time the list changes.
+      document.getElementById('calc-options-list')?.addEventListener('change', (e) => {
+        if (e.target.classList.contains('calc-option')) this.runRarityCalculation();
+      });
+
       this.updateRarityOptionsForModel(modelSelect?.value || 'BNR34');
       this.runRarityCalculation();
     },
@@ -1408,6 +1414,31 @@ document.addEventListener('DOMContentLoaded', () => {
             `<option value="${c.code}">${c.code} — ${c.name} (${c.percent}%)</option>`;
         });
       }
+
+      // Only offer equipment this chassis's own build plates decode to, with
+      // the real number of cars carrying it. A chassis whose option block isn't
+      // decoded (R32, S13, Z32 — they predate the FASTOP table) shows nothing
+      // rather than a list of boxes that would silently do nothing.
+      const optionGroup = document.getElementById('calc-options-group');
+      const optionList = document.getElementById('calc-options-list');
+      if (optionList) {
+        const catalog = (JDM_DATABASE.getOptionCatalog(modelKey) || []).slice(0, 8);
+        optionList.innerHTML = catalog.map((o, i) => `
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
+            <input type="checkbox" class="calc-option" data-option-text="${this._escapeAttr(o.text)}" style="margin-top: 3px;">
+            <span>${this._escapeHtml(o.text)} <span style="color: var(--text-secondary);">(${o.count.toLocaleString()})</span></span>
+          </label>`).join('');
+        if (optionGroup) optionGroup.style.display = catalog.length ? '' : 'none';
+      }
+    },
+
+    _escapeHtml: function(s) {
+      return String(s).replace(/[&<>"']/g, c =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    },
+
+    _escapeAttr: function(s) {
+      return this._escapeHtml(s);
     },
 
     runRarityCalculation: function() {
@@ -1418,11 +1449,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // which printed on the certificate of a Silvia or a 300ZX too.
       const vinInput = document.getElementById('calc-vin-input')?.value.trim() || 'NOT SUPPLIED';
 
-      const options = [];
-      if (document.getElementById('opt-cold-weather')?.checked) options.push('cold_weather');
-      if (document.getElementById('opt-carbon')?.checked) options.push('carbon_spoiler');
-      if (document.getElementById('opt-leather')?.checked) options.push('leather_interior');
-      if (document.getElementById('opt-navi')?.checked) options.push('navi_audio');
+      // The decoded option text itself is the key, so what's counted is exactly
+      // what the checkbox says.
+      const options = [...document.querySelectorAll('.calc-option:checked')]
+        .map(el => el.getAttribute('data-option-text'));
 
       const result = RARITY_CALCULATOR.calculateRarity({
         modelId,

@@ -610,6 +610,13 @@ const MODEL_DECODER = {
         ['Built', record.buildDate || '—'],
         ['Series', record.series || '—'],
         ['Paint', `${record.colorCode}${record.colorName !== record.colorCode ? ' — ' + record.colorName : ''}`],
+        // The colour field as the plate actually reads it: paint code with the
+        // trim character in front. Only worth a row where the record carries
+        // one — the R32/R33/R34 discs leave it blank, so the plate and the
+        // paint code are the same string there.
+        ...(record.colorTrimCode
+          ? [['Plate colour field', `${record.colorTrimCode}${record.colorCode}`]]
+          : []),
         ['Interior code', this._explainTrim(gen, record.interiorCode)],
         ['Factory code', record.modelCode || '—']
       ],

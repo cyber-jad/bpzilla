@@ -35,45 +35,54 @@ const RARITY_CALCULATOR = {
     const colorCount = colorObj.count;
     const colorRatio = colorCount / totalProd;
 
-    // Option modifier (Cold weather, carbon, leather, navi, etc.)
-    let optionModifier = 1.0;
-    if (options.includes('cold_weather')) optionModifier *= 0.18;
-    if (options.includes('carbon_spoiler') || options.includes('carbon_hood')) optionModifier *= 0.12;
-    if (options.includes('leather_interior')) optionModifier *= 0.08;
-    if (options.includes('navi_audio')) optionModifier *= 0.25;
-    if (options.includes('sunroof')) optionModifier *= 0.04;
-    if (options.includes('n1_engine')) optionModifier *= 0.02;
+    // Count the actual cars, don't model them.
+    //
+    // This was a joint-probability estimate: grade share x colour share x a
+    // table of invented per-option coefficients (cold weather 0.18, leather
+    // 0.08, and so on — numbers with no source behind them). On a BNR34
+    // V-Spec II Nür in Bayside Blue it returned 178 where the factory records
+    // hold 119, and printed that figure onto a certificate of authenticity.
+    //
+    // Every record is already in memory, so the combination is counted.
+    const optionTexts = (options || []).filter(Boolean);
+    const match = JDM_DATABASE.countMatching(modelId, {
+      grade: trimObj.trim,
+      colorCode: colorObj.code,
+      options: optionTexts
+    });
+    // A real combination can legitimately have been built zero times; saying so
+    // is the honest answer, and far more interesting than rounding it up to 1.
+    const matchingUnits = match ? match.count : 0;
 
-    // Joint probability estimation grounded in authentic factory distributions
-    let estimatedMatchingUnits = Math.round(totalProd * trimRatio * colorRatio * optionModifier);
-    if (estimatedMatchingUnits < 1) estimatedMatchingUnits = 1;
-    if (estimatedMatchingUnits > trimCount) estimatedMatchingUnits = Math.min(trimCount, colorCount);
-
-    const rarityPercentile = +((1 - (estimatedMatchingUnits / totalProd)) * 100).toFixed(2);
-    const exactPercentage = +((estimatedMatchingUnits / totalProd) * 100).toFixed(3);
+    const rarityPercentile = +((1 - (matchingUnits / totalProd)) * 100).toFixed(2);
+    const exactPercentage = +((matchingUnits / totalProd) * 100).toFixed(3);
 
     // Determine Tier
     let tierName = 'Core Production';
     let tierBadge = 'badge-standard';
     let tierDescription = 'Standard factory high-volume configuration.';
 
-    if (estimatedMatchingUnits === 1) {
+    if (matchingUnits === 0) {
+      tierName = 'No Record of This Build';
+      tierBadge = 'badge-grail';
+      tierDescription = 'No car in the factory records was built to this exact combination. Either it was never offered together, or this specification is not what the plate actually reads.';
+    } else if (matchingUnits === 1) {
       tierName = 'One-of-One Unicorn';
       tierBadge = 'badge-unicorn';
       tierDescription = 'Literally the single only vehicle produced with this exact factory specification.';
-    } else if (estimatedMatchingUnits <= 19) {
+    } else if (matchingUnits <= 19) {
       tierName = 'Pinnacle Grail (Tier 0)';
       tierBadge = 'badge-grail';
       tierDescription = 'Among the top 20 rarest halo collector vehicles in global automotive history.';
-    } else if (estimatedMatchingUnits <= 80) {
+    } else if (matchingUnits <= 80) {
       tierName = 'Ultra Rare Spec (Tier 1)';
       tierBadge = 'badge-ultra-rare';
       tierDescription = 'Exceptionally scarce; highly sought-after by premier collectors and heritage museums.';
-    } else if (estimatedMatchingUnits <= 250) {
+    } else if (matchingUnits <= 250) {
       tierName = 'Collector Grade (Tier 2)';
       tierBadge = 'badge-collector';
       tierDescription = 'Limited production run with high investment retention and enthusiast appeal.';
-    } else if (estimatedMatchingUnits <= 800) {
+    } else if (matchingUnits <= 800) {
       tierName = 'Desirable Spec (Tier 3)';
       tierBadge = 'badge-desirable';
       tierDescription = 'Uncommon specification featuring distinctive paint or performance options.';
@@ -95,13 +104,16 @@ const RARITY_CALCULATOR = {
       colorPercentage: colorObj.percent,
       totalInTrim: trimCount,
       trimPercentage: trimObj ? trimObj.percent : 0,
-      estimatedMatchingUnits: estimatedMatchingUnits,
+      matchingUnits: matchingUnits,
+      estimatedMatchingUnits: matchingUnits,  // retained for older callers
       exactPercentage: exactPercentage,
       rarityPercentile: rarityPercentile,
       tierName: tierName,
       tierBadge: tierBadge,
       tierDescription: tierDescription,
-      oneOfXText: `1 of ${estimatedMatchingUnits.toLocaleString()} in the FAST Records`,
+      oneOfXText: matchingUnits === 1
+        ? `The only one in the FAST records`
+        : `1 of ${matchingUnits.toLocaleString()} in the FAST records`,
       optionsApplied: options
     };
   },

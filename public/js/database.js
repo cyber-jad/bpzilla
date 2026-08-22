@@ -48,6 +48,13 @@ const JDM_DATABASE = {
   _cols: {},
   _byPrefix: {},         // legacy shim: { BCNR33: { length: n } }
   _paint: {},            // paint code -> factory colour name
+
+  // Bucket label for rows whose grade or transmission character exists but has
+  // no confirmed meaning. "Not decoded" rather than "not recorded": ER33/ECR33
+  // early cars do carry a value here (a literal 'N'), we just can't say what it
+  // meant — claiming the plate was blank would be a different, wrong statement.
+  // Shared so the breakdowns and countMatching agree on the same string.
+  UNDECODED_LABEL: 'Not decoded',
   _totalRecords: 0,
   _loaded: false,
   loadError: null,
@@ -361,8 +368,18 @@ const JDM_DATABASE = {
       badgeClass: 'badge-nissan',
       description: 'Turbocharged S13 Silvia coupe — CA18DET early cars, SR20DET after the 1991 running change.'
     },
+    // `chassisStamp` is the prefix this car actually wears, as distinct from
+    // `chassisPrefix`, which names the physical FAST file the rows live in.
+    // The two differ only here, and the data forces the distinction: PS13 and
+    // KPS13 serials collide on 12,185 of KPS13's 12,197 records, so the two are
+    // running *separate* numbering sequences and cannot share a printed prefix
+    // without inventing thousands of duplicate chassis numbers. (Contrast the
+    // other splits — ER34 GT/GT-t, RS13/KRS13, WGNC34/260RS, ECR33/ECR33_V —
+    // where serials are perfectly disjoint, proving one shared sequence, and
+    // where sharing the printed prefix is therefore correct.) Matches the
+    // chassisCode below, which was already recorded as E-KPS13.
     'KPS13': {
-      id: 'KPS13', chassisPrefix: 'PS13',
+      id: 'KPS13', chassisPrefix: 'PS13', chassisStamp: 'KPS13',
       gradeFilter: '0:K',
       generation: 'S13 (Silvia)',
       name: 'Nissan Silvia Turbo, Super HICAS (KPS13)',
@@ -885,7 +902,11 @@ const JDM_DATABASE = {
             blkStr: col.dict.b[col.blk[i]] || '0',
             ser: col.ser[i],
             dateStr: col.dict.d[col.di[i]] || '',
-            colorStr: col.dict.c[col.ci[i]] || '',
+            // Recombine trim + paint so the merged dictionary is built from the
+            // same raw field shape the per-file loader saw, then split once at
+            // the end. Source columns are already normalised by this point.
+            colorStr: (col.dict.ctr ? col.dict.ctr[col.ci[i]] || '' : '') +
+                      (col.dict.c[col.ci[i]] || ''),
             interiorStr: col.dict.t[col.ti[i]] || '',
             mcStr: col.dict.mc[col.mci[i]] || '',
             vin: col.vin ? col.vin[i] : undefined,
@@ -947,6 +968,9 @@ const JDM_DATABASE = {
         merged.ranges[b][1] = i;
       }
 
+      this._splitColorDict(merged.dict);
+      if (this._ensureSortedByChassis(merged)) this._rebuildRanges(merged);
+
       this._cols[newId] = merged;
       this._byPrefix[newId] = { length: n };
 
@@ -955,6 +979,95 @@ const JDM_DATABASE = {
         delete this._byPrefix[srcId];
       });
     });
+  },
+
+  // ---- Colour field normalisation ------------------------------------------
+  // A Nissan build plate records the body colour as a three-character exterior
+  // paint code followed by a single interior trim character. The FAST export
+  // carries both in one field, and on the older JDM discs the trim character is
+  // often blank — which is why the same paint arrives here as "KH3" on some
+  // records and "GKH3" on others.
+  //
+  // Left alone, that splits one colour into several: an M35 Stagea showed 33
+  // "colours" for its 10 real paints, and every per-colour count, percentage
+  // and rarity denominator was computed against a fragment of the true total.
+  // Nissan's own colour master (the "C" records inside ABBREV on the discs)
+  // names paint by the three-character code alone, confirming that the code —
+  // not the code-plus-trim — is the colour's identity.
+  //
+  // Splitting once here, at the dictionary level, fixes every consumer at the
+  // same time: `dict.c` becomes the paint code and `dict.ctr` the trim
+  // character at the same index, so nothing is discarded and no per-record
+  // storage is added.
+  _splitColorDict: function(dict) {
+    if (!dict || !Array.isArray(dict.c) || dict.ctr) return;
+    const paint = new Array(dict.c.length);
+    const trim  = new Array(dict.c.length);
+    for (let i = 0; i < dict.c.length; i++) {
+      const code = dict.c[i] || '';
+      const isPrefixed = code.length === 4;
+      trim[i]  = isPrefixed ? code[0] : '';
+      paint[i] = isPrefixed ? code.slice(1) : code;
+    }
+    dict.c = paint;
+    dict.ctr = trim;
+  },
+
+  // ---- Chassis-order invariant ---------------------------------------------
+  // findChassis binary-searches col.ser inside the span recorded for a block,
+  // which is only valid while rows really are grouped by block and ascending by
+  // serial inside each group. Every file satisfied that except PS13, where the
+  // 12,197 KPS13 rows sit appended after the block-1 rows as a *second* block-0
+  // run — so block 0's recorded span covered the whole file, the serials inside
+  // it were not monotonic, and every KPS13 chassis number failed to resolve.
+  //
+  // Restoring the order here is better than teaching the lookup to cope: the
+  // invariant is what the range table, the default row order and the binary
+  // search all assume, so one sort keeps the three of them honest at once.
+  // Returns true when it had to reorder, so the caller can rebuild the ranges.
+  _ensureSortedByChassis: function(col) {
+    const blockOf = i => col.dict.b[col.blk[i]] || '0';
+    let sorted = true;
+    for (let i = 1; i < col.n; i++) {
+      const pb = blockOf(i - 1), cb = blockOf(i);
+      if (cb < pb || (cb === pb && col.ser[i] < col.ser[i - 1])) { sorted = false; break; }
+    }
+    if (sorted) return false;
+
+    const order = Array.from({ length: col.n }, (_, i) => i);
+    order.sort((a, b) => {
+      const ba = blockOf(a), bb = blockOf(b);
+      if (ba !== bb) return ba < bb ? -1 : 1;
+      return (col.ser[a] - col.ser[b]) || (a - b);
+    });
+
+    const permuteTyped = arr => {
+      const out = new arr.constructor(col.n);
+      for (let i = 0; i < col.n; i++) out[i] = arr[order[i]];
+      return out;
+    };
+    col.blk = permuteTyped(col.blk);
+    col.ser = permuteTyped(col.ser);
+    col.di  = permuteTyped(col.di);
+    col.ci  = permuteTyped(col.ci);
+    col.ti  = permuteTyped(col.ti);
+    col.mci = permuteTyped(col.mci);
+    if (col.rowSource) col.rowSource = permuteTyped(col.rowSource);
+    if (col.vin) {
+      col.vin = order.map(i => col.vin[i]);
+      col.vinIndex = new Map();
+      for (let i = 0; i < col.n; i++) if (col.vin[i]) col.vinIndex.set(col.vin[i], i);
+    }
+    return true;
+  },
+
+  _rebuildRanges: function(col) {
+    col.ranges = {};
+    for (let i = 0; i < col.n; i++) {
+      const b = col.blk[i];
+      if (!col.ranges[b]) col.ranges[b] = [i, i];
+      col.ranges[b][1] = i;
+    }
   },
 
   // ---- Load the compact FAST exports ---------------------------------------
@@ -1038,6 +1151,9 @@ const JDM_DATABASE = {
           if (!col.ranges[b]) col.ranges[b] = [i, i];
           col.ranges[b][1] = i;
         }
+
+        this._splitColorDict(col.dict);
+        if (this._ensureSortedByChassis(col)) this._rebuildRanges(col);
 
         this._cols[upper] = col;
         this._byPrefix[upper] = { length: n };
@@ -1156,9 +1272,14 @@ const JDM_DATABASE = {
     const physicalId = resolved.physicalId;
 
     const model = this.models[modelId];
+    const stamp = (model && model.chassisStamp) || physicalId;
     const block = col.dict.b[col.blk[i]] || '0';
     const serial = col.ser[i];
     const code = col.dict.c[col.ci[i]] || '';
+    // The trim character the plate carries alongside the paint code. Kept and
+    // shown as the raw factory character: no colour master on the discs names
+    // these letters, so decoding one would be a guess.
+    const colorTrim = col.dict.ctr ? (col.dict.ctr[col.ci[i]] || '') : '';
     const date = col.dict.d[col.di[i]] || '';
     const name = this._paint[code] || (this.colorNames[code] || {}).name || code;
     const hex = (this.colorNames[code] || {}).hex || this._swatchFor(code, name);
@@ -1193,6 +1314,7 @@ const JDM_DATABASE = {
         grade: '',
         buildDate: date,
         colorCode: code,
+        colorTrimCode: colorTrim,
         colorName: name,
         colorHex: hex,
         interiorCode: '',
@@ -1206,11 +1328,13 @@ const JDM_DATABASE = {
     }
 
     return {
-      // The physical chassis prefix, never the (possibly grade-split) model
-      // id, so the chassis number always matches what's actually stamped on
-      // the car — an ER34_GT and an ER34_GTT car both read "ER34-######".
-      chassisNumber: `${physicalId}${block}-${String(serial).padStart(6, '0')}`,
-      plateNumber: `${physicalId}-${String(serial).padStart(6, '0')}`,
+      // What's actually stamped on the car, never the browsable model id — an
+      // ER34_GT and an ER34_GTT both read "ER34-######" because they share one
+      // numbering sequence. That is usually the physical file's prefix, but not
+      // always: KPS13 runs its own sequence inside the PS13 file and carries
+      // its own stamp, so it must not borrow PS13's (see the KPS13 entry).
+      chassisNumber: `${stamp}${block}-${String(serial).padStart(6, '0')}`,
+      plateNumber: `${stamp}-${String(serial).padStart(6, '0')}`,
       modelId: modelId,
       seriesBlock: block,
       modelCode: col.dict.mc[col.mci[i]] || '',
@@ -1220,6 +1344,7 @@ const JDM_DATABASE = {
       options: this._decodeOptions(physicalId, col.dict.mc[col.mci[i]] || '', date),
       buildDate: date,
       colorCode: code,
+      colorTrimCode: colorTrim,
       colorName: name,
       colorHex: hex,
       interiorCode: col.dict.t[col.ti[i]] || '',
@@ -1268,6 +1393,32 @@ const JDM_DATABASE = {
     return null;
   },
 
+  // Stamped-prefix -> { physicalId, filters } lookup, built once on first use.
+  // `filters` is null when the whole column wears one stamp (the normal case,
+  // including grade splits like ER34 GT/GT-t that share a serial sequence), and
+  // is the list of that stamp's row filters when a single file holds more than
+  // one stamp — today only PS13/KPS13.
+  _chassisStampIndex: null,
+  _stampIndex: function() {
+    if (this._chassisStampIndex) return this._chassisStampIndex;
+    const byStamp = {};
+    const stampsPerCol = {};
+    for (const key of Object.keys(this.models)) {
+      const model = this.models[key];
+      const physicalId = model.chassisPrefix || key;
+      const stamp = model.chassisStamp || physicalId;
+      if (!byStamp[stamp]) byStamp[stamp] = { physicalId, filters: [] };
+      byStamp[stamp].filters.push(model.gradeFilter || null);
+      (stampsPerCol[physicalId] = stampsPerCol[physicalId] || new Set()).add(stamp);
+    }
+    for (const stamp of Object.keys(byStamp)) {
+      const e = byStamp[stamp];
+      if (stampsPerCol[e.physicalId].size < 2) e.filters = null;
+    }
+    this._chassisStampIndex = byStamp;
+    return byStamp;
+  },
+
   findChassis: function(input) {
     if (!input) return [];
     const clean = String(input).toUpperCase().replace(/[\s_]/g, '');
@@ -1281,11 +1432,21 @@ const JDM_DATABASE = {
     const m = clean.match(/^([A-Z]+[0-9]{2})([0-9])?-?([0-9]{1,7})$/);
     if (!m) return [];
 
-    // A physical chassis prefix — what's actually stamped on the car — never
-    // a grade-split model id, since a VIN alone doesn't say GT vs GT-t.
-    const physicalId = m[1];
+    // The prefix the car is stamped with, which is usually — but not always —
+    // the physical file's id. KPS13 shares PS13's file while running its own
+    // serial sequence, so it is looked up as "KPS13" and must not return PS13
+    // cars that happen to carry the same serial.
+    const entry = this._stampIndex()[m[1]];
+    if (!entry) return [];
+    const { physicalId, filters } = entry;
     const col = this._cols[physicalId];
     if (!col) return [];
+
+    const rowBelongs = i => {
+      if (!filters) return true;
+      const mc = col.dict.mc[col.mci[i]] || '';
+      return filters.some(f => !f || this._matchesFilter(mc, f));
+    };
 
     const search = (block, serial) => {
       const found = [];
@@ -1294,10 +1455,18 @@ const JDM_DATABASE = {
         if (block !== undefined && block !== null && block !== '' && blockChar !== block) continue;
         const [lo, hi] = col.ranges[b];
         const i = this._bsearch(col.ser, lo, hi, serial);
-        if (i >= 0) {
-          const mc = col.dict.mc[col.mci[i]] || '';
-          const virtualId = this._virtualModelFor(physicalId, mc);
-          found.push(this._materialize(virtualId, i));
+        if (i < 0) continue;
+        // Two cars in the same block can share a serial where one file holds
+        // two numbering sequences, so walk out to both edges of the equal-serial
+        // run rather than trusting whichever index the search happened to land
+        // on — otherwise the answer depends on where the midpoint fell.
+        let lo2 = i, hi2 = i;
+        while (lo2 > lo && col.ser[lo2 - 1] === serial) lo2--;
+        while (hi2 < hi && col.ser[hi2 + 1] === serial) hi2++;
+        for (let k = lo2; k <= hi2; k++) {
+          if (!rowBelongs(k)) continue;
+          const mc = col.dict.mc[col.mci[k]] || '';
+          found.push(this._materialize(this._virtualModelFor(physicalId, mc), k));
         }
       }
       return found;
@@ -2007,6 +2176,15 @@ const JDM_DATABASE = {
     const blockCounts = new Map();
     const transmissionCounts = new Map();
     let totalCount = 0;
+    // A handful of records carry a model code in a different format from the
+    // rest of their chassis (S14's 54 "BYARR..." rows, for instance) and no
+    // position rule decodes them. They were previously left out of these
+    // breakdowns entirely, so the percentages summed to less than 100% and the
+    // rows didn't reconcile against the model total. They get their own bucket
+    // below instead — undecoded is a fact about the record, not a reason to
+    // drop it from the count.
+    let ungradedCount = 0;
+    let untransmissionedCount = 0;
 
     for (let i = 0; i < col.n; i++) {
       if (!this._rowMatches(col, i, filterChar)) continue;
@@ -2018,9 +2196,11 @@ const JDM_DATABASE = {
       const mc = col.dict.mc[col.mci[i]] || '';
       const g = this._decodeGrade(physicalId, mc, col.dict.d[col.di[i]] || '');
       if (g) gradeCounts.set(g, (gradeCounts.get(g) || 0) + 1);
+      else ungradedCount++;
 
       const t = this._decodeTransmission(physicalId, mc);
       if (t) transmissionCounts.set(t, (transmissionCounts.get(t) || 0) + 1);
+      else untransmissionedCount++;
 
       const yr = (col.dict.d[col.di[i]] || '').substring(0, 4) || 'Unknown';
       yearCounts.set(yr, (yearCounts.get(yr) || 0) + 1);
@@ -2045,13 +2225,22 @@ const JDM_DATABASE = {
         };
       });
 
-    const gradeBreakdown = [...gradeCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([grade, count]) => ({ grade, count, percent: pct(count) }));
+    // Only worth showing the leftover bucket where the rest of the chassis did
+    // decode. A model with no grade rule at all reports an empty breakdown, and
+    // a single "Not recorded in code: 144,097" row would be noise, not news.
+    const withRemainder = (entries, key, remainder) => {
+      const rows = [...entries]
+        .sort((a, b) => b[1] - a[1])
+        .map(([value, count]) => ({ [key]: value, count, percent: pct(count) }));
+      if (rows.length && remainder > 0) {
+        rows.push({ [key]: this.UNDECODED_LABEL, count: remainder, percent: pct(remainder) });
+      }
+      return rows;
+    };
 
-    const transmissionBreakdown = [...transmissionCounts.entries()]
-      .sort((a, b) => b[1] - a[1])
-      .map(([transmission, count]) => ({ transmission, count, percent: pct(count) }));
+    const gradeBreakdown = withRemainder(gradeCounts.entries(), 'grade', ungradedCount);
+    const transmissionBreakdown =
+      withRemainder(transmissionCounts.entries(), 'transmission', untransmissionedCount);
 
     const productionByYear = [...yearCounts.entries()]
       .sort((a, b) => a[0].localeCompare(b[0]))
@@ -2067,6 +2256,86 @@ const JDM_DATABASE = {
       }));
 
     return { totalCount, colorBreakdown, gradeBreakdown, transmissionBreakdown, productionByYear, seriesBreakdown };
+  },
+
+  // ---- Exact combination counts --------------------------------------------
+  // How many cars were built to one particular spec — a given grade, in a given
+  // paint, with a given set of factory options.
+  //
+  // This used to be modelled rather than counted: grade share multiplied by
+  // colour share multiplied by a table of invented per-option coefficients.
+  // For a BNR34 V-Spec II Nür in Bayside Blue that produced "1 of 178" when the
+  // factory records hold exactly 119 — a 50% overstatement, printed onto a
+  // certificate of authenticity. Every one of those records is loaded in this
+  // browser, so the combination is counted directly and the estimate is gone.
+  //
+  // Grade and options both derive from (model code, date), so both decodes are
+  // memoised on that pair; a model's rows only carry a few thousand distinct
+  // combinations even when there are a hundred thousand records.
+  countMatching: function(modelId, criteria) {
+    const { grade = null, colorCode = null, options = [] } = criteria || {};
+    const resolved = this._resolvePhysical(modelId);
+    if (!resolved || !resolved.col.n) return null;
+    const { col, physicalId, filterChar } = resolved;
+    const wanted = (options || []).filter(Boolean);
+
+    const gradeCache = new Map();
+    const optionCache = new Map();
+    let count = 0, total = 0;
+
+    for (let i = 0; i < col.n; i++) {
+      if (!this._rowMatches(col, i, filterChar)) continue;
+      total++;
+      if (colorCode && (col.dict.c[col.ci[i]] || '') !== colorCode) continue;
+
+      const key = col.mci[i] + '|' + col.di[i];
+      const mc = col.dict.mc[col.mci[i]] || '';
+      const date = col.dict.d[col.di[i]] || '';
+
+      if (grade) {
+        let g = gradeCache.get(key);
+        if (g === undefined) { g = this._decodeGrade(physicalId, mc, date) || ''; gradeCache.set(key, g); }
+        // The breakdowns bucket undecodable rows under a label rather than
+        // dropping them, so selecting that bucket has to match them here too.
+        if ((g || this.UNDECODED_LABEL) !== grade) continue;
+      }
+      if (wanted.length) {
+        let texts = optionCache.get(key);
+        if (texts === undefined) {
+          texts = (this._decodeOptions(physicalId, mc, date) || []).map(o => o.text);
+          optionCache.set(key, texts);
+        }
+        if (!wanted.every(w => texts.indexOf(w) !== -1)) continue;
+      }
+      count++;
+    }
+    return { count, total };
+  },
+
+  // Every factory option this model's records actually decode to, with how many
+  // cars carry each. Drives the rarity calculator's option list, so what's on
+  // offer is always something the archive can really count rather than a fixed
+  // set of checkboxes that may mean nothing for the selected chassis.
+  getOptionCatalog: function(modelId) {
+    const resolved = this._resolvePhysical(modelId);
+    if (!resolved || !resolved.col.n) return [];
+    const { col, physicalId, filterChar } = resolved;
+    const tally = new Map();
+    const cache = new Map();
+    for (let i = 0; i < col.n; i++) {
+      if (!this._rowMatches(col, i, filterChar)) continue;
+      const key = col.mci[i] + '|' + col.di[i];
+      let texts = cache.get(key);
+      if (texts === undefined) {
+        texts = (this._decodeOptions(physicalId,
+          col.dict.mc[col.mci[i]] || '', col.dict.d[col.di[i]] || '') || []).map(o => o.text);
+        cache.set(key, texts);
+      }
+      for (const t of texts) tally.set(t, (tally.get(t) || 0) + 1);
+    }
+    return [...tally.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([text, count]) => ({ text, count }));
   },
 
   // ---- Grade/series x paint code cross-tabulation ---------------------------
