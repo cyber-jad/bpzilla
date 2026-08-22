@@ -2022,6 +2022,57 @@ const JDM_DATABASE = {
   // guides) and has NOT been independently confirmed against this archive. It
   // is shown to the reader flagged as such rather than presented as fact.
   //
+  // ---- On the 新型車解説書 A7 legend, and why it is NOT used here -----------
+  //
+  // Nissan's own R32 新型車解説書 (section A7 発売車種, 1. 型式記号の説明) prints a
+  // labelled breakdown of the 届出記号 — the registration notification code —
+  // worked through the example E-BNR32SKXFCWCBSM. It confirms, from the
+  // manufacturer, several fields this archive had already reached on its own:
+  // B = RB26 and H = RB20, N = 全輪駆動 + SUPER HICAS, H = ハードトップ4ドア and
+  // K = クーペ2ドア (the K is the leading plate character the FAST export drops),
+  // X = GT-R and G = GTS, F = 手動5速 and A = 自動4速. Every one of those matches:
+  // the grade slot is X on the GT-R and G on all three GTS chassis, and the
+  // gearbox slot is F or A and nothing else, across 295,861 records.
+  //
+  // Its その他 block lists W = パワーステアリング, L = サンルーフ, C = エアコン,
+  // B = オポーズド型ディスクブレーキ, S = 4輪アンチスキッド(4WAS), M = LSD,
+  // V = オートスポイラー, Z = 寒冷地仕様. That legend does NOT describe the block
+  // this file decodes, and it must not be applied to it:
+  //
+  //   W is パワーステアリング, which every R32 had. It appears in 0.5% of BNR32
+  //   codes and 0.0% of HCR32, HR32, HNR32 and FR32 codes.
+  //   Only 0.2% (BNR32) to 9.1% (HCR32) of records are built entirely from
+  //   legend letters, and only 0.0% to 4.4% are in the legend's own order.
+  //   A, the commonest character in this block and often twice on one car, is
+  //   not in the legend at all.
+  //
+  // The 届出記号 and the FAST model code are two different strings that share
+  // their front-end fields and not their tails. This is almost certainly the
+  // source of the "L = Sunroof" and "L = Projector Headlamps" tables that
+  // circulate for the R32: the legend is authentic Nissan documentation, read
+  // off this page and then applied to the wrong code. It is recorded here so
+  // that it is not applied to the wrong code again.
+  //
+  // Where the prefix ends is confirmed by Nissan directly. The 1990 GT-R
+  // brochure (05108-9081AMM) prints, in its 主要諸元表, 車種型号 KBNR32RXFS —
+  // the type code with no option characters after it. Every one of the 14,234
+  // GT-Rs this archive holds for 1989 and 1990 carries exactly that prefix,
+  // 100.00%, with the option block appended per car. Two other prefix
+  // characters are confirmed the same way: the English GT-R service manual's
+  // A3 MODEL VARIATION table gives one row only — 4WD, RB26DETT, GT-R, 2-door
+  // coupe, manual 5-speed — matching mc[5] R on 100%, mc[6] X, mc[7] F on 100%
+  // and mc[8] S on 100%.
+  //
+  // That brochure also lists the GT-R's equipment, and nearly all of it is
+  // standard. The only メーカーオプション it names outright is オーディオレス仕様
+  // (audio delete, note 3); 寒冷地仕様 and manual フェンダーミラー appear as the
+  // other selectable variants (note 2). Three selectable items, against a
+  // Series 1 block that varies in about three places — prepend M/T/R and pair
+  // ZG/AA/WW — with T steady at 5.5-6.1% of Series 1 cars in every year.
+  // Suggestive, and deliberately not acted on: three candidates against three
+  // slots is not an assignment, and FASTOP's R33 table shows Nissan coding
+  // combinations rather than one option per letter.
+  //
   // BNR32 ONLY. The same letters mean different things on the other R32
   // chassis — see the note in _decodeR32Plate — so this table is not applied
   // to them, and their plate characters are shown positioned but unnamed.
@@ -2078,19 +2129,44 @@ const JDM_DATABASE = {
       // KBNR32RXFS7AA reports GT-R標準車 / メーカーオプション無し, and that car's
       // body is exactly this pair behind a Series 3 marker. 22,828 records.
       AA: { text: 'No factory options', verified: true },
-      // 245 records, which is the published BNR32 N1 total to the car, and the
-      // same set _decodeBNR32SubGrade reaches from the opposite direction.
+      // 245 records, and the split matches gtr-registry's independently
+      // compiled production numbers in all three categories at once, car for
+      // car: 118 GT-R N1 (Series 2), 64 V-Spec N1, 63 V-Spec II N1. Every one
+      // of the 245 is paint 326 Crystal White, which is the only colour the N1
+      // was built in. Same set _decodeBNR32SubGrade reaches from the opposite
+      // direction.
       ZN: { text: 'N1 specification', verified: true },
       // 16,428 Series 1 records carry ZG and never carry Z or G apart from it.
       ZG: { text: 'Rear wiper and GT-R specification', reported: true },
-      // 560 records, and they sit inside 1989-12 to 1990-03 and nowhere else —
-      // four months at the very start of production, against a run that lasted
-      // to 1994-11. Named for that confinement, not from any outside table.
-      RA: { text: 'Early Series 1 equipment group', verified: true }
+      // The Group A homologation special. 560 records, which is the published
+      // Nismo build exactly; all 560 are Series 1; all 560 are paint KH2 Gun
+      // Grey Metallic, the only colour it was built in; and they sit inside
+      // 1989-12 to 1990-03 and nowhere else, against a run lasting to 1994-11.
+      // Count, colour, series and window all agree with gtr-registry's
+      // independently compiled figures. (An earlier revision here called this
+      // "early Series 1 equipment group", which was the date confinement read
+      // without knowing what caused it.)
+      RA: { text: 'Nismo (Group A homologation special)', verified: true }
     }
     // Still unnamed here, and left that way deliberately: prepend T (1,068
     // records), prepend N (293), and pairs MA (608), NA (212), WW (100),
     // PA (31), Y1 (14), ZH and RN (1 each).
+    //
+    // What will settle them is known, and it is not another chart. Nissan's
+    // own OPTION CODE LIST program carries an R32 series in 27 pages, and it
+    // describes this exact field — "この車両に使用しているモデル記号（モデルナンバー
+    // プレートのモデル欄）の意味" — the MODEL column of the model number plate.
+    // Two things it shows line up with what this file derived independently:
+    // it splits the R32 into date windows, page 1 covering [8905-9108], which
+    // is the L window here to the month; and it names the tail as three
+    // subfields, VS記号 then バック記号 then パーソナル記号, each with its own
+    // numbered 桁 positions — which is why a single flat position table can
+    // never fit. Page 8, "VS記号の説明 1/2" for [9108-9307], gives VS 1桁目 as
+    // 標準 / プロジェクター・ヘッドランプ＆フォグランプ / プロジェクター・ヘッドランプ
+    // and VS 2桁目 as 標準 / エアバッグ / フロントオートエアコン / 電子制御アクティブ
+    // フルオートエアコン. Projector headlamps really are in this block, which is
+    // the grain of truth under the charts that put them at a fixed position.
+    // The remaining pages of that program are the thing to read.
     //
     // One caveat on the split above. That the body is [prepends][terminal] is
     // settled; that the terminal is two characters rather than one is not. A
@@ -2188,7 +2264,12 @@ const JDM_DATABASE = {
     };
   },
 
-  _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic', E: '5-speed automatic' },
+  // Nissan's own 変速機 legend (新型車解説書 A7, 型式記号の説明) lists exactly two:
+  // F = 手動5速, A = 自動4速. This archive agrees — the gearbox slot holds F or A
+  // and nothing else on all 295,861 R32 records. An earlier E = "5-speed
+  // automatic" entry here never fired: E does occur on the R32, but in the
+  // induction slot (HR32 100%, HCR32 22.7%), one place further along.
+  _r32Gearbox: { F: '5-speed manual', A: '4-speed automatic' },
 
   _decodeR32Plate: function(modelId, mc) {
     const opts = [];
