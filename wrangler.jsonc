@@ -21,7 +21,22 @@
     // the gate is consulted at all, and the view routes because no file exists
     // at /model/BNR34 — without this Cloudflare 404s them before the script
     // ever sees the request. Everything else still comes straight off the edge.
+    // "/" is here because the homepage is the one page whose markup depends on
+    // which domain asked for it — bpzilla.com and gtr-registry.org share this
+    // document and differ only in the wordmark, which the script swaps.
+    //
+    // It does not appear to take effect. `wrangler dev` serves "/" from the
+    // asset store no matter what is listed here — "/", "/index.html" and a
+    // "/*" with negative exclusions were all tried, and the response still
+    // comes back with the asset store's own cache header rather than the
+    // script's. The documentation says a bare "/" matches, so this may be a
+    // local-dev limitation that behaves correctly once deployed; it is left in
+    // because it is right if it works and harmless if it does not. What
+    // actually guarantees the wordmark on the homepage is the small inline
+    // script next to the badge in index.html. Worth re-testing on the live
+    // domain: if the edge does swap it, that script never has anything to do.
     "run_worker_first": [
+      "/",
       "/data/*",
       "/model/*",
       "/chassis/*",

@@ -215,6 +215,34 @@ h1, h2, h3, h4, .font-display {
   letter-spacing: 3px;
 }
 
+/* ---- gtr-registry.org -----------------------------------------------------
+   The same site under its other name, so the wordmark changes and nothing
+   else. The plate goes black rather than blue because the GT-R badge this
+   name refers to is a red R on black, and a red R on the blue plate is both
+   a colour clash and poor contrast. The rivets stay: they are the archive's
+   own metaphor, not BPZILLA's, and they quietly tie the two front doors
+   together.
+
+   Set by the worker off the request's Host header — see GTR_HOSTS in
+   src/index.js. There is one deployment and one copy of the records. */
+.brand-logo-badge.brand-gtr {
+  background: linear-gradient(160deg, #23262b, #0b0d10);
+  border-color: #000000;
+}
+
+/* REGISTRY is three characters longer than ZILLA. Left at the same size the
+   plate outgrows its header slot on narrow screens, so the tag is set tighter
+   to hold roughly the width the blue one has. */
+.brand-logo-badge.brand-gtr .plate-tag {
+  font-size: 1.02rem;
+  letter-spacing: 1.6px;
+}
+
+.brand-logo-badge.brand-gtr .gtr-r {
+  /* Nissan's GT-R red, and the one carrying letter in the mark. */
+  color: #e6232a;
+}
+
 .brand-text-group h1 {
   font-size: 1.15rem;
   color: var(--text-primary);
