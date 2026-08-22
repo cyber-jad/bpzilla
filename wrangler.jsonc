@@ -24,5 +24,24 @@
     // with index.html and a 200, which would tell search engines that every
     // typo'd URL is a real page.
     "not_found_handling": "404-page"
+  },
+  // Per-IP rate limiting for /data/, enforced in the script. This is the half
+  // of the anti-scraping story that header checks can't cover: a spoofed
+  // header defeats the same-origin gate, but it doesn't help against a limit
+  // counted per address.
+  //
+  // 300 requests/minute is deliberately far above real use — a visitor pulls
+  // 40 files once per page load, so this allows roughly seven full reloads a
+  // minute before anything happens. A scraper walking the archive repeatedly
+  // is the only thing that reaches it.
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "DATA_RATE_LIMIT",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 300, "period": 60 }
+      }
+    ]
   }
 }

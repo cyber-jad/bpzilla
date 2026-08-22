@@ -81,6 +81,41 @@ function refused() {
   });
 }
 
+function tooMany() {
+  return new Response(
+    'Too many requests for the factory records from this address.\n\n' +
+    'The archive is 40 files fetched once per page load; this limit sits well ' +
+    'above that. If you need the data in bulk, ask — contact@bpzilla.com.\n',
+    {
+      status: 429,
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Retry-After': '60',
+        'Cache-Control': 'no-store',
+        'X-Robots-Tag': 'noindex'
+      }
+    }
+  );
+}
+
+/**
+ * Per-IP limit on /data/, which is the half of this that a spoofed header
+ * can't get around. Deliberately fails open: if the binding is missing or
+ * throws, the request is allowed. A rate limiter having a bad day must never
+ * be the reason the archive stops loading.
+ */
+async function withinRateLimit(request, env) {
+  const limiter = env.DATA_RATE_LIMIT;
+  if (!limiter || typeof limiter.limit !== 'function') return true;
+  const key = request.headers.get('CF-Connecting-IP') || 'unknown';
+  try {
+    const { success } = await limiter.limit({ key });
+    return success;
+  } catch {
+    return true;
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -93,7 +128,10 @@ export default {
           headers: { Allow: 'GET, HEAD', 'Cache-Control': 'no-store' }
         });
       }
+      // Origin check first: it's local and free, so a request that was never
+      // going to be served doesn't spend a rate-limit call on the way out.
       if (!sameOriginSignal(request, url.origin)) return refused();
+      if (!(await withinRateLimit(request, env))) return tooMany();
     }
 
     return env.ASSETS.fetch(request);
