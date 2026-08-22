@@ -1169,7 +1169,24 @@ layout, all 6 views at 320 / 375 / 768 / 1280
         <p>What it removes is the free option. Generic crawlers, <code>wget</code>, <code>python-requests</code>, archivers and AI scrapers using stock HTTP libraries all send none of these headers and are refused. Copying the archive stops being one shell command and starts requiring someone to deliberately target this site — which is also the point at which edge rate limiting starts to bite, because that is IP- and behaviour-based and does not care what headers are sent.</p>
       </div>
 
-      <p>The layer above this is Cloudflare configuration rather than code: a rate-limiting rule on <code>/data/*</code>, and Bot Fight Mode with the verified-bot allowlist so search crawlers stay unaffected. The layer below is architectural — serving query results instead of the corpus, which would end bulk copying outright at the cost of the in-browser querying the whole design is built on.</p>
+      <h4>Rate limiting</h4>
+      <p>The gate is defeated by a spoofed header; a per-address limit isn't. Cloudflare's rate-limiting binding is declared in <code>wrangler.jsonc</code> and enforced in the same script, so it lives in the repository rather than in dashboard state nobody can review. <strong>300 requests per minute per IP</strong> — far above real use, since a visitor pulls 40 files once per page load, leaving room for roughly seven full reloads a minute. It runs after the origin check, so a request that was never going to be served doesn't spend a limit call on the way out, and it <strong>fails open</strong>: a missing binding or a throw allows the request, because a rate limiter having a bad day must never be why the archive stops loading.</p>
+
+      <h4>Bot policy</h4>
+      <div class="tw">
+        <table>
+          <thead><tr><th>Category</th><th class="m">Setting</th><th>Reasoning</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Search</strong><br>crawlers that index for search results</td><td class="m">Allow</td><td>Discoverability is the point. Untouched.</td></tr>
+            <tr><td><strong>Agent</strong><br>bots fetching answers to user questions</td><td class="m">Allow</td><td>These cite and refer traffic back rather than rebuilding the archive.</td></tr>
+            <tr><td><strong>Training</strong><br>crawlers scraping to train models</td><td class="m">Block</td><td>This is the category that takes the work wholesale.</td></tr>
+            <tr><td><strong>Mixed-purpose</strong><br>one crawler doing both search and training</td><td class="m">Allow</td><td>Cloudflare warns that blocking Training also blocks operators who use the same bot for Search. Search visibility was the stated requirement, so it wins where the two collide — dedicated training crawlers are still blocked.</td></tr>
+          </tbody>
+        </table>
+        <caption>Set 21 August 2026 and verified after a reload. The mixed-purpose choice takes effect 15 September 2026; it is a one-click reversal if the trade should go the other way.</caption>
+      </div>
+
+      <p>The layer below all of this is architectural — serving query results instead of the corpus, which would end bulk copying outright at the cost of the in-browser querying the whole design is built on.</p>
 
       <h3>Regenerating derived data</h3>
       <p>Both extractors need the FAST discs mounted at <code>H:</code>. Neither touches the record files — only the derived tables.</p>
