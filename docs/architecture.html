@@ -908,7 +908,7 @@ html { scroll-behavior: smooth; }
       <h2>Audit Report</h2>
       <div class="rule"></div>
 
-      <p>A full sweep of all 39 models and 1,284,067 records, run 21 August 2026. Seven defects found and fixed. Every finding below was verified against the data before being treated as a bug, and the fixes were verified after.</p>
+      <p>A full sweep of all 39 models and 1,284,067 records, plus a layout pass at four viewport widths, run 21 August 2026. Eight defects found and fixed. Every finding below was verified against the data before being treated as a bug, and the fixes were verified after.</p>
 
       <div class="finding crit">
         <div class="finding-head">
@@ -997,11 +997,30 @@ all 33 other chassis files      clean</div>
         <p><strong>Fix:</strong> an exact hit answers with that car alone; partial queries keep matching as before. Two results can still be correct — the same serial in two series blocks is two different cars.</p>
       </div>
 
+      <div class="finding high">
+        <div class="finding-head">
+          <h3>Content was being clipped off the side of every view on a phone</h3>
+          <span class="chip high">High</span><span class="chip fixed">Fixed</span>
+        </div>
+        <p>Because <code>body</code> sets <code>overflow-x: hidden</code>, none of this produced a scrollbar — it was cut off silently, which is why a data-layer audit never surfaced it.</p>
+        <p>The header failed on all six views. The title was capped at <code>46vw</code>, reserving 172px of a 375px screen, but the avatar, plate badge and two gaps had already spent 208px of the 343px available. The brand row came to 388px, so the avatar's left edge and the end of the title were both cut.</p>
+        <p>Four more elements failed for the same underlying reason — a <strong>min-content floor</strong> that a container could not shrink below:</p>
+        <div class="evidence">element                    demanded   available
+&lt;select&gt; (longest option)      384px       351px    rarity calculator
+.filter-select                 303px       272px    filter bar
+.decoder-key-head &gt; div        320px       250px    hard-coded min-width
+.footer-links (6, nowrap)      350px       272px    no wrapping</div>
+        <p><strong>Fix:</strong> <code>min-width: 0</code> where flex and grid items need to shrink, <code>minmax(0, 1fr)</code> instead of bare <code>1fr</code> tracks, and wrapping on the footer. The viewport-percentage guess in the header is gone — letting the flex items shrink sizes it correctly at any width, and the ellipsis falls wherever the screen really ends.</p>
+        <p>Also raised in the same pass: nav tabs from 37px to 44px, form controls to 42px, build-plate position numbers from 8.7px to 10.2px, and the rarity option checkboxes from 13px to 17px with a 50px padded row as the tap target.</p>
+        <p>One of these was self-inflicted: spelling paint names out in full is what pushed the <code>&lt;select&gt;</code> minimum to 384px, so the colour work earlier the same day caused the calculator overflow.</p>
+      </div>
+
       <h3>Checked and found correct</h3>
       <p>Two things that looked like defects were verified as deliberate and left alone.</p>
       <ul>
         <li><strong>R31 and R30 are not loaded.</strong> <code>fast_hr31.json</code> (182,351 records) and <code>fast_dr30.json</code> (44,439) sit in the data directory but are absent from the loader. Both counts were verified against the FAST source; they are out of scope by request, not a loading bug.</li>
         <li><strong>ER33's undecoded transmission is honest.</strong> All 18,539 affected records carry <code>N</code>, and they stop cleanly at 1995-12 while F/A coverage ramps up — the signature of a field that only began being populated properly, not a third gearbox.</li>
+        <li><strong>The certificate watermark only looked like it was escaping.</strong> It measures 521px wide inside a 244px card, but <code>.certificate-inner</code> already clips it — a bounding box reports its layout size regardless of ancestor clipping. No fix applied.</li>
       </ul>
 
       <h4>Post-fix verification</h4>
@@ -1014,7 +1033,13 @@ all 33 other chassis files      clean</div>
   chassis round-trip (117 + 2,700 random)     PASS
   search finds every sampled record           PASS
   rarity vs brute force (108 combinations)    PASS
-  exceptions thrown                           NONE</div>
+  adding an option never raises a count       PASS  (60 combinations)
+  exceptions thrown                           NONE
+
+layout, all 6 views at 320 / 375 / 768 / 1280
+  elements clipped off-screen                 NONE
+  scrollWidth equals viewport                 PASS
+  desktop sizing unchanged by mobile rules    PASS</div>
     </section>
 
     <!-- ============ 8. LIMITS ============ -->
