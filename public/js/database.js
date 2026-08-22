@@ -2485,35 +2485,40 @@ const JDM_DATABASE = {
     for (let p = 0; p < 5; p++) {
       const ch = mc[12 + p];
       if (!ch || ch === '-' || ch === ' ') continue;
-      // exact window match on build date first; for cars built after the
-      // last window FASTOP was maintained to (table upkeep stopped before
-      // production did on every chassis here), fall back to the latest
-      // definition of that letter rather than dropping it.
-      let hit = null, latest = null, earliest = null;
+      // Exact window match on the build date first, then the nearest window
+      // that defines this letter at this position.
+      //
+      // The windows record when FASTOP was maintained, not when the car was
+      // built, and they are narrower than production at both ends — the R33
+      // table starts 9308 while R33 records start 1993-02. They are also not
+      // contiguous in what they define: a letter can be defined at a position
+      // in two windows and left out of the one in between, and an earlier
+      // revision here only handled dates outside the whole span, so those cars
+      // fell through to unnamed. That was most of the R33 shortfall — 1,026
+      // records on position 0 letter B alone, 795 on 1:E, 633 on 2:A.
+      // Measuring the distance to each window instead covers all four cases
+      // (inside, between, before, after) with one rule.
+      let hit = null, near = null, nearDist = Infinity;
       for (const e of table) {
         if (e.pos !== p || e.char !== ch) continue;
         const from = e.from < 8000 ? e.from + 10000 : e.from;
         const to = e.to < 8000 ? e.to + 10000 : e.to;
         if (d !== null && from <= d && d <= to) { hit = e; break; }
-        if (!latest || to > (latest._to || 0)) { latest = e; latest._to = to; }
-        if (!earliest || from < (earliest._from || 99999)) { earliest = e; earliest._from = from; }
+        if (d === null) { if (!near) near = e; continue; }
+        const dist = d < from ? from - d : d - to;
+        if (dist < nearDist) { nearDist = dist; near = e; }
       }
-      // Outside every window, fall back to the nearest one in that direction.
-      // The windows record when FASTOP was maintained, not when the car was
-      // built, and they are narrower than production at both ends: the R33
-      // table starts 9308 while R33 records start 1993-02, so every car built
-      // Feb-Jul 1993 decoded to nothing at all. The tail end was already
-      // handled; this is the same argument applied to the head.
-      const use = hit
-        || (d !== null && latest && d > latest._to ? latest : null)
-        || (d !== null && earliest && d < earliest._from ? earliest : null);
-      // FASTOP is Nissan's own table, so a hit is as confirmed as this gets.
-      // A miss is still shown — the character is genuinely stamped on the car,
-      // and "position 15 reads B, meaning unconfirmed" is a more useful and more
-      // honest answer than silently omitting the field. Roughly 3% of slots
-      // across the R33/R34 chassis land here.
+      const use = hit || near;
+      // An exact window match is Nissan's own definition for that build date.
+      // A nearest-window match is still Nissan's, but for a neighbouring date
+      // range, and letters genuinely are redefined between windows — so it is
+      // flagged rather than presented as confirmed.
+      //
+      // A miss is still shown: the character is genuinely stamped on the car,
+      // and "position 15 reads B, meaning unconfirmed" is a more useful and
+      // more honest answer than silently omitting the field.
       if (use) opts.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
-                           text: use.text, verified: true });
+                           text: use.text, verified: !!hit, reported: !hit });
       else opts.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
                        text: null, undecoded: true });
     }
