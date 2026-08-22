@@ -572,26 +572,13 @@
             <input type="text" id="calc-vin-input" class="form-control mono" placeholder="e.g. ER34-012345, BNR34-000101">
           </div>
 
-          <div class="form-group" style="margin-bottom: 20px;">
+          <!-- Options are built from the selected chassis's own decoded build
+               plates, so every box here is something the archive can actually
+               count. The previous fixed list was generic and drove a set of
+               invented rarity multipliers rather than a real record count. -->
+          <div class="form-group" style="margin-bottom: 20px;" id="calc-options-group">
             <label>Factory Installed Equipment / Options</label>
-            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
-                <input type="checkbox" id="opt-cold-weather" value="cold_weather">
-                <span>Cold Weather Package (High-amp Alternator / Heated Mirrors)</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
-                <input type="checkbox" id="opt-carbon" value="carbon_spoiler">
-                <span>Factory Carbon Fiber Aero / Ducted Bonnet / High Wing</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
-                <input type="checkbox" id="opt-leather" value="leather_interior">
-                <span>Factory Leather Upholstery / M-Spec Trim</span>
-              </label>
-              <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; color: var(--text-primary);">
-                <input type="checkbox" id="opt-navi" value="navi_audio">
-                <span>MFD / Triple Center Gauges & Audio Upgrade</span>
-              </label>
-            </div>
+            <div id="calc-options-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;"></div>
           </div>
 
           <button class="btn-submit" id="btn-calculate-rarity" style="width: 100%;">
