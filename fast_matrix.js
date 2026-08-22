@@ -23,15 +23,26 @@
 'use strict';
 const { decodeG4 } = require('./fast_image.js');
 
-// rows/cols of the page that are mostly ink = ruling lines
-function findLines(rows, width, axis, minFrac) {
+// rows/cols of the page that are mostly ink = ruling lines.
+//
+// `span` limits the search to a band, and matters more than it looks. A column
+// rule is only as tall as its table, so measuring its darkness against the whole
+// page height punishes short tables: page 5 of the Z32 volume is a seven-row
+// table on a full page, its rules cover well under a third of the height, and
+// the column search returned nothing at all. Measuring within the table's own
+// vertical extent instead makes the threshold mean what it should.
+function findLines(rows, width, axis, minFrac, span) {
   const n = axis === 'h' ? rows.length : width;
-  const m = axis === 'h' ? width : rows.length;
+  const lo = span ? Math.max(0, span[0]) : 0;
+  const hi = span ? Math.min(axis === 'h' ? width : rows.length, span[1])
+                  : (axis === 'h' ? width : rows.length);
+  const m = hi - lo;
+  if (m <= 0) return [];
   const hits = [];
   for (let i = 0; i < n; i++) {
     let dark = 0;
-    for (let j = 0; j < m; j++) {
-      const v = axis === 'h' ? rows[i][j] : rows[j][i];
+    for (let j = lo; j < hi; j++) {
+      const v = axis === 'h' ? rows[i][j] : (rows[j] ? rows[j][i] : 255);
       if (v < 128) dark++;
     }
     if (dark / m >= minFrac) hits.push(i);
@@ -67,7 +78,8 @@ function readMatrix(stream, opt = {}) {
   const width = opt.width || 1280;
   const { rows } = decodeG4(stream, width, opt.maxRows || 5000);
   const rowLines = findLines(rows, width, 'h', opt.minRowFrac || 0.45);
-  const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.30);
+  const band = rowLines.length >= 2 ? [rowLines[0], rowLines[rowLines.length - 1]] : null;
+  const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.60, band);
   const cells = [];
   for (let r = 0; r + 1 < rowLines.length; r++) {
     const line = [];
@@ -142,7 +154,8 @@ function readMarks(stream, opt = {}) {
   const width = opt.width || 1280;
   const { rows } = decodeG4(stream, width, opt.maxRows || 5000);
   const rowLines = findLines(rows, width, 'h', opt.minRowFrac || 0.45);
-  const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.30);
+  const band = rowLines.length >= 2 ? [rowLines[0], rowLines[rowLines.length - 1]] : null;
+  const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.60, band);
   const marks = [];
   for (let r = 0; r + 1 < rowLines.length; r++) {
     const line = [];
