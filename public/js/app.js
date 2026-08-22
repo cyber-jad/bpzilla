@@ -1429,6 +1429,76 @@ document.addEventListener('DOMContentLoaded', () => {
           ${opts}
           ${rarity.length ? `<p class="build-rarity">${rarity.join(' ')}</p>` : ''}
         </div>`;
+
+      // Reading a plate already establishes the exact grade, paint and option
+      // set, which is everything the rarity engine needs. Hanging this off the
+      // same call that renders the summary means the two can never describe
+      // different cars.
+      this.renderDecoderRarity(record);
+    },
+
+    // -------------------------------------------------------------------------
+    // Rarity + certificate for the record currently shown in the decoder.
+    //
+    // The Stats tab asks the visitor to re-pick model, grade, paint and options
+    // by hand. A decoded plate has already stated all four, so re-entering them
+    // is both busywork and a chance to enter the wrong car. This runs the same
+    // RARITY_CALCULATOR the Stats tab runs, on values taken from the record.
+    // -------------------------------------------------------------------------
+    renderDecoderRarity: function(record) {
+      const host = document.getElementById('decoder-rarity-area');
+      if (!host) return;
+      if (!record) { host.innerHTML = ''; return; }
+
+      const result = this._rarityForRecord(record);
+      if (!result) { host.innerHTML = ''; return; }
+
+      const chassis = record.plateNumber || record.chassisNumber || 'NOT SUPPLIED';
+      const certHTML = RARITY_CALCULATOR.generateCertificateHTML(result, chassis);
+
+      // Say what the count was actually matched on. The number is only as
+      // specific as the plate is decoded: a chassis whose option block this
+      // archive can't read yet (R32, S13, Z32) matches on grade and paint
+      // alone, and claiming otherwise would overstate how rare the car is.
+      const optionCount = (result.optionsApplied || []).length;
+      const basis = optionCount
+        ? `grade, paint and ${optionCount} decoded option${optionCount === 1 ? '' : 's'}`
+        : 'grade and paint (this chassis’s option block isn’t decoded yet)';
+
+      host.innerHTML = `
+        <div class="guide-card" style="margin-top: 20px;">
+          <div class="decoder-key-head">
+            <div>
+              <h4 class="decoder-step">How rare is this exact build</h4>
+              <p class="decoder-hint" style="margin-bottom:0;">
+                Counted from the records, matched on ${basis}.
+              </p>
+            </div>
+            <button class="btn-page" id="btn-decoder-print-cert" style="display: flex; align-items: center; gap: 6px;">
+              <i data-lucide="printer" style="width: 14px; height: 14px;"></i>
+              <span>Print / Save Certificate</span>
+            </button>
+          </div>
+          ${certHTML}
+        </div>`;
+
+      document.getElementById('btn-decoder-print-cert')
+        ?.addEventListener('click', () => window.print());
+
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    },
+
+    // A record already carries grade, paint and the decoded option text, which
+    // are exactly the keys countMatching uses — so both this and the Stats tab
+    // count the same cars and can't return different answers for one car.
+    _rarityForRecord: function(record) {
+      if (!record || !record.modelId) return null;
+      return RARITY_CALCULATOR.calculateRarity({
+        modelId: record.modelId,
+        trim: record.grade,
+        colorCode: record.colorCode,
+        options: (record.options || []).map(o => o.text).filter(Boolean)
+      });
     },
 
     // Real codes for a chassis, replacing the invented preset list that used to
@@ -1471,22 +1541,29 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      box.innerHTML = hits.map(h => `
+      box.innerHTML = hits.map((h, i) => `
         <div class="decoder-hit">
           <div>
             <span class="mono decoder-hit-vin">${h.plateNumber}</span>
             <span class="decoder-hit-meta">${h.modelName} &middot; ${h.buildDate} &middot; ${h.colorName}${
               h.series ? ' &middot; ' + h.series : ''}</span>
           </div>
-          <button class="btn-page" data-code="${h.modelCode}">Decode ${h.modelCode}</button>
+          <button class="btn-page" data-hit="${i}" data-code="${h.modelCode}">Decode ${h.modelCode}</button>
         </div>`).join('');
 
-      box.querySelectorAll('button[data-code]').forEach(btn => {
+      // One plate number can return more than one car — the same stamping
+      // reused in a later series. Carry the clicked hit through, not just its
+      // code: re-rendering the summary from the chosen record is what keeps
+      // "what this car is" and the certificate below it on the same car. The
+      // index addresses the hit because two hits can share a model code.
+      box.querySelectorAll('button[data-hit]').forEach(btn => {
         btn.addEventListener('click', () => {
-          const code = btn.getAttribute('data-code');
+          const hit = hits[+btn.getAttribute('data-hit')];
+          if (!hit) return;
           const input = document.getElementById('fast-input-string');
-          if (input) input.value = code;
-          this.runFastDecode(code);
+          if (input) input.value = hit.modelCode;
+          this.renderBuildSummary(hit);
+          this.runFastDecode(hit.modelCode);
           document.getElementById('decoder-code-panel')
                   ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
@@ -1730,6 +1807,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     _escapeAttr: function(s) {
       return this._escapeHtml(s);
+    },
+
+    // Drive the whole calculator from a real record.
+    //
+    // The "Generate Certificate" button used to set the chassis field alone and
+    // recalculate, which left model, grade, paint and options at whatever was
+    // last selected — so the certificate carried a real chassis number over
+    // another car's specification. Every field the record states is applied.
+    //
+    // The option list is capped at the eight most common for the chassis, so a
+    // car can legitimately carry equipment that has no checkbox. Those are
+    // appended as their own checked rows rather than dropped, because dropping
+    // them would widen the match and quietly report the car as less rare than
+    // it is. They stay visible and can be unticked like any other.
+    applyRecordToRarity: function(record) {
+      if (!record || !record.modelId) return;
+
+      const modelSelect = document.getElementById('calc-model-select');
+      if (modelSelect) modelSelect.value = record.modelId;
+      this.updateRarityOptionsForModel(record.modelId);
+
+      const trimSelect = document.getElementById('calc-trim-select');
+      if (trimSelect && record.grade) trimSelect.value = record.grade;
+
+      const colorSelect = document.getElementById('calc-color-select');
+      if (colorSelect && record.colorCode) colorSelect.value = record.colorCode;
+
+      const vinInput = document.getElementById('calc-vin-input');
+      if (vinInput) vinInput.value = record.plateNumber || record.chassisNumber || '';
+
+      const wanted = (record.options || []).map(o => o.text).filter(Boolean);
+      const list = document.getElementById('calc-options-list');
+      if (list) {
+        const present = new Set(
+          [...list.querySelectorAll('.calc-option')].map(el => el.getAttribute('data-option-text')));
+        const extra = wanted.filter(t => !present.has(t));
+        if (extra.length) {
+          const group = document.getElementById('calc-options-group');
+          if (group) group.style.display = '';
+          list.insertAdjacentHTML('beforeend', extra.map(t => `
+            <label style="display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; font-size: 0.82rem; line-height: 1.45; cursor: pointer; color: var(--text-primary);">
+              <input type="checkbox" class="calc-option" data-option-text="${this._escapeAttr(t)}" style="width: 17px; height: 17px; margin: 1px 0 0; flex: none;">
+              <span>${this._escapeHtml(t)} <span style="color: var(--text-secondary);">(on this car)</span></span>
+            </label>`).join(''));
+        }
+        const want = new Set(wanted);
+        list.querySelectorAll('.calc-option').forEach(el => {
+          el.checked = want.has(el.getAttribute('data-option-text'));
+        });
+      }
+
+      this.runRarityCalculation();
     },
 
     runRarityCalculation: function() {
@@ -2284,9 +2413,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('btn-modal-cert-gen')?.addEventListener('click', () => {
         modal.classList.remove('active');
         this.switchTab('stats-view');
-        const calcVin = document.getElementById('calc-vin-input');
-        if (calcVin) calcVin.value = record.chassisNumber;
-        this.runRarityCalculation();
+        this.applyRecordToRarity(record);
         document.getElementById('rarity-calculator-block')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
 
