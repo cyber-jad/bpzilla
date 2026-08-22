@@ -23,11 +23,22 @@
 # did nothing, because the HTML carrying it arrived an hour before the function
 # that binds it.
 #
-# stale-while-revalidate keeps that cheap. The browser still paints instantly
-# from cache and never blocks on a round trip; it just refreshes in the
-# background, so a deploy is picked up on the next visit rather than an hour
-# later. There is no build step here to hash filenames with, which is the
-# other way to solve this.
+# stale-while-revalidate made that cheap but could not close it. Two rules that
+# disagree by design still disagree: the M35 removal went live and the site kept
+# reporting the old record count, with the dropped chassis still listed, until
+# the second page load.
+#
+# What closes it is version_assets.js, which stamps every reference here with a
+# hash of the file's own contents — /js/app.js?v=1f4c2a9b. index.html is always
+# fresh, so fresh markup asks for a URL no cache has ever seen and the pair
+# cannot disagree. That is the build-step-free version of hashed filenames.
+#
+# These rules stay as they are rather than going long-and-immutable, which
+# stamped URLs would otherwise allow. The stamp is only correct if the script
+# was actually run before committing; if it was forgotten, a short max-age
+# means the change still lands on its own within the week, while `immutable`
+# would pin the stale file for as long as the max-age says. Cheap insurance
+# against the one way this can go wrong.
 /css/*
   Cache-Control: public, max-age=60, stale-while-revalidate=604800
 
