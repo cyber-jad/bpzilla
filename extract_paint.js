@@ -183,6 +183,49 @@ const OVERRIDES = {
   QX1: 'White Pearl',
   EY0: 'Silica Breath',
 
+  // Corrections where a single disc entry is contradicted by the published
+  // record. Both of these rest on ONE vote, from H:/AR-JP/JP/ABBR.TXT, and both
+  // read as a bare colour word that is simply the wrong colour:
+  //
+  //   TG0 was "Blue" on 27,321 records. Nissan's own R32 touch-up paint for TG0
+  //   is Grey Metallic, and gtr-registry's R32 colour list has Light Grey
+  //   Metallic. A grey car was being described as blue.
+  //   JK0 was "Silver" on 251 records against Yellowish Green Metallic in the
+  //   same list.
+  TG0: 'Light Grey Metallic',
+  JK0: 'Yellowish Green Metallic',
+
+  // Held at the era-correct name. Preferring the most specific disc entry
+  // otherwise promotes "Glacier White Pearlglow" here, which is a 2000s Nissan
+  // colour; every KH6 record in this archive is a Z32 or an R32, and both
+  // gtr-registry's R32 list and the Z32 sources call KH6 Pearl White.
+  KH6: 'Pearl White',
+
+  // Marketing names the discs themselves carry, chosen over the bare reading
+  // because nothing in any table scopes them to a date range. Both are used by
+  // S13/S14/Z32-era records only.
+  //   AG2 is "RED" nine times and "AZTEC RED" five, no qualifier on either.
+  //   WK0 is "WHITE" four times and "ASPEN WHITE PEARL" once — a single vote,
+  //   but unqualified, and it is the name these cars are sold under.
+  AG2: 'Aztec Red',
+  WK0: 'Aspen White Pearl',
+
+  // Deliberately NOT overridden, though a marketing name exists on the discs:
+  // AJ4, TK3 and K23 were RENAMED mid-production and the tables say so —
+  // AJ4 "RED <UP TO OCT.1994>" then "ULTRA RED <FROM OCT.1994>", TK3
+  // "BLUE PEARL GRAPHITE <UP TO OCT.1994>" then "SAPPHIRE BLUE <FROM OCT.1994>",
+  // K23 through Brilliant Silver, Liquid Platinum and Platinum Ice. This
+  // archive's records straddle those dates, so a single marketing name would be
+  // wrong for roughly half of them. The dominant generic reading is the only
+  // one true across the whole run. Naming these properly needs the paint table
+  // to become date-aware, which is a bigger change than this file.
+
+  // The R34's famous green. The discs and the paint trade both record the
+  // generic reading — "YELLOWISH GREEN M." is exactly how suppliers list it —
+  // but Nissan's name for it is Millennium Jade, and that is what the car is
+  // known by. Every JW0 record in this archive is an R34.
+  JW0: 'Millennium Jade',
+
   // Two-tone codes carried by real records that no disc in this set names.
   // Both are R33 combinations; the composition below is the reading multiple
   // owner-forum sources agree on, and the archive corroborates the era: every
@@ -228,6 +271,22 @@ function prettify(input) {
 // spellings are folded into their unqualified form first, so "DARK GRAY" and
 // "DARK GRAY <FROM JUL. 1992>" count as votes for the same name instead of
 // splitting and letting a rarer variant win.
+// A name that is nothing but a colour word, optionally with a finish suffix:
+// "RED", "WHITE 3P", "BLUE M", "BLACK SOLID". These are what the JDM discs
+// mostly carry, and they are true but uninformative.
+const BARE = /^(?:VERY |DARK |LIGHT |DEEP |BRIGHT |PALE |GRAYISH |GREYISH |BLUISH |REDDISH |YELLOWISH |GREENISH |BROWNISH |PURPLISH )*(?:WHITE|BLACK|SILVER|GRAY|GREY|RED|BLUE|GREEN|YELLOW|BROWN|BEIGE|GOLD|PURPLE|ORANGE|PINK|IVORY|CHAMPAGNE)(?:\s+(?:M|P|S|3P|2P|PM|TPM|SOLID|METALLIC|PEARL|MICA))*$/i;
+
+// Pick the name that says the most, not the one repeated most often.
+//
+// Frequency was the original rule and it is systematically wrong here: a bare
+// factory reading like "RED" appears on every disc that lists the code, while
+// the marketing name appears on the handful that bother. Voting therefore
+// selects the LEAST informative variant every time. AG2 is "RED" nine times and
+// "AZTEC RED" five; WK0 is "WHITE" four times and "ASPEN WHITE PEARL" once.
+//
+// So: if any variant is more than a bare colour word, choose among those (by
+// support, then length) and ignore the bare ones. Only if every variant is bare
+// does frequency decide.
 function bestName(variants) {
   const folded = new Map();
   for (const [name, n] of variants) {
@@ -236,8 +295,36 @@ function bestName(variants) {
     folded.set(key, (folded.get(key) || 0) + n);
   }
   const pool = folded.size ? folded : variants;
-  return [...pool.entries()]
-    .sort((a, b) => (b[1] - a[1]) || (b[0].length - a[0].length))[0][0];
+  let all = [...pool.entries()];
+
+  // Throw out variants the disc mangled before preferring anything for being
+  // long. The description field is capped at 43 characters, so an entry with a
+  // date window on the end gets cut mid-qualifier: B21 reads "FOUNTAIN BLUE PM
+  // (FROM AUG.2004 UP TO AUG.20" with no closing bracket, which stripQualifier
+  // cannot match and which must never win on length.
+  const malformed = ([name]) => {
+    const opens = (name.match(/\(/g) || []).length;
+    const closes = (name.match(/\)/g) || []).length;
+    if (opens !== closes) return true;
+    if (/\b(?:FROM|UP TO)\b/i.test(name)) return true;
+    return false;
+  };
+  const clean = all.filter(v => !malformed(v));
+  if (clean.length) all = clean;
+
+  // Support decides, not length.
+  //
+  // Preferring the most specific variant was tried and abandoned. It fixes the
+  // obvious cases — AG2 "RED" x9 against "AZTEC RED" x5 — but breaks more than
+  // it mends, because the rare variants are usually rare for a reason: they are
+  // era-specific renames. The discs record AY2 as "RED PM (UP TO AUG. 2004)"
+  // and then "GARNET FIRE-PM (FROM AUG. 2004)", KY0 as "SILVER M" 42 times and
+  // "BRILLIANT SILVER-M (FROM AUG. 2004)" once. Promoting the rare name applies
+  // a 2004 rename to cars built in 2001. The dominant reading is the one that
+  // holds across the whole production run, so it wins, and the handful of codes
+  // whose marketing name is genuinely better and genuinely era-safe are listed
+  // in OVERRIDES above with their sources.
+  return all.sort((a, b) => (b[1] - a[1]) || (b[0].length - a[0].length))[0][0];
 }
 
 // ---------------------------------------------------------------------------
