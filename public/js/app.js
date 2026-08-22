@@ -53,10 +53,147 @@ document.addEventListener('DOMContentLoaded', () => {
       step('initCompareView', this.initCompareView);
       step('initModals', this.initModals);
       step('renderDatabaseTable', this.renderDatabaseTable);
+      // Last, so every view it might have to open already exists.
+      step('initRouter', this.initRouter);
 
       if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
+    },
+
+    // -------------------------------------------------------------------------
+    // ROUTING
+    // -------------------------------------------------------------------------
+    // The whole archive used to live at one URL. Nothing could be linked to,
+    // nothing survived a refresh, and a shared link always opened on the
+    // homepage regardless of what the sender was looking at.
+    //
+    // Paths rather than hash fragments, because fragments stopped counting as
+    // separate URLs to search engines when hashbang was deprecated — the edge
+    // worker gives each of these its own title and description (see
+    // src/index.js), which only works if the address is a real path.
+    Router: {
+      // view id <-> path. The database view is the site root.
+      PATHS: {
+        'database-view':     '/',
+        'stats-view':        '/stats',
+        'fast-decoder-view': '/decoder',
+        'history-view':      '/history',
+        'tools-view':        '/tools',
+        'legends-view':      '/legends'
+      },
+
+      // Set while a URL is being applied to the page, so the state changes
+      // that applying it causes don't turn around and rewrite the URL again.
+      applying: false,
+
+      parse: function(pathname) {
+        const path = decodeURIComponent(pathname || '/').replace(/\/+$/, '') || '/';
+
+        const model = path.match(/^\/model\/([A-Za-z0-9_]+)$/);
+        if (model) {
+          const key = model[1].toUpperCase();
+          if (JDM_DATABASE.models[key]) return { model: key };
+        }
+
+        const chassis = path.match(/^\/chassis\/([A-Za-z0-9-]{4,24})$/);
+        if (chassis) return { chassis: chassis[1].toUpperCase() };
+
+        for (const [view, p] of Object.entries(this.PATHS)) {
+          if (p === path) return { view };
+        }
+        return null;
+      },
+
+      // Where the page currently is, as a path.
+      current: function() {
+        const app = window.App;
+        const view = app.currentTab || 'database-view';
+        const model = view === 'legends-view' ? app.currentLegendsModel : app.currentModel;
+        // A model is only worth putting in the URL on the two views that are
+        // actually about one — the others are reference material.
+        if ((view === 'database-view' || view === 'legends-view') && model) {
+          return `/model/${model}`;
+        }
+        return this.PATHS[view] || '/';
+      },
+
+      // Reflect the page's state in the address bar without adding history
+      // entries — tab and model switching is browsing within one page, not
+      // navigation between pages.
+      sync: function() {
+        if (this.applying) return;
+        const path = this.current();
+        if (path !== location.pathname) history.replaceState({}, '', path);
+      },
+
+      // A record is a real destination, so it gets its own history entry and
+      // the back button returns to whatever was underneath it.
+      pushRecord: function(chassisNumber) {
+        if (this.applying) return;
+        history.pushState({}, '', `/chassis/${encodeURIComponent(chassisNumber)}`);
+      },
+
+      // Closing a record leaves the URL pointing at a record that is no longer
+      // on screen; put it back to the view behind it.
+      clearRecord: function() {
+        if (this.applying) return;
+        if (!location.pathname.startsWith('/chassis/')) return;
+        history.replaceState({}, '', this.current());
+      },
+
+      apply: function(route) {
+        const app = window.App;
+        if (!route) return;
+        this.applying = true;
+        try {
+          if (route.chassis) {
+            const hits = JDM_DATABASE.findChassis(route.chassis) || [];
+            const record = hits[0];
+            if (record) {
+              app.switchCurrentModel(record.modelId);
+              app.switchTab(JDM_DATABASE.isLegend(record.modelId) ? 'legends-view' : 'database-view');
+              app.openChassisDetailModal(record);
+            } else {
+              // A link to a chassis that isn't in the archive. Say so rather
+              // than silently opening the homepage as though it were found.
+              app.switchTab('database-view');
+              app.showMissingChassis(route.chassis);
+            }
+          } else if (route.model) {
+            app.switchCurrentModel(route.model);
+            app.switchTab(JDM_DATABASE.isLegend(route.model) ? 'legends-view' : 'database-view');
+          } else if (route.view) {
+            app.switchTab(route.view);
+          }
+        } finally {
+          this.applying = false;
+        }
+      }
+    },
+
+    initRouter: function() {
+      const route = this.Router.parse(location.pathname);
+      if (route) this.Router.apply(route);
+      else this.Router.sync();
+
+      window.addEventListener('popstate', () => {
+        const r = this.Router.parse(location.pathname);
+        if (r) this.Router.apply(r);
+        else this.Router.apply({ view: 'database-view' });
+      });
+    },
+
+    // A /chassis/ link for a record that isn't here — a typo, or a car from a
+    // chassis this archive doesn't carry. Put the number into the table's own
+    // search so the visitor lands on "no matches" for what they asked for,
+    // rather than on the homepage wondering whether the link worked.
+    showMissingChassis: function(chassisNumber) {
+      const search = document.getElementById('filter-chassis-search');
+      if (!search) return;
+      search.value = chassisNumber;
+      this.dbPage = 1;
+      this.renderDbTable('skyline');
     },
 
     // -------------------------------------------------------------------------
@@ -699,7 +836,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td class="mono" style="font-size: 0.74rem; color: var(--text-secondary); white-space: nowrap;" title="${rec.modelCode || ''}">${rec.modelCode || '—'}</td>
         `;
 
-        tr.addEventListener('click', () => this.openChassisDetailModal(rec));
+        tr.addEventListener('click', () => this.toggleInlineDetail(tr, rec));
 
         tbody.appendChild(tr);
       });
@@ -707,6 +844,86 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
+    },
+
+    // -------------------------------------------------------------------------
+    // INLINE BUILD-PLATE BREAKDOWN
+    // -------------------------------------------------------------------------
+    // Clicking a row opens the plate underneath it rather than in a popup, so
+    // the record stays in the context of the list it was found in and several
+    // rows can't fight over one modal. Only one is open at a time — the point
+    // is to read one car, not to accordion the whole page open.
+    toggleInlineDetail: function(tr, rec) {
+      const isOpen = tr.nextElementSibling &&
+                     tr.nextElementSibling.classList.contains('inline-detail-row');
+
+      const tbody = tr.parentElement;
+      tbody.querySelectorAll('.inline-detail-row').forEach(r => r.remove());
+      tbody.querySelectorAll('tr.is-expanded').forEach(r => r.classList.remove('is-expanded'));
+      if (isOpen) return;                       // clicking the open row closes it
+
+      const row = document.createElement('tr');
+      row.className = 'inline-detail-row';
+      const cell = document.createElement('td');
+      cell.colSpan = tr.children.length;
+      cell.innerHTML = this.renderPlateBreakdown(rec);
+      row.appendChild(cell);
+      tr.classList.add('is-expanded');
+      tr.after(row);
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    },
+
+    // The plate, read field by field. Positions are numbered the way a plate
+    // is numbered, not the way the FAST export happens to be indexed, so a
+    // reading here can be checked against the plate on the car.
+    renderPlateBreakdown: function(rec) {
+      const esc = (s) => this._escapeHtml(s == null ? '' : s);
+      const built = MODEL_DECODER.explainBuild(rec);
+      const spec = (built && built.spec ? built.spec : [])
+        .map(([k, v]) => `
+          <div class="plate-spec-item">
+            <span class="plate-spec-key">${esc(k)}</span>
+            <span class="plate-spec-val">${esc(v)}</span>
+          </div>`).join('');
+
+      const opts = rec.options || [];
+      let optionsHTML;
+      if (!opts.length) {
+        optionsHTML = `<p class="plate-empty">No factory option characters are stamped on this
+          record's model code.</p>`;
+      } else {
+        optionsHTML = opts.map(o => {
+          const pos = o.platePos != null ? o.platePos : o.pos;
+          if (!o.text) {
+            return `<li class="plate-opt plate-opt-unknown">
+              <code>(${pos}${esc(o.char)})</code>
+              <span>Stamped on the car, meaning not confirmed</span>
+            </li>`;
+          }
+          // Flagged rather than quietly mixed in: a name taken from outside
+          // documentation is not the same kind of fact as one read out of
+          // Nissan's own table, and the reader is entitled to know which.
+          const flag = o.reported
+            ? `<span class="plate-flag" title="Named from outside documentation, not confirmed against this archive">reported</span>`
+            : '';
+          return `<li class="plate-opt">
+            <code>(${pos}${esc(o.char)})</code>
+            <span>${esc(o.text)}${flag}</span>
+          </li>`;
+        }).join('');
+        optionsHTML = `<ol class="plate-opt-list">${optionsHTML}</ol>`;
+      }
+
+      return `
+        <div class="plate-breakdown">
+          <div class="plate-breakdown-head">
+            <span class="plate-code mono">${esc((rec.modelCode || '').trim() || '—')}</span>
+            <span class="plate-chassis mono">${esc(rec.chassisNumber)}</span>
+          </div>
+          <div class="plate-spec-grid">${spec}</div>
+          <h4 class="plate-opt-title">Factory options, by plate position</h4>
+          ${optionsHTML}
+        </div>`;
     },
 
     showVinNotFound: function(query) {
@@ -1468,6 +1685,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const certHTML = RARITY_CALCULATOR.generateCertificateHTML(result, vinInput);
 
+      // If the chassis number entered is a real record, read its plate out
+      // underneath the certificate. Same component the VIN table expands, so
+      // the two can't drift apart — a car reads the same wherever it's found.
+      let plateHTML = '';
+      const hits = vinInput && vinInput !== 'NOT SUPPLIED'
+        ? (JDM_DATABASE.findChassis(vinInput) || [])
+        : [];
+      if (hits.length) {
+        plateHTML = `
+          <div class="stats-plate-block">
+            <h4 class="plate-opt-title">Build plate for ${this._escapeHtml(hits[0].chassisNumber)}</h4>
+            <div class="stats-plate-frame">${this.renderPlateBreakdown(hits[0])}</div>
+          </div>`;
+      }
+
       resultArea.innerHTML = `
         <div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
           <span style="font-family: var(--font-display); font-size: 1rem; color: var(--text-primary);">FACTORY SPECIFICATION CERTIFICATE OF AUTHENTICITY</span>
@@ -1477,6 +1709,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
         </div>
         ${certHTML}
+        ${plateHTML}
       `;
 
       document.getElementById('btn-print-certificate')?.addEventListener('click', () => {
