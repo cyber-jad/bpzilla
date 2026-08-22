@@ -406,6 +406,21 @@
         </div>
       </div>
 
+      <!-- Look up one car. The rarity calculator further down also accepts a
+           chassis number, but it sits two thirds of the way down the page and
+           its field reads as optional certificate decoration, so there was no
+           obvious way to ask this section about a specific car. -->
+      <div class="stats-lookup">
+        <label for="stats-vin-lookup">Look up a chassis number</label>
+        <div class="stats-lookup-row">
+          <input type="text" id="stats-vin-lookup" class="form-control mono"
+                 placeholder="e.g. BNR340-000051, KPS130-000001, ER34-012345"
+                 autocomplete="off" spellcheck="false">
+          <button class="btn-submit" id="stats-vin-lookup-btn">Read the plate</button>
+        </div>
+        <div id="stats-vin-lookup-result"></div>
+      </div>
+
       <!-- Quick Metrics Grid -->
       <div class="spec-grid" id="stats-metrics-grid">
         <!-- Populated via JS -->
