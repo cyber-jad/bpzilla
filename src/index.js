@@ -10,7 +10,7 @@
  * ---------------------------------------------------------------------------
  * The record files are the site. `curl https://bpzilla.com/data/fast_hcr32.json`
  * returned 144,097 records in 0.41s with no browser, no referer and no session —
- * forty of those and someone has the whole 1.28M-record archive in a few
+ * thirty-seven of those and someone has the whole 1.36M-record archive in a few
  * seconds. robots.txt says not to, but robots.txt is a request, not a control,
  * and the crawlers worth worrying about are exactly the ones that ignore it.
  *
@@ -61,14 +61,14 @@ const VIEW_ROUTES = {
 // tells search engines to drop the pages that do work, so the order mattered.
 //
 // BOTH domains canonical here, which is the point: it makes them one site
-// rather than two copies of the same 1.25M records competing with each other.
+// rather than two copies of the same 1.36M records competing with each other.
 // bpzilla.com keeps working and keeps its own wordmark; it just tells search
 // engines where the real address is.
 const SITE = 'https://gtr-registry.org';
 
 // Hosts that wear the GTR Registry mark instead of the BPZILLA one. Same
 // worker, same assets, same records — one deployment answering to both names,
-// because maintaining a second copy of a 1.25M-record archive to change a logo
+// because maintaining a second copy of a 1.36M-record archive to change a logo
 // would be absurd. Everything else about the page is identical by design.
 const GTR_HOSTS = new Set(['gtr-registry.org', 'www.gtr-registry.org']);
 
@@ -123,7 +123,7 @@ function refused() {
 function tooMany() {
   return new Response(
     'Too many requests for the factory records from this address.\n\n' +
-    'The archive is 40 files fetched once per page load; this limit sits well ' +
+    'The archive is 37 files fetched once per page load; this limit sits well ' +
     'above that. If you need the data in bulk, ask — contact@bpzilla.com.\n',
     {
       status: 429,
@@ -195,7 +195,7 @@ async function describeRoute(pathname, env) {
       canonical: `${SITE}${decoded}`,
       title: `${r.title} | BPZILLA`,
       description:
-        `${r.title} across 1,271,066 Nissan factory records read from the ` +
+        `${r.title} across 1,357,633 Nissan factory records read from the ` +
         `Nissan FAST microfiche — Skyline, Silvia, Stagea and 300ZX.`
     };
   }

@@ -11,7 +11,7 @@
  *   R33 / R34   GJPRQFR33ZDA-J---R33     positional option string, dash filler
  *   R32         BNR32RXFSLMZG    R32     chassis code first, space filler
  *
- * So the meanings here are derived at runtime from all 1,271,066 records. For a
+ * So the meanings here are derived at runtime from all 1,357,633 records. For a
  * given character at a given position, we look at which chassis actually carry
  * it, and if every one of those chassis shares the same engine, drivetrain or
  * body style, that is reported as the meaning — with the evidence attached.
