@@ -461,6 +461,47 @@ covers.
 for other chassis but never for the ones that carry them here, so they are an
 ordinary table gap rather than a structural puzzle.
 
+### The S14's Autech cars were decoded but not counted
+
+Volume 088's front matter is all one car, and the plate code `P870Z` was
+matched to it exactly — but only in `_decodeOptions`, as an option. A car's own
+page named it correctly while the grade breakdown, the trim filter and the
+rarity counts all still saw a `U` at position 4 and said K's.
+
+That is the same trap as the S15's Autech variants: **a coachbuilt car still
+carries the donor car's grade character**, so testing the grade letter first
+hides it. The group is now checked first, on both generations.
+
+| grade | before | after |
+|---|---|---|
+| Q's | 50,585 | 50,585 |
+| K's | 30,384 | 30,082 |
+| Autech Version K's MF-T | — | 272 |
+| Autech special build | — | 30 |
+
+All 302 came out of K's, which is what the car's own name predicts. Nissan's
+glossary agrees the car exists: `AUTC2` against `S14` reads
+`F/AUTECH JAPAN VERSION`.
+
+**Cross-checked the S14 option text against `SPECDSC` while here**, the same
+pass that caught the S15 interior colour. `SPECDSC` is thin for this chassis —
+20 tokens against the S15's 78 — and 12 of the 14 checkable items are already
+in the served text, including Diamond Selection 2, the MOMO leather steering
+wheel, the carbon centre rear spoiler and the S/K's badges. Two are not:
+
+- `AUTC2` (Autech) is absent from the option tables **and should be** — on this
+  chassis the Autech car is identified by model-code group, not by a plate
+  option, which is the subject of this section.
+- `TYR5H` reads `F/SPORTS SUSPENSION` for the S14, and nothing in the S14
+  option text mentions suspension at all. This is **not** a decoding gap: every
+  `(position, character)` pair on an S14 plate now resolves, with zero
+  undecoded characters left, so there is no slot for it to be hiding in. It is
+  most likely grade equipment rather than an option. Worth noting that the same
+  token means `16 INCH ALUMINIUM WHEEL` on the S15 — `SPECDSC` keys on token
+  AND chassis for a reason, and a token's meaning must never be carried from
+  one generation to another.
+
+
 ## S15 (volume 089) — complete, and it was missing entirely
 
 The S15 Silvia was not in this archive at all: 39,138 records, the last Silvia
