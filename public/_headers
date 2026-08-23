@@ -60,9 +60,35 @@
   # the site over HTTPS once — the plain-HTTP entry point still needs
   # "Always Use HTTPS" turned on in the Cloudflare dashboard.
   Strict-Transport-Security: max-age=31536000
-  # No Content-Security-Policy here on purpose. The page pulls Lucide from
-  # unpkg and Chart.js from jsDelivr, and leans on inline style attributes
-  # throughout, so any policy strict enough to be worth having would need
-  # 'unsafe-inline' anyway — and a wrong one silently breaks the charts and
-  # icons on a live site. Low value against a static page with no auth, no
-  # cookies and no user input that is ever stored.
+  # Content-Security-Policy.
+  #
+  # This used to say a CSP was not worth having, on the grounds that inline
+  # styles force 'unsafe-inline' anyway and a wrong policy silently breaks the
+  # charts. Both halves are true and neither is a reason to have no policy.
+  #
+  # What this actually buys, even with 'unsafe-inline' on scripts: the page
+  # loads 627 KB of third-party JavaScript — Lucide from unpkg, Chart.js from
+  # jsDelivr — and without a policy, anything that gets a <script src> onto the
+  # page can pull code from ANY origin. This names the only two that are
+  # allowed. It does not stop a compromise of unpkg itself; nothing here can,
+  # short of self-hosting. It stops the page being told to load from a
+  # third place.
+  #
+  # 'unsafe-inline' is required twice and for different reasons: 109 inline
+  # style attributes in index.html, and one inline <script> — the wordmark swap
+  # beside the badge, which has to run before first paint and so cannot be
+  # moved to a file. Neither can be dropped without changing the page.
+  #
+  # Every origin below was enumerated from the source rather than guessed:
+  #   unpkg.com, cdn.jsdelivr.net   the two <script src> tags in index.html
+  #   fonts.googleapis.com          @import at the top of css/style.css
+  #   fonts.gstatic.com             the font files that @import pulls in
+  # schema.org appears in the JSON-LD but is an identifier, never fetched, so
+  # it needs no entry. No eval or new Function anywhere in the site's own JS,
+  # so 'unsafe-eval' is deliberately absent — Chart.js and Lucide both run
+  # without it.
+  #
+  # frame-ancestors duplicates X-Frame-Options for browsers that honour the
+  # newer directive; object-src and base-uri close the two gaps that
+  # 'unsafe-inline' would otherwise leave worth exploiting.
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
