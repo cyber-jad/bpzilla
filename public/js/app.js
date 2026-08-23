@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
       step('populateModelSelects', this.populateModelSelects);
       step('renderModelQuickStrip', this.renderModelQuickStrip);
       step('renderLegendsModelStrip', () => this.renderModelStrip('legends'));
+      step('renderLegendsTabCount', this.renderLegendsTabCount);
       step('initNavigation', this.initNavigation);
       step('initToolsSubNav', this.initToolsSubNav);
       step('initGlobalSearch', this.initGlobalSearch);
@@ -286,6 +287,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // R35, ...). Selecting one resolved to no model and silently produced an
     // empty view. Generating them here keeps every dropdown in sync with the
     // 17 models that actually have FAST records.
+    // How many chassis sit behind the Nissan Legends tab.
+    //
+    // Counted from the loaded models rather than written into the markup, so
+    // the number cannot drift from what the tab actually opens — which it
+    // would, given how often chassis are added here. Left blank if the count
+    // comes back zero: the badge hides itself when empty, and no badge is
+    // better than a badge reading "0".
+    renderLegendsTabCount: function() {
+      const el = document.getElementById('legends-tab-count');
+      if (!el) return;
+      const n = Object.keys(JDM_DATABASE.models || {})
+        .filter(k => JDM_DATABASE.isLegend(k)).length;
+      el.textContent = n ? String(n) : '';
+      el.title = n ? n + ' chassis beyond the Skyline' : '';
+    },
+
     populateModelSelects: function() {
       const byGeneration = (isLegend) => {
         const out = {};

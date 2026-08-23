@@ -15,7 +15,7 @@
        crawlers: opt out of training use where the crawler respects this —
        it does not block indexing or search visibility. -->
   <meta name="robots" content="index, follow, noai, noimageai">
-  <link rel="stylesheet" href="/css/style.css?v=99205688">
+  <link rel="stylesheet" href="/css/style.css?v=1b1dd754">
   <link rel="stylesheet" href="/css/components.css?v=c0f48232">
   <!-- ====================================================================
        Third-party scripts: pinned, with integrity hashes.
@@ -220,9 +220,12 @@
           <i data-lucide="wrench" style="width: 15px; height: 15px;"></i>
           <span>Tools</span>
         </button>
+        <!-- The count is filled in by App.init from the loaded records rather
+             than written here, so it cannot drift from what the tab opens. -->
         <button class="nav-tab-btn nav-tab-btn-legends" data-tab="legends-view">
           <i data-lucide="star" style="width: 15px; height: 15px;"></i>
           <span>Nissan Legends</span>
+          <span class="tab-badge" id="legends-tab-count"></span>
         </button>
       </div>
     </nav>
@@ -375,15 +378,21 @@
     <!-- Skyline-only VIN Database above.                                          -->
     <!-- ========================================================================= -->
     <section id="legends-view" class="view-section">
+      <!-- Legends Model Strip.
+           FIRST, deliberately. The Skyline side reads hero -> model strip ->
+           filters -> table, because #model-strip is a sibling of the view and
+           sits directly under the hero. This view used to open with a line of
+           introduction instead, which pushed the car picker down the page and
+           made choosing a Silvia feel like a different, lesser thing from
+           choosing a Skyline. The strip now sits in the same place on both. -->
+      <div class="model-strip-outer" id="legends-model-strip" style="margin-bottom: 20px;">
+        <!-- Populated dynamically by JS -->
+      </div>
+
       <p class="verified-note" style="margin-bottom: 16px;">
         <i data-lucide="star" style="width: 13px; height: 13px;"></i>
         Beyond the Skyline: real Nissan FAST factory records for the Silvia, 180SX, Stagea and 300ZX (Z32) families.
       </p>
-
-      <!-- Legends Model Strip -->
-      <div class="model-strip-outer" id="legends-model-strip" style="margin-bottom: 20px;">
-        <!-- Populated dynamically by JS -->
-      </div>
 
       <!-- Filter Bar — model + search stay visible; the rest is opt-in -->
       <div class="filter-panel">
@@ -1221,7 +1230,7 @@
   <script src="/js/modelDecoder.js?v=fc71bf76"></script>
   <script src="/js/rarityCalculator.js?v=336ec00e"></script>
   <script src="/js/paintIndex.js?v=8857c8e4"></script>
-  <script src="/js/app.js?v=8b1d68b9"></script>
+  <script src="/js/app.js?v=072f6e33"></script>
 
 </body>
 </html>

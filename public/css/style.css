@@ -433,10 +433,47 @@ h1, h2, h3, h4, .font-display {
   background: var(--gtr-red-soft);
 }
 
+/* Nissan Legends.
+ *
+ * Everything but the Skyline lives behind this one tab — the Silvia, 180SX,
+ * Stagea and Z32 families, well over half the archive's chassis. It used to be
+ * styled exactly like every other tab and pushed to the far right by
+ * margin-left:auto, which reads as an afterthought rather than as the other
+ * half of the site.
+ *
+ * It keeps its position (it IS a different scope from the Skyline tabs, and
+ * the separator earns its place) but now carries the star in the marque red
+ * and a soft outline, so it reads as a destination while inactive. The active
+ * state is unchanged and still wins, so this cannot be confused for selection.
+ */
 .nav-tab-btn-legends {
   margin-left: auto;
   border-left: 1px solid var(--border-subtle);
   padding-left: 20px;
+  color: var(--text-primary);
+}
+
+.nav-tab-btn-legends svg {
+  color: var(--gtr-red);
+}
+
+.nav-tab-btn-legends:not(.active) {
+  background: var(--gtr-red-soft);
+  border-bottom-color: var(--gtr-red-glow);
+}
+
+.nav-tab-btn-legends:not(.active):hover {
+  border-bottom-color: var(--gtr-red);
+}
+
+.nav-tab-btn-legends .tab-badge {
+  border-color: var(--gtr-red-glow);
+  color: var(--text-primary);
+}
+
+/* Empty until the record count is known — an empty pill is worse than none. */
+.nav-tab-btn-legends .tab-badge:empty {
+  display: none;
 }
 
 .nav-tab-btn .tab-badge {
