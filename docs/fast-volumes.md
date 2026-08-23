@@ -41,6 +41,7 @@ copy short of re-deriving it from the FAST binaries.
 | S13          | 087 | 18 | 165,866 | done, from this legend |
 | PS13 / KS13  | 087 | —  | 136,777 | done, from this legend |
 | S14          | 088 |  3 |  84,826 | partial — FASTOP stops at 9606 |
+| S15          | 089 | 10 |  39,138 | done, from this legend |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
@@ -262,3 +263,57 @@ in three digits against 83,860 that do not, and the common endings are `D4C`,
 **What remains unnamed**: 20,799 character occurrences, led by `T` (6,397),
 `0` (3,489), `1` (2,274), `Y` (1,315) and `U` (1,207). Closing it needs an
 S14 legend for the 1996 facelift from somewhere outside this disc set.
+
+## S15 (volume 089) — complete, and it was missing entirely
+
+The S15 Silvia was not in this archive at all: 39,138 records, the last Silvia
+and the last S-chassis, sitting in `VINDAT3.AB3` untouched.
+
+**Why the audit did not catch it.** `audit_chassis.js` was scoped to the
+generations the site already held. A generation that had never been added
+cannot show up as absent from an audit that only asks "is what we have
+complete". It surfaced because someone asked for it by name. S15 is in `GENS`
+now, but the lesson generalises: an audit scoped to what you already know finds
+omissions, not blind spots.
+
+**Two counting bugs, both the same class as the R34 one.**
+
+The record walk rejected any match preceded by a letter — a guard against "R32"
+matching inside "ECR32". That holds only while record tails are zero. S15's are
+not: one ends `00 00 12 52`, and `0x52` is `R`, so the *next* record was
+discarded for being preceded by a letter while a phantom `RS15` matched one byte
+earlier and read the identical fields, because the extra code character cancels
+against the extra offset. That cost 4,912 records and invented two chassis codes,
+**RS15** (2,581) and **CS15** (116), which do not exist. Their gaps give them
+away: multiples of 29, the S15 stride, not their own 30. `findRecords` now keeps
+only offsets whose neighbours are records.
+
+And the two-digit year was read as 1900s, cutting the car off at 1999-12 when it
+ran to 2002-08 — 20,476 of its records are years 00, 01 and 02.
+
+**The layout is positional**, unlike the S13 family:
+
+```
+[1 車体形状 G クーペ][2-3 エンジン BY SR20DE][4 アクスル A 2WS / B 4WS]
+[5 R 右ハンドル][6 グレード T S / U S-AERO,R][7 変速機 F MT5 / Y MT6 / A AT4]
+S15 [11 燃料装置 E EGI / U ターボ][12 仕向地 D 標準地 / Z 寒冷地]
+[13 特装 4 標準][14-18 オプションコード]
+```
+
+**Five option positions, each with its own alphabet** (pages 3-6), and the
+letters skip I and O throughout. A dash means standard, which is why so many
+plates read `C--A-`. Position 14 has 24 letters, position 15 has five.
+
+**The Autech cars are identified by option group, not chassis code** (page 1),
+which is why looking for an "Autech S15" among the chassis codes finds nothing.
+`PB4`/`PB6` is the Autech Version 6MT, `UA3`/`UA4` the Varietta, `TKA`/`TK1`/
+`TKB`/`TK2` the Style-A, `LVT` the Driving Helper — all with `Z` at position 18,
+a value the ordinary position-18 table does not contain. The archive holds
+**1,875 Autech Version, 1,088 Varietta and 54 Style-A**. No Driving Helper.
+
+**One paint code has no disc behind it.** BN5, on 237 records, is in none of the
+196 ABBREV colour tables. Enthusiast sources call it Light Bluish Silver (some
+say Aqua Silver), so it is in OVERRIDES marked as corroborated rather than
+sourced — the same footing as the R33 two-tones 1N3 and 1N4.
+
+**Decode**: 98.8% of records have every option character named.

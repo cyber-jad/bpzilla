@@ -77,7 +77,11 @@ const LOCATION = {
   KPS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
   KRS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
   RPS13:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
-  KRPS13: { vindat: 'VINDAT6.AB3', mdlcode: 'MDLCODE.AB3' }
+  KRPS13: { vindat: 'VINDAT6.AB3', mdlcode: 'MDLCODE.AB3' },
+
+  // S15 Silvia. One chassis code, despite appearances - see the note in
+  // findRecords about the phantom RS15 and CS15.
+  S15:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' }
 };
 
 // A shipped file is not always one chassis code.
@@ -96,6 +100,7 @@ const GROUPS = {
   ks13:  ['KS13'],
   rs13:  ['RS13', 'KRS13'],
   rps13: ['RPS13', 'KRPS13'],
+  s15:   ['S15'],
   ecr32: ['ECR32'],
   er32:  ['ER32'],
   fr32:  ['FR32'],
@@ -117,11 +122,17 @@ const GROUPS = {
 // database.js splits it back out at load: dict.c becomes the paint code and
 // dict.ctr the trim character, keyed on length 4. So keeping it where the
 // family keeps it is what makes the trim character show up on the plate at all.
-const KEEPS_COLOR_PREFIX = new Set(['s13', 'ps13', 'ks13', 'rs13', 'rps13']);
+const KEEPS_COLOR_PREFIX = new Set(['s13', 'ps13', 'ks13', 'rs13', 'rps13', 's15']);
 
 const be24 = (b, o) => (b[o] << 16) | (b[o + 1] << 8) | b[o + 2];
 const be16 = (b, o) => (b[o] << 8) | b[o + 1];
 const ascii = (b, o, n) => b.subarray(o, o + n).toString('ascii');
+
+// Two-digit years, disambiguated by where these cars actually were built. The
+// FAST discs here cover 1985 to 2002, so a year below 60 is the 2000s and
+// anything else is the 1900s. S15 is the only chassis in this repo that needs
+// it - it runs to 2002-08 - but R34 would too if it were ever re-extracted.
+const yearOf = (ymm) => { const y = Math.floor(ymm / 100); return (y < 60 ? '20' : '19') + String(y).padStart(2, '0'); };
 
 /**
  * Every offset in `buf` holding a valid record for this chassis.
@@ -141,15 +152,18 @@ function findRecords(buf, code) {
     const o = i;
     i += 1;
     if (o + L + 26 > buf.length) continue;
-    // The byte before must not be a letter, or we matched inside a longer code.
-    if (o > 0) { const p = buf[o - 1]; if (p >= 65 && p <= 90) continue; }
     const blk = buf[o + L];
     if (blk < 0x30 || blk > 0x39) continue;
     const ymm = be16(buf, o + L + 4);
     const mo = ymm % 100;
     if (mo < 1 || mo > 12) continue;
     const yr = Math.floor(ymm / 100);
-    if (yr < 60 || yr > 99) continue;
+    // Two-digit year, and it wraps. The same "yr < 60 is not a date" rule that
+    // made the audit tool report R34 nearly 24,000 records short was sitting
+    // here too, and it cut S15 off at 1999-12: the car ran to 2002-08, so 20,476
+    // of its 39,138 records are years 00, 01 and 02. Any two-digit year is a
+    // year; see yearOf below for how the century is chosen.
+    if (yr > 99) continue;
     const paint = ascii(buf, o + L + 7, 3);
     if (!/^[A-Z0-9]{3}$/.test(paint)) continue;
     // [L+10..L+13] and [L+15..L+17] are usually spaces but are NOT padding -
@@ -159,10 +173,39 @@ function findRecords(buf, code) {
     // like a clean extract: 43,878 of 43,895 with no error. The structural
     // anchors are the nulls, which hold on every record in every chassis.
     if (buf[o + L + 18] !== 0x00) continue;
-    if (be24(buf, o + L + 22) !== 0 || buf[o + L + 25] !== 0x00) continue;
     offsets.push(o);
   }
-  return offsets;
+
+  // Keep only offsets that sit on this chassis's own record grid.
+  //
+  // This replaces two earlier tests that were each wrong in a different way.
+  //
+  // The first was "the byte before must not be a letter", meant to stop "R32"
+  // matching inside "ECR32". It works only while record tails are zero. S15's
+  // are not: an S15 record ends 00 00 12 52, and 0x52 is "R" - so the NEXT
+  // record was thrown away for being preceded by a letter, and a phantom
+  // "RS15" was found one byte earlier reading the very same fields. That cost
+  // 4,912 of S15's 39,138 records and invented two chassis codes, RS15 and
+  // CS15, that do not exist.
+  //
+  // The second was requiring the four trailing bytes to be zero. Also true
+  // only of the older chassis; R34 and S15 both carry data there.
+  //
+  // What actually identifies a record is that its neighbours are records.
+  // A genuine run is contiguous at len(code) + 26, so an offset is kept when
+  // one step either way lands on another match. That admits S15's letter-
+  // preceded records and still rejects the lone false positive this had
+  // caught: an "ER32" inside an HK11 Micra record whose paint code is ER3
+  // followed by a 2, which has no neighbour at ±30.
+  const step = L + 26;
+  const set = new Set(offsets);
+  const kept = offsets.filter(o => set.has(o - step) || set.has(o + step));
+  // A chassis with a single record would be dropped by that rule; none here
+  // has fewer than 116, but say so rather than let it fail silently.
+  if (offsets.length && !kept.length) {
+    throw new Error(`${code}: ${offsets.length} matches, none contiguous at ${step} bytes.`);
+  }
+  return kept;
 }
 
 // Build one export from an ordered list of chassis codes. A single-code file is
@@ -200,8 +243,7 @@ function extract(name) {
       rows.push([
         intern(b, bi, String.fromCharCode(buf[o + L])),
         be24(buf, o + L + 1),
-        intern(d, di, '19' + String(Math.floor(ymm / 100)).padStart(2, '0') +
-                      '-' + String(ymm % 100).padStart(2, '0')),
+        intern(d, di, yearOf(ymm) + '-' + String(ymm % 100).padStart(2, '0')),
         // [L+6] is the colour-trim character. Kept or dropped per family - see
         // KEEPS_COLOR_PREFIX. When kept it is trimmed, so a space there yields
         // the bare 3-character paint code, which is why those families show a

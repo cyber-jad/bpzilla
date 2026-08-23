@@ -1,0 +1,499 @@
+{
+ "generated": "2026-08-23",
+ "positions": {
+  "14": {
+   "-": {
+    "text": "standard",
+    "spec": []
+   },
+   "A": {
+    "text": "rear wiper",
+    "spec": [
+     "WIPR2"
+    ]
+   },
+   "B": {
+    "text": "rear wiper + leather trim, red stitching",
+    "spec": [
+     "WIPR2",
+     "WHSTE"
+    ]
+   },
+   "C": {
+    "text": "rear wiper + pillar gauge, boost + titanium meter finisher",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "SMET5"
+    ]
+   },
+   "D": {
+    "text": "rear wiper + rear spoiler + side sill protector + leather trim, red stitching + pillar gauge, oil pressure + front fog lamps",
+    "spec": [
+     "WIPR2",
+     "SPOI5",
+     "MUDG3",
+     "WHSTE",
+     "OMET2",
+     "LMPF5"
+    ]
+   },
+   "E": {
+    "text": "rear wiper + rear spoiler + side sill protector + pillar gauge, boost + front fog lamps + titanium meter finisher",
+    "spec": [
+     "WIPR2",
+     "SPOI5",
+     "MUDG3",
+     "BMET2",
+     "LMPF5",
+     "SMET5"
+    ]
+   },
+   "F": {
+    "text": "rear wiper + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "LMRF2"
+    ]
+   },
+   "G": {
+    "text": "rear wiper + leather trim, red stitching + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "WHSTE",
+     "LMRF2"
+    ]
+   },
+   "H": {
+    "text": "rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "SMET5",
+     "LMRF2"
+    ]
+   },
+   "J": {
+    "text": "rear wiper + rear spoiler + side sill protector + leather trim, red stitching + pillar gauge, oil pressure + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "SPOI5",
+     "MUDG3",
+     "WHSTE",
+     "OMET2",
+     "LMRF2"
+    ]
+   },
+   "K": {
+    "text": "rear wiper + rear spoiler + side sill protector + pillar gauge, boost + titanium meter finisher + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "SPOI5",
+     "MUDG3",
+     "BMET2",
+     "SMET5",
+     "LMRF2"
+    ]
+   },
+   "L": {
+    "text": "rear wiper + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior",
+    "spec": [
+     "WIPR2",
+     "LMPF5",
+     "SMET5",
+     "WHSTC",
+     "STTMQ"
+    ]
+   },
+   "M": {
+    "text": "rear wiper + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior",
+    "spec": [
+     "WIPR2",
+     "SMET5",
+     "LMRF2",
+     "WHSTC",
+     "STTMQ"
+    ]
+   },
+   "N": {
+    "text": "rear wiper + pillar gauge, boost + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "LMPF5",
+     "SMET5",
+     "WHSTC",
+     "STTMQ"
+    ]
+   },
+   "P": {
+    "text": "rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "SMET5",
+     "LMRF2",
+     "WHSTC",
+     "STTMQ"
+    ]
+   },
+   "Q": {
+    "text": "rear wiper + front fog lamps + silver interior + leather steering wheel, silver stitching",
+    "spec": [
+     "WIPR2",
+     "LMPF5",
+     "STTMW",
+     "WHST3"
+    ]
+   },
+   "R": {
+    "text": "rear wiper + rear fog lamp + silver interior + leather steering wheel, silver stitching",
+    "spec": [
+     "WIPR2",
+     "LMRF2",
+     "STTMW",
+     "WHST3"
+    ]
+   },
+   "S": {
+    "text": "rear wiper + pillar gauge, boost + front fog lamps + silver interior + leather steering wheel, silver stitching",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "LMPF5",
+     "STTMW",
+     "WHST3"
+    ]
+   },
+   "T": {
+    "text": "rear wiper + pillar gauge, boost + rear fog lamp + silver interior + leather steering wheel, silver stitching",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "LMRF2",
+     "STTMW",
+     "WHST3"
+    ]
+   },
+   "U": {
+    "text": "rear wiper + titanium meter finisher",
+    "spec": [
+     "WIPR2",
+     "SMET5"
+    ]
+   },
+   "V": {
+    "text": "rear wiper + titanium meter finisher + rear fog lamp",
+    "spec": [
+     "WIPR2",
+     "SMET5",
+     "LMRF2"
+    ]
+   },
+   "W": {
+    "text": "rear wiper + leather trim, red stitching + punched suede-style seats and door trim",
+    "spec": [
+     "WIPR2",
+     "WHSTE",
+     "STTMR"
+    ]
+   },
+   "X": {
+    "text": "rear wiper + leather trim, red stitching + rear fog lamp + punched suede-style seats and door trim",
+    "spec": [
+     "WIPR2",
+     "WHSTE",
+     "LMRF2",
+     "STTMR"
+    ]
+   },
+   "Y": {
+    "text": "rear wiper + pillar gauge, boost + titanium meter finisher + punched suede-style seats and door trim",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "SMET5",
+     "STTMR"
+    ]
+   },
+   "Z": {
+    "text": "rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + punched suede-style seats and door trim",
+    "spec": [
+     "WIPR2",
+     "BMET2",
+     "SMET5",
+     "LMRF2",
+     "STTMR"
+    ]
+   }
+  },
+  "15": {
+   "-": {
+    "text": "standard",
+    "spec": []
+   },
+   "A": {
+    "text": "16-inch alloy wheels + rear helical LSD",
+    "spec": [
+     "TYR5H",
+     "DIFF7"
+    ]
+   },
+   "B": {
+    "text": "16-inch alloy wheels",
+    "spec": [
+     "TYR5H"
+    ]
+   },
+   "C": {
+    "text": "rear viscous LSD",
+    "spec": [
+     "DIFF6"
+    ]
+   },
+   "D": {
+    "text": "16-inch alloy wheels, chrome",
+    "spec": [
+     "DWHLG"
+    ]
+   },
+   "E": {
+    "text": "steel wheels",
+    "spec": [
+     "DWHLZ"
+    ]
+   }
+  },
+  "16": {
+   "-": {
+    "text": "standard",
+    "spec": []
+   },
+   "A": {
+    "text": "sunroof",
+    "spec": [
+     "ROOF2"
+    ]
+   },
+   "B": {
+    "text": "privacy glass",
+    "spec": [
+     "GLSSW"
+    ]
+   },
+   "C": {
+    "text": "sunroof + privacy glass",
+    "spec": [
+     "ROOF2",
+     "GLSSW"
+    ]
+   },
+   "D": {
+    "text": "remote door lock",
+    "spec": [
+     "KYLS4"
+    ]
+   },
+   "E": {
+    "text": "sunroof + remote door lock",
+    "spec": [
+     "ROOF2",
+     "KYLS4"
+    ]
+   },
+   "F": {
+    "text": "privacy glass + remote door lock",
+    "spec": [
+     "GLSSW",
+     "KYLS4"
+    ]
+   },
+   "G": {
+    "text": "sunroof + privacy glass + remote door lock",
+    "spec": [
+     "ROOF2",
+     "GLSSW",
+     "KYLS4"
+    ]
+   },
+   "H": {
+    "text": "water-repellent door glass deleted",
+    "spec": [
+     "GLSDP"
+    ]
+   },
+   "J": {
+    "text": "sunroof + water-repellent door glass deleted",
+    "spec": [
+     "ROOF2",
+     "GLSDP"
+    ]
+   },
+   "K": {
+    "text": "privacy glass + water-repellent door glass deleted",
+    "spec": [
+     "GLSSW",
+     "GLSDP"
+    ]
+   },
+   "L": {
+    "text": "sunroof + privacy glass + water-repellent door glass deleted",
+    "spec": [
+     "ROOF2",
+     "GLSSW",
+     "GLSDP"
+    ]
+   }
+  },
+  "17": {
+   "-": {
+    "text": "standard",
+    "spec": []
+   },
+   "A": {
+    "text": "audio deleted",
+    "spec": [
+     "STERX"
+    ]
+   },
+   "B": {
+    "text": "holographic sound system + 7 speakers",
+    "spec": [
+     "STERW",
+     "SPKRB"
+    ]
+   },
+   "C": {
+    "text": "TV / navigation system, CD",
+    "spec": [
+     "TELV2"
+    ]
+   },
+   "D": {
+    "text": "TV / navigation system, DVD",
+    "spec": [
+     "TELV3"
+    ]
+   },
+   "E": {
+    "text": "audio deleted + speakers deleted",
+    "spec": [
+     "STERX",
+     "SPKRZ"
+    ]
+   },
+   "F": {
+    "text": "J-navi navigation system, CD",
+    "spec": [
+     "NAVI3"
+    ]
+   },
+   "G": {
+    "text": "1DIN radio with CD and MD",
+    "spec": [
+     "STERV"
+    ]
+   }
+  },
+  "18": {
+   "-": {
+    "text": "standard",
+    "spec": []
+   },
+   "A": {
+    "text": "interior package, orange",
+    "spec": [
+     "STTMQ"
+    ]
+   },
+   "B": {
+    "text": "xenon headlamps",
+    "spec": [
+     "LMPHW"
+    ]
+   },
+   "C": {
+    "text": "side airbags",
+    "spec": [
+     "ABAGS"
+    ]
+   },
+   "D": {
+    "text": "interior package, orange + xenon headlamps",
+    "spec": [
+     "STTMQ",
+     "LMPHW"
+    ]
+   },
+   "E": {
+    "text": "interior package, orange + side airbags",
+    "spec": [
+     "STTMQ",
+     "ABAGS"
+    ]
+   },
+   "F": {
+    "text": "xenon headlamps + side airbags",
+    "spec": [
+     "LMPHW",
+     "ABAGS"
+    ]
+   },
+   "G": {
+    "text": "interior package, orange + xenon headlamps + side airbags",
+    "spec": [
+     "STTMQ",
+     "LMPHW",
+     "ABAGS"
+    ]
+   },
+   "K": {
+    "text": "headlamp inner silver + aluminium pedals",
+    "spec": [
+     "LMPRC",
+     "ETCTC"
+    ]
+   },
+   "L": {
+    "text": "xenon headlamps + headlamp inner silver + aluminium pedals",
+    "spec": [
+     "LMPHW",
+     "LMPRC",
+     "ETCTC"
+    ]
+   },
+   "M": {
+    "text": "one-way trunk through + door mirror titanium clear finish deleted",
+    "spec": [
+     "STRRJ",
+     "MIROW"
+    ]
+   },
+   "N": {
+    "text": "xenon headlamps + one-way trunk through + door mirror titanium clear finish deleted",
+    "spec": [
+     "LMPHW",
+     "STRRJ",
+     "MIROW"
+    ]
+   },
+   "P": {
+    "text": "side airbags + one-way trunk through + door mirror titanium clear finish deleted",
+    "spec": [
+     "ABAGS",
+     "STRRJ",
+     "MIROW"
+    ]
+   },
+   "Q": {
+    "text": "xenon headlamps + side airbags + one-way trunk through + door mirror titanium clear finish deleted",
+    "spec": [
+     "LMPHW",
+     "ABAGS",
+     "STRRJ",
+     "MIROW"
+    ]
+   }
+  }
+ }
+}
