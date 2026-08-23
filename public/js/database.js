@@ -3007,7 +3007,25 @@ const JDM_DATABASE = {
       M: 'Fluororesin paint',
       P: 'Fluororesin paint + cold-region specification',
       8: 'Fluororesin paint + Kagoshima (volcanic ash) specification',
-      9: 'Kagoshima (volcanic ash) specification'
+      9: 'Kagoshima (volcanic ash) specification',
+      // From volume 084 page 13, the [9201- ] VS table — the window that runs
+      // most of the SR20 180SX's life and had never been read here.
+      //
+      // These two were the largest single hole left in the archive: G appears
+      // on 53,786 records and H on 6,470, and both decoded to nothing. "GM" on
+      // its own is the most common option string RPS13 has, 27,380 cars.
+      //
+      // Safe to put in this shared table rather than a window-keyed one: G and
+      // H appear on RPS13 and on no other chassis in the family — zero records
+      // in S13, PS13, KS13 or RS13 carry either — so there is nothing here for
+      // them to mislabel.
+      //
+      // G is a grade marker sitting in an options field, which is the legend's
+      // own arrangement, not a reading of it. Page 3's layout diagram says the
+      // same thing from the other side: 車格 J means TYPE III or TYPE/X
+      // 「VS記号がGの場合」.
+      G: 'TYPE III / TYPE X specification',
+      H: 'ABS'
     },
     // パック記号. Silvia windows first, then the 180SX's own table.
     //
