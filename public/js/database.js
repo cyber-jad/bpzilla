@@ -1705,21 +1705,46 @@ const JDM_DATABASE = {
       if (c === 'F' || c === 'A') return "J's";
       return '';
     }
-    // S14/CS14 — lower confidence than the S13 family above: no external
-    // source with a matching total exists to confirm against exactly, so
-    // this rests on real-world grounding instead. Position 4 is 'T' (SR20DET
-    // turbo, real K's engine) or 'U' (SR20DE NA, real Q's engine) on every
-    // record checked, full 1993-1998 production span on both sides (a
-    // standing option, not a running change), independently echoed at
-    // position 9 (E/U, matches T/U exactly bar 54 stray records). 62%/38%
-    // T/U split is consistent with K's being the better-selling S14 grade,
-    // as commonly reported. No further sub-grade (Aero, Aero SE, Aero SE
-    // Limited — all real per s-chassis-archive's Japan-market rows) isolable
-    // from any position tried, so those stay folded into K's/Q's.
+    // S14/CS14 — CORRECTED. This mapping was the wrong way round, on all
+    // 84,826 S14 and CS14 records, until the S15 was decoded.
+    //
+    // The old note said position 4 was "'T' (SR20DET turbo, real K's engine)
+    // or 'U' (SR20DE NA, real Q's engine)", and chose that direction because
+    // the 62/38 split matched K's "being the better-selling S14 grade, as
+    // commonly reported". Which letter meant turbo was assumed, and then a
+    // popularity claim was used to confirm the assumption.
+    //
+    // What settles it is mc[9], the same character the old note cited as an
+    // independent echo without saying which way it pointed. Volume 089's
+    // モデル記号の意味 page names it for the S15: 11桁目 燃料装置, E = EGI,
+    // U = ターボ. The S14 and S15 share this layout exactly, and on the S14
+    // the two characters correspond one-to-one — U with U on 30,384 records,
+    // T with E on 50,585, nothing else but 54 strays. So mc[4] = 'U' is the
+    // TURBO car, which is the K's.
+    //
+    // Three further checks, all agreeing:
+    //
+    //   Gearbox.  'U' is 92.1% manual (27,998 MT / 2,386 AT). 'T' is 54.7%
+    //             (27,671 / 22,914). A turbo sports grade skews hard to
+    //             manual and a base NA does not. The S15 Spec-R, confirmed
+    //             from its own legend, is 94% manual — the same shape.
+    //   Autech.   All 272 Autech Version K's MF-T cars (plate P870Z, volume
+    //             088) carry mc[4] = 'U'. Autech named those exact cars
+    //             K's.
+    //   CS14.     Same split, same direction, independently.
+    //
+    // The consequence is that the NA Q's outsold the turbo K's, 62% to 38%,
+    // which is the opposite of the claim the old mapping was built on — and
+    // is entirely ordinary for a Japanese-market coupe whose base engine was
+    // much cheaper to buy and insure.
+    //
+    // No further sub-grade (Aero, Aero SE, Aero SE Limited — all real per
+    // s-chassis-archive's Japan-market rows) is isolable from any position
+    // tried, so those stay folded into K's/Q's.
     if (modelId === 'S14' || modelId === 'CS14') {
       const c = mc[4];
-      if (c === 'T') return "K's";
-      if (c === 'U') return "Q's";
+      if (c === 'U') return "K's";
+      if (c === 'T') return "Q's";
       return '';
     }
     // 180SX (RS13/KRS13) — exact-match confirmed the same way as the S13
@@ -3850,6 +3875,38 @@ const JDM_DATABASE = {
     YNZ: 'Autech special build (code YNZ, not named in volume 089)'
   },
 
+  // S14 coachbuilt plates, read as a whole 5-character group rather than
+  // position by position — the same shape the S15's Autech cars use, and for
+  // the same reason: the group is one identifier, not five option slots, so
+  // decoding it a character at a time produces five unknowns instead of one
+  // answer. That is exactly what these were doing: 302 cars accounted for
+  // 1,480 of the S14's undecodable characters.
+  //
+  // The trailing Z is the marker on both generations.
+  _s14Autech: {
+    // Volume 088's entire front matter is about this one car, across two
+    // pages (その3 and その4, "オーテックバージョンK's MF-T" and "AJバージョン
+    // K's MF-T"). Both print the plate as モデルナンバープレート車種記号
+    // P 8 7 0 Z, against an AJ架装車種記号 of P 8 ■ 0 Z where ■ is G or M:
+    // G is manual air conditioning plus 16-inch steel wheels, M adds the
+    // triple cross bar. That G/M distinction lives in Autech's own coachwork
+    // code and NOT on the plate, so the records cannot tell the two apart and
+    // this does not pretend to.
+    //
+    // The volume dates it [9711- ]; the records start 1997-07, four months
+    // earlier. The plate code matches exactly and uniquely, so the car is not
+    // in doubt, but the adoption date on the page and the build dates in the
+    // data disagree and that is left visible rather than reconciled.
+    P870Z: "Autech Version K's MF-T",
+
+    // 30 cars, all 1994-09. Carries the same trailing Z, and no ordinary S14
+    // option combination ends that way, but volume 088 documents only the
+    // MF-T and names nothing that fits this. Same treatment as the S15's YNZ:
+    // the marker is reported because the records show it, the variant is not
+    // named because the source does not name it.
+    PR90Z: 'Autech special build (code PR90Z, not named in volume 088)'
+  },
+
   _decodeS15Plate: function(modelId, mc, date) {
     const opts = [];
     const body = String(mc || '').replace(/[-\s]*S15\s*$/, '');
@@ -3936,6 +3993,18 @@ const JDM_DATABASE = {
     // S15 is its own shape: five option positions, each with its own alphabet,
     // rather than a VS run followed by a pack code.
     if (modelId === 'S15') return this._decodeS15Plate(modelId, mc, date);
+    // A coachbuilt S14 carries one identifier across all five option slots,
+    // so it is answered as one field before the per-position tables are asked
+    // anything — see _s14Autech.
+    if (modelId === 'S14' || modelId === 'CS14') {
+      const grp = String(mc).slice(12, 17);
+      const built = this._s14Autech[grp];
+      if (built) {
+        opts.push({ pos: 12, platePos: this.platePos(12), char: grp,
+                    field: 'Autech', text: built, verified: true });
+        return opts;
+      }
+    }
     if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',
