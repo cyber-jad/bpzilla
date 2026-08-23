@@ -245,13 +245,34 @@
    one click to open a generation. Making the filters cost a second one meant
    two clicks before the page did anything. The Skyline tab keeps the
    disclosure: it opens on a single model with the strip already expanded. */
-.refine-filters-fixed > .refine-filters-heading {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.refine-filters-fixed > summary {
+  cursor: default;
+  pointer-events: none;
+}
+/* Both states, because the generic rule this is overriding is
+   .refine-filters[open] > summary::before - an attribute selector, so it
+   outranks a plain class no matter which comes last in the file. Matching
+   [open] here is what actually removes the marker on a wide screen. */
+.refine-filters-fixed > summary::before,
+.refine-filters-fixed[open] > summary::before {
+  content: none;
+}
+
+/* ...but a phone is the one place the cost is real: open, these five controls
+   are 266px, about a third of the screen, all of it above the table. So the
+   disclosure comes back below 768px - the same breakpoint at which the model
+   strip stops auto-opening its generation, for the same reason. */
+@media (max-width: 768px) {
+  .refine-filters-fixed > summary {
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .refine-filters-fixed > summary::before {
+    content: '+';
+  }
+  .refine-filters-fixed[open] > summary::before {
+    content: '\2212';
+  }
 }
 
 /* Data Tables */
