@@ -193,6 +193,46 @@ kept — one record is not evidence of a fault, and inventing a rule to remove
 codes that look wrong is how real data gets lost — but they are worth
 suspicion if anything downstream depends on them.
 
+## The variant field, decoded
+
+`BTCEMDV` maps each variant key to about ten five-character attribute codes,
+and `BTCEAI2` gives each of those a Shift-JIS description. Together they
+spell a variant out into a full specification.
+
+**The variant is four characters, not five** — the first pass had it wrong.
+BTCEMDV settles it: its keys are four wide, and a five-character reading of
+the spec matches **3 of 157,386** codes against **157,386 of 157,386** for the
+four-character one. The stray character belongs to the equipment field.
+
+    F176 = coupe · 280PS · rotary · 13B · manual · 5-speed ·
+           Bilstein dampers · ABS · 17-inch wheels · Spirit R · two-seat
+
+That is an RX-7 **Spirit R Type A**. `F177` is the four-seat Type B and
+`F175` the 255PS automatic Type C — the exact three-car Spirit R lineup,
+arrived at from the discs alone. The same vocabulary picks out the 10th
+Anniversary, the Roadster NR-A, Mazdaspeed cars and limited editions.
+
+**Coverage.** All 6,179 variants across the 660 chassis resolve to an
+attribute list. The 89 attributes the sixteen named cars use are translated,
+so those read **100% English (228 of 228 variants)**. The remaining ~700
+attribute codes are emitted in the disc's own Japanese rather than guessed
+at, which leaves 498 of 6,179 descriptions fully English overall.
+
+**A bug worth recording.** Changing the dictionaries to the 4/3 split without
+changing the row-building slices produced no error at all: the dictionaries
+looked correct, every file still wrote, and every decoded field downstream
+read `undefined`. The extractor now probes one record per chassis and throws
+if any field fails to resolve.
+
+## The equipment field resists
+
+Three characters at `[6..8]`, and they behave like independent sub-fields —
+`[6]` is one of 1-5 and 9, `[7]` one of 1, C, H, K. Neither tracks build year
+(both span the FD's full 1991-2002 run), so they are not a series marker.
+Nothing found so far keys on them: `BTCESES` maps part groups to figures,
+`BTCEILB` is illustration blocks with attribute filters, and `BTCEAI1` is
+part applicability. It is emitted raw.
+
 ## Still not decoded
 
 `[2..6]` the model/spec variant and `[7..8]` the equipment code. The variant
