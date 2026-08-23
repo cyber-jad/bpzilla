@@ -1189,6 +1189,18 @@ const JDM_DATABASE = {
       // M35 Stagea (nm35, hm35, pm35, pnm35) is deliberately not listed —
       // see the scope note in the file header. The four files stay in
       // public/data; they are simply not fetched.
+      //
+      // Three more families are held the same way, extracted but not served:
+      //
+      //   S110 Silvia 1979-1983   s110, ps110, us110          73,184
+      //   S12  Silvia 1983-1988   s12, js12, us12             28,170
+      //   Z31  300ZX  1983-1989   z31, gz31, hz31, pz31,      35,381
+      //                           hgz31, pgz31
+      //
+      // 136,735 records in twelve files, decoded and checkable, deliberately
+      // outside the site's scope. Adding any of them to this list is all it
+      // would take to serve them — but each also needs an entry in models{}
+      // below, or it loads records with nothing to display them under.
       'wgc34','whc34','wgnc34',
       'z32','gz32','cz32','hz32','gcz32',
       'z32_us','gz32_us','z32_ca','gz32_ca','gz32_el','gz32_er'
