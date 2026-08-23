@@ -45,11 +45,33 @@
 // The 15-character spec code splits into five fields:
 //
 //   [0..1]   market          "JP" on every JDM car
-//   [2..6]   model/spec      "F1092" - a grade-and-era variant; each value
-//                            spans only one to three model years
-//   [7..8]   equipment       "10", "C0", "1A", "CW" - not decoded
+//   [2..5]   MODEL VARIANT   "F109" - keys BTCEMDV, decoded below
+//   [6..8]   equipment       "210", "31L", "3CF" - NOT decoded
 //   [9..11]  EXTERIOR PAINT  "PZ", "18G", "25G"
 //   [12..14] INTERIOR TRIM   "FE2", "FF1"
+//
+// THE VARIANT IS FOUR CHARACTERS, NOT FIVE. That was wrong on the first pass,
+// and BTCEMDV is what settles it: its keys are four wide (F138, F139), and a
+// five-character reading of the spec matches 3 of 157,386 codes against
+// 157,386 of 157,386 for the four-character one. The stray character belongs
+// to the equipment field.
+//
+// BTCEMDV maps each variant to about ten five-character attribute codes, and
+// BTCEAI2 gives each of those a Shift-JIS description, so a variant spells
+// out into a full specification:
+//
+//   F176 = coupe, 280PS, rotary, 13B, manual, 5-speed, Bilstein dampers,
+//          ABS, 17-inch wheels, Spirit R, two-seat
+//
+// which is an RX-7 Spirit R Type A. F177 is the four-seat Type B and F175 the
+// 255PS automatic Type C - the exact three-car Spirit R lineup, arrived at
+// from the discs alone.
+//
+// The EQUIPMENT field resists. Its three characters behave like independent
+// sub-fields ([6] one of 1-5 and 9, [7] one of 1, C, H, K), neither of which
+// tracks build year, and nothing found so far keys on them: BTCESES maps part
+// groups to figures, BTCEILB is illustration blocks with attribute filters,
+// and BTCEAI1 is part applicability. It is emitted raw.
 //
 // The two colour fields are confirmed against BTCECLR, the colour-dependent
 // parts table each model directory carries. Its 55-byte records hold a colour
@@ -98,6 +120,66 @@ const SRC = 'C:/Users/cyber/Downloads/JDM_EPC (1)';
 const OUT_DIR = path.join(__dirname, 'public', 'data', 'mazda');
 
 const HEADER = 2048, BLOCK = 4096, REC = 40;
+
+// ---------------------------------------------------------------------------
+// The variant attribute vocabulary, from BTCEAI2.
+//
+// BTCEMDV maps a four-character variant key to about ten five-character
+// attribute codes; BTCEAI2 gives each of those a Shift-JIS description. So
+// F138 = B3103 B4PC5 B4103 B423B B5102 B5204 B6A03 B6E01 B6H16 B6S01 reads as
+// coupe, 255HP, rotary, 13B, AT, 4-speed, normal dampers, ABS, 16-inch wheels,
+// normal suspension — which is an RX-7 FD Series 6 automatic.
+//
+// 1,004 codes carry text across the discs. Roughly 194 of those are AAA-prefixed
+// illustration annotations rather than vehicle attributes. The 89 below are
+// every attribute the sixteen named cars use; the other chassis fall back to
+// the raw Japanese, which is emitted rather than guessed at.
+const ATTR = {
+  // body
+  B3101: 'saloon', B3103: 'coupe', B3104: 'hatchback', B3105: 'hardtop',
+  B3108: 'cabriolet', B3141: 'open top',
+  B3302: '2-door', B3303: '3-door', B3304: '4-door',
+  B3S00: 'no sunroof', B3S01: 'sunroof', B3S03: 'sliding sunroof',
+  B3S05: 'cabriolet', B3S15: 'no retractable hardtop', B3S16: 'retractable hardtop',
+  // engine
+  B4101: 'petrol', B4103: 'rotary', B4H03: 'rotary',
+  B4216: '1600cc', B4218: '1800cc', B4220: '2000cc',
+  B422A: '12A', B422C: '20B', B423B: '13B',
+  B4302: 'two-rotor', B4303: 'three-rotor',
+  B4E01: 'EGI', B4F00: 'regular petrol', B4F03: 'premium petrol',
+  B4H01: 'OHC', B4H02: 'DOHC',
+  B4P01: 'standard power', B4P02: 'high power',
+  B4PC5: '255PS', B4PD5: '265PS', B4PE0: '280PS',
+  B4T00: 'naturally aspirated', B4T01: 'turbo',
+  // transmission
+  B5101: 'manual', B5102: 'automatic', B5E04: 'manual', B5E02: 'EC-AT',
+  B5204: '4-speed', B5205: '5-speed', B5206: '6-speed', B5301: 'floor shift',
+  // chassis
+  B66S0: 'no side spoiler', B66S3: 'large side spoiler',
+  B6A00: 'no self-levelling suspension', B6A01: 'self-levelling suspension',
+  B6A02: 'Bilstein dampers', B6A03: 'normal dampers',
+  B6A05: 'height-adjustable dampers',
+  B6B04: 'four-wheel discs',
+  B6D01: 'open differential', B6D02: 'limited-slip differential',
+  B6D03: 'viscous LSD', B6D04: 'Torsen LSD',
+  B6E00: 'no ABS', B6E01: 'ABS',
+  B6H16: '16-inch wheels', B6H17: '17-inch wheels',
+  B6S01: 'normal suspension', B6S03: 'hard suspension', B6S06: 'sports suspension',
+  B6S30: 'Mazdaspeed suspension', B6S52: 'bespoke tuned suspension',
+  // grade and edition
+  B6I02: '10th Anniversary', B6I03: 'excluding 10th Anniversary',
+  B6I24: 'Spirit R', B6I25: 'excluding Spirit R',
+  B6ISE: 'limited edition', B6ISX: 'excluding limited edition',
+  B6P02: 'two-seat', B6P04: 'four-seat', B6P40: 'standard',
+  B6P42: 'Mazdaspeed-bodied', B6P43: 'NR-A',
+  B7101: 'no special bodywork',
+  // equipment
+  BA800: 'no airbag', BA801: 'airbag',
+  BB200: 'no GPS antenna hole', BB201: 'GPS antenna hole',
+  BB300: 'no rally version', BB301: 'rally version',
+  BB302: 'excluding Custom Built Type A',
+  BD300: 'no DSC', BD301: 'DSC'
+};
 
 // The fourteen. Names are the JDM market names; where a car is better known
 // by its export name that is given too.
@@ -227,6 +309,57 @@ function colourVocabulary(isoPaths) {
   return { all, byQual };
 }
 
+// BTCEMDV (variant -> attribute codes) and BTCEAI2 (attribute code -> text),
+// read from every model directory on every disc.
+//
+// MDV records are: 4-char variant key, a 0x80 marker, a count byte, then that
+// many space-separated 5-character attribute codes.
+function variantTables(isoPaths) {
+  const dec = new TextDecoder('shift_jis');
+  const mdv = new Map(), attr = new Map();
+  const walk = (buf, recSize, fn) => {
+    const blocks = Math.floor((buf.length - HEADER) / BLOCK);
+    const per = Math.floor((BLOCK - 6) / recSize);
+    for (let b = 0; b < blocks; b++) {
+      const bo = HEADER + b * BLOCK;
+      if (bo + 6 > buf.length) break;
+      const used = buf.readInt16LE(bo + 4);
+      if (used < 0) continue;
+      const n = Math.min(Math.floor(used / recSize) + 1, per);
+      for (let i = 0; i < n; i++) {
+        const ro = bo + 6 + i * recSize;
+        if (ro + recSize > buf.length) break;
+        fn(buf.subarray(ro, ro + recSize));
+      }
+    }
+  };
+  for (const iso of isoPaths) {
+    for (const f of listIso(iso).files) {
+      if (/\/BTCEMDV\.DB$/i.test(f.path)) {
+        const buf = readFile(iso, f); const rs = buf.readUInt16LE(0);
+        if (rs < 10 || rs > 400) continue;
+        walk(buf, rs, (r) => {
+          const key = r.subarray(0, 4).toString('latin1').trim();
+          if (!/^[A-Z0-9]{4}$/.test(key) || mdv.has(key)) return;
+          const list = r.subarray(6).toString('latin1').split(' ')
+            .map(s => s.replace(/\0.*$/, '').trim())
+            .filter(s => /^[A-Z0-9]{5}$/.test(s));
+          if (list.length) mdv.set(key, list);
+        });
+      } else if (/\/BTCEAI2\.DB$/i.test(f.path)) {
+        const buf = readFile(iso, f); const rs = buf.readUInt16LE(0);
+        if (rs < 10 || rs > 200) continue;
+        walk(buf, rs, (r) => {
+          const t = dec.decode(r).replace(/\0+/g, '');
+          const m = /^.([A-Z0-9]{5})(.+)$/.exec(t);
+          if (m && !attr.has(m[1])) attr.set(m[1], m[2].trim());
+        });
+      }
+    }
+  }
+  return { mdv, attr };
+}
+
 function main() {
   const write = process.argv.includes('--write');
   const all = process.argv.includes('--all');
@@ -263,9 +396,13 @@ function main() {
 
   if (write) fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  process.stderr.write('reading BTCEMDV / BTCEAI2 variant tables...\n');
+  const variants = variantTables(isos.map(f => path.join(SRC, f)));
   process.stderr.write('reading BTCECLR colour vocabulary...\n');
   const vocab = colourVocabulary(isos.map(f => path.join(SRC, f)));
   console.log('');
+  console.log('BTCEMDV: ' + variants.mdv.size.toLocaleString() + ' variant keys   BTCEAI2: ' +
+              variants.attr.size.toLocaleString() + ' attribute descriptions');
   console.log('BTCECLR vocabulary: ' + vocab.all.size + ' colour codes across ' +
               vocab.byQual.size + ' qualifiers');
 
@@ -313,11 +450,26 @@ function main() {
       const vals = [...new Set(uniq.map(r => field(r.spec, a, b)))].sort();
       return [vals, new Map(vals.map((v, i) => [v, i]))];
     };
+    // The variant key is FOUR characters, not five. BTCEMDV is keyed on four
+    // (F138, F139) and a five-character reading matches 3 of 157,386 spec
+    // codes against 157,386 of 157,386 for the four-character one. The stray
+    // character belongs to the equipment field, which is three wide.
     const [markets, mkIdx] = dict(0, 2);
-    const [fcodes, fcIdx]  = dict(2, 7);
-    const [equips, eqIdx]  = dict(7, 9);
+    const [fcodes, fcIdx]  = dict(2, 6);
+    const [equips, eqIdx]  = dict(6, 9);
     const [paints, ptIdx]  = dict(9, 12);
     const [trims, trIdx]   = dict(12, 15);
+
+    // What each variant actually is, from BTCEMDV -> BTCEAI2. Untranslated
+    // codes fall back to the disc's own Japanese rather than being dropped or
+    // guessed at.
+    const fspec = {};
+    for (const v of fcodes) {
+      const codes = variants.mdv.get(v);
+      if (!codes) continue;
+      const words = codes.map(c => ATTR[c] || variants.attr.get(c) || c);
+      fspec[v] = words.join(' · ');
+    }
 
     const iso = (d) => d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8);
     // Only the named cars are listed individually; with --all the other 600-odd
@@ -332,6 +484,23 @@ function main() {
     if (uniq.length)
       vocabCheck.push([code, { paint: new Set(paints), trim: new Set(trims) }]);
 
+    // A dictionary index that comes back undefined means the row slice and the
+    // dictionary slice have drifted apart. Nothing else notices: the file still
+    // writes, the dictionaries still look right, and every decoded field reads
+    // "undefined" downstream.
+    if (uniq.length) {
+      const probe = uniq[0];
+      const bad = [['market', mkIdx.get(field(probe.spec, 0, 2))],
+                   ['fcode', fcIdx.get(field(probe.spec, 2, 6))],
+                   ['equip', eqIdx.get(field(probe.spec, 6, 9))],
+                   ['paint', ptIdx.get(field(probe.spec, 9, 12))],
+                   ['trim', trIdx.get(field(probe.spec, 12, 15))]]
+                  .filter(([, v]) => v === undefined).map(([k]) => k);
+      if (bad.length)
+        throw new Error(code + ': spec field(s) ' + bad.join(', ') +
+                        ' did not resolve — row slices and dictionary slices disagree');
+    }
+
     if (!write || !uniq.length) continue;
     const out = {
       m: code,
@@ -343,13 +512,19 @@ function main() {
       // Spec code split into its five fields. `paint` and `trim` are confirmed
       // against BTCECLR; `fcode` and `equip` are positional readings only.
       market: markets, fcode: fcodes, equip: equips, paint: paints, trim: trims,
+      // Each variant key spelled out from BTCEMDV + BTCEAI2.
+      fspec,
       // The raw 15-character code, kept so nothing depends on the split above
       // being right forever.
       sc: specs,
       // [serial, date, market, fcode, equip, paint, trim, rawSpec]
+      // Slices must match the dictionaries above exactly — variant 4 wide at
+      // [2..5], equipment 3 wide at [6..8]. They did not, briefly, and the
+      // effect was silent: fcIdx.get() simply returned undefined for every
+      // row while the dictionaries themselves looked perfectly correct.
       r: uniq.map(r => [r.serial, dIdx.get(r.date),
-                        mkIdx.get(field(r.spec, 0, 2)), fcIdx.get(field(r.spec, 2, 7)),
-                        eqIdx.get(field(r.spec, 7, 9)), ptIdx.get(field(r.spec, 9, 12)),
+                        mkIdx.get(field(r.spec, 0, 2)), fcIdx.get(field(r.spec, 2, 6)),
+                        eqIdx.get(field(r.spec, 6, 9)), ptIdx.get(field(r.spec, 9, 12)),
                         trIdx.get(field(r.spec, 12, 15)), sIdx.get(r.spec)]),
       _src: [...(sources.get(code) || [])],
       _fields: 'r = [serial, dateIdx, marketIdx, fcodeIdx, equipIdx, paintIdx, trimIdx, specIdx]',
