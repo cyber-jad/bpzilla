@@ -239,6 +239,21 @@
   margin-top: 12px;
 }
 
+/* On Legends these controls are always open. That tab spans 22 chassis across
+   four unrelated families, so trim and paint are how you actually find a car
+   there rather than an afterthought - and the model strip above already costs
+   one click to open a generation. Making the filters cost a second one meant
+   two clicks before the page did anything. The Skyline tab keeps the
+   disclosure: it opens on a single model with the strip already expanded. */
+.refine-filters-fixed > .refine-filters-heading {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 /* Data Tables */
 .table-responsive {
   width: 100%;
