@@ -1817,8 +1817,30 @@ const JDM_DATABASE = {
       const c = mc[4];
       if (c === 'T') return 'Spec-S';
       if (c !== 'U') return '';
+      //
+      // The packages were NOT Spec-S only - Spec-R was offered in them too,
+      // and the data carries that plainly. The three trim treatments each
+      // appear on both sides of the fuel split:
+      //
+      //                                    NA (S)   turbo (R)
+      //   leather, blue stitching + blue    1,331       1,100
+      //   silver interior + silver wheel      836         699
+      //   punched suede                       957       2,849
+      //
+      // Same option letters, same equipment, both engines. Reading these as
+      // Spec-S only put 4,649 Spec-R package cars under a plain "Spec-R".
+      //
+      // The two sides are tested differently because the authority differs.
+      // On the NA side the footnote settles it outright: S/AERO minus S Aero
+      // IS the packages, so the whole non-aero bucket is package cars. On the
+      // turbo side nothing states it, so the trim treatment does the work -
+      // the same treatments the footnote already established as package
+      // equipment on the NA side.
       const aero = this._s15HasAeroBody(mc[12]);
-      if (mc[9] === 'U') return aero ? 'Spec-R Aero' : 'Spec-R';
+      if (mc[9] === 'U') {
+        if (aero) return 'Spec-R Aero';
+        return this._s15HasPackageTrim(mc[12]) ? 'Spec-R package (G/b/L/V)' : 'Spec-R';
+      }
       return aero ? 'Spec-S Aero' : 'Spec-S package (G/b/L/V)';
     }
     return null;
@@ -3906,6 +3928,21 @@ const JDM_DATABASE = {
         /rear spoiler/i.test(t[k]) && /side sill/i.test(t[k])));
     }
     return this._s15AeroCodes.has(ch);
+  },
+
+  // The package cars are the ones carrying a trim treatment: leather with
+  // coloured stitching, a silver interior, or punched suede. Base Spec-S
+  // carries NONE of these - 1,290 cars, and every one of them is either
+  // "rear wiper" or "rear wiper + rear fog lamp" and nothing more. So a trim
+  // treatment is never the base car's equipment.
+  _s15TrimCodes: null,
+  _s15HasPackageTrim: function (ch) {
+    if (!this._s15TrimCodes) {
+      const t = (this._s15Options && this._s15Options['14']) || {};
+      this._s15TrimCodes = new Set(Object.keys(t).filter(k =>
+        /leather trim|silver interior|punched suede/i.test(t[k])));
+    }
+    return this._s15TrimCodes.has(ch);
   },
 
   _s15AutechGrade: {

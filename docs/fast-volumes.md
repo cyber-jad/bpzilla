@@ -497,6 +497,65 @@ S15 [11 燃料装置 E EGI / U ターボ][12 仕向地 D 標準地 / Z 寒冷地
 [13 特装 4 標準][14-18 オプションコード]
 ```
 
+**The grade character is a bundle, not a trim.** Position 6 reads `T` = S and
+`U` = "S-AERO, R" — the volume itself puts two things in one slot. A footnote
+on the same page widens it further:
+
+> （注）S/AEROグレードには、spec SのGパッケージ・bパッケージ・
+> Lパッケージ・Vパッケージ及びSエアロを含みます。
+
+"The S/AERO grade includes spec S's G, b, L and V packages, and S Aero." The
+second is printed lowercase on the page. So `U` covers Spec-R, Spec-R Aero,
+S Aero and four named packages, and reading it as one trim collapsed all of
+them into a single wrong label.
+
+Two things in the option data pull them back apart, and they rest on different
+authorities, which is why the code tests the two engines differently.
+
+*The aero body*, at position 14. If it were freely orderable, base Spec-S cars
+would carry it. **Not one of the 1,290 does** — it appears only on `U` cars.
+That is a grade-linked body, not an option.
+
+*The trim treatments*, also at position 14. Base Spec-S is startlingly bare —
+every one of its 1,290 cars is "rear wiper" or "rear wiper + rear fog lamp" and
+nothing else. So any leather, silver interior or suede is above the base car.
+On the NA side the footnote settles what those are outright: S/AERO minus S
+Aero **is** the packages. On the turbo side nothing states it, so the trim
+treatment does the work — and it works because the treatments appear on both
+engines, in the same option letters:
+
+| treatment | NA (Spec-S) | turbo (Spec-R) |
+|---|---|---|
+| leather, blue stitching + blue interior | 1,331 | 1,100 |
+| silver interior + silver steering wheel | 836 | 699 |
+| punched suede | 957 | 2,849 |
+| leather, red stitching | 5,654 | — |
+
+The packages were never Spec-S only. Treating them that way hid 4,649 Spec-R
+package cars inside a plain "Spec-R".
+
+| grade | cars |
+|---|---|
+| Spec-R | 10,203 |
+| Spec-S package (G/b/L/V) | 8,781 |
+| Spec-R Aero | 6,032 |
+| Spec-S Aero | 4,689 |
+| Spec-R package (G/b/L/V) | 4,649 |
+| Autech Version | 1,875 |
+| Spec-S | 1,290 |
+| Varietta | 1,088 |
+| Autech special build | 477 |
+| Style-A | 54 |
+
+**What is deliberately not claimed.** Nothing names which car is a G rather
+than an L. No option position carries a package name, and FASTOP has no S15 at
+all — it stops before the car existed. There is a tempting near-fit, four trim
+treatments on the NA side against four package names, and the red-stitch
+treatment being absent from plain turbo cars would even explain a package that
+was S-only. It stays an observation. Assigning the letters on the strength of
+the counts matching would be invention, so the packages are shown as a bucket.
+
+
 **Five option positions, each with its own alphabet** (pages 3-6), and the
 letters skip I and O throughout. A dash means standard, which is why so many
 plates read `C--A-`. Position 14 has 24 letters, position 15 has five.
