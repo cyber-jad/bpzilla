@@ -1823,7 +1823,8 @@ const JDM_DATABASE = {
       // appear on both sides of the fuel split:
       //
       //                                    NA (S)   turbo (R)
-      //   leather, blue stitching + blue    1,331       1,100
+      //   leather, blue stitching + interior 1,331       1,100
+      //     (orange or blue - see below)
       //   silver interior + silver wheel      836         699
       //   punched suede                       957       2,849
       //
@@ -1836,6 +1837,13 @@ const JDM_DATABASE = {
       // turbo side nothing states it, so the trim treatment does the work -
       // the same treatments the footnote already established as package
       // equipment on the NA side.
+      // On the interior colour: the option code does NOT record it. Nissan's
+      // own glossary on the disc gives STTMQ two descriptions for the S15,
+      // "F/BLUE INTERIOR" and "F/INTERIOR(ORANGE OR BLUE)", and the second is
+      // the honest one - orange and blue share a single code. This archive had
+      // it as plain "blue interior" at plate 14 and "interior package, orange"
+      // at plate 18: the same token, split into two colours it cannot tell
+      // apart. Both now read "interior, orange or blue".
       const aero = this._s15HasAeroBody(mc[12]);
       if (mc[9] === 'U') {
         if (aero) return 'Spec-R Aero';
@@ -3814,10 +3822,10 @@ const JDM_DATABASE = {
       'H': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp',
       'J': 'rear wiper + rear spoiler + side sill protector + leather trim, red stitching + pillar gauge, oil pressure + rear fog lamp',
       'K': 'rear wiper + rear spoiler + side sill protector + pillar gauge, boost + titanium meter finisher + rear fog lamp',
-      'L': 'rear wiper + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior',
-      'M': 'rear wiper + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior',
-      'N': 'rear wiper + pillar gauge, boost + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior',
-      'P': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior',
+      'L': 'rear wiper + front fog lamps + titanium meter finisher + leather trim, blue stitching + interior, orange or blue',
+      'M': 'rear wiper + titanium meter finisher + rear fog lamp + leather trim, blue stitching + interior, orange or blue',
+      'N': 'rear wiper + pillar gauge, boost + front fog lamps + titanium meter finisher + leather trim, blue stitching + interior, orange or blue',
+      'P': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + leather trim, blue stitching + interior, orange or blue',
       'Q': 'rear wiper + front fog lamps + silver interior + leather steering wheel, silver stitching',
       'R': 'rear wiper + rear fog lamp + silver interior + leather steering wheel, silver stitching',
       'S': 'rear wiper + pillar gauge, boost + front fog lamps + silver interior + leather steering wheel, silver stitching',
@@ -3863,13 +3871,13 @@ const JDM_DATABASE = {
     },
     '18': {
       '-': 'standard',
-      'A': 'interior package, orange',
+      'A': 'interior, orange or blue',
       'B': 'xenon headlamps',
       'C': 'side airbags',
-      'D': 'interior package, orange + xenon headlamps',
-      'E': 'interior package, orange + side airbags',
+      'D': 'interior, orange or blue + xenon headlamps',
+      'E': 'interior, orange or blue + side airbags',
       'F': 'xenon headlamps + side airbags',
-      'G': 'interior package, orange + xenon headlamps + side airbags',
+      'G': 'interior, orange or blue + xenon headlamps + side airbags',
       'K': 'headlamp inner silver + aluminium pedals',
       'L': 'xenon headlamps + headlamp inner silver + aluminium pedals',
       'M': 'one-way trunk through + door mirror titanium clear finish deleted',

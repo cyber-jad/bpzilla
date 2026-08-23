@@ -526,7 +526,7 @@ engines, in the same option letters:
 
 | treatment | NA (Spec-S) | turbo (Spec-R) |
 |---|---|---|
-| leather, blue stitching + blue interior | 1,331 | 1,100 |
+| leather, blue stitching + interior (orange or blue) | 1,331 | 1,100 |
 | silver interior + silver steering wheel | 836 | 699 |
 | punched suede | 957 | 2,849 |
 | leather, red stitching | 5,654 | — |
@@ -546,6 +546,16 @@ package cars inside a plain "Spec-R".
 | Varietta | 1,088 |
 | Autech special build | 477 |
 | Style-A | 54 |
+
+**The interior colour is not in the record.** `STTMQ` is the token, and the
+disc's own glossary describes it twice for the S15 — `F/BLUE INTERIOR` and
+`F/INTERIOR(ORANGE OR BLUE)`. The second is the honest one: orange and blue
+share a single option code, so no record can say which a given car got. This
+archive had the token transcribed as "blue interior" at plate 14 and "interior
+package, orange" at plate 18 — one token, split into two colours it cannot
+distinguish, which read as two different options on the same car. Both now say
+orange or blue. The lesson is the ordinary one: the page transcription was a
+reading, and `SPECDSC` had the answer keyed by token and chassis all along.
 
 **What is deliberately not claimed.** Nothing names which car is a G rather
 than an L. No option position carries a package name, and FASTOP has no S15 at
