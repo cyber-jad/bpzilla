@@ -79,14 +79,74 @@ spread over six `BTCENVI.DB` tables in RA1 and RB1 — and those ranges turn out
 to be complementary rather than overlapping: **zero duplicates** on
 chassis+serial+date across all 383,742.
 
-## What is NOT decoded
+## The spec code, decoded
 
-The 15-character **spec code** (`JPF141310NU FF1`). It is the analogue of
-Nissan's model code and grade, colour and equipment live inside it. FD3S alone
-uses 679 distinct values.
+The 15-character spec code splits into five fields:
 
-The decode tables look present and none has been read: every model directory
-carries **`BTCECLR.DB`** (colour), plus `BTCEKIJ`, `BTCENOS`, `BTCESNM` and
-`BTCENTX`. That is the same shape of job as the Nissan option work. The spec
-code is stored verbatim so it can be decoded later without re-reading 2.7 GB
-of disc images.
+| bytes | field | example | status |
+|---|---|---|---|
+| `[0..1]` | market | `JP` | one value on every JDM car |
+| `[2..6]` | model / spec variant | `F1092` | positional reading, not decoded |
+| `[7..8]` | equipment | `10`, `CW`, `CF` | positional reading, not decoded |
+| `[9..11]` | **exterior paint** | `PZ`, `18G`, `25G` | **confirmed against BTCECLR** |
+| `[12..14]` | **interior trim** | `FE2`, `FF1` | **confirmed against BTCECLR** |
+
+So a car reads:
+
+    FD3S-100028   1991-10-19   JP  F1092  10  paint NU   trim FE2
+    FD3S-607313   2002-08-26   JP  F1763  CF  paint 25G  trim FF2
+
+### How the colour fields were confirmed
+
+`BTCECLR` is the colour-dependent parts table every model directory carries —
+which part number applies for which paint. 55-byte records:
+
+    [0..3] group   [6..10] part stem   [16..20] part   [21..23] variant
+    [24..31] serial-from   [32..39] serial-to   [40..43] model
+    [45..47] COLOUR CODE   [48..50] qualifier
+
+Restricting it to the FD's own model code separates the two vocabularies
+cleanly. Qualifier `298` yields `{18G, 20P, A3F, NU, PT}`, which is what cars
+carry at `[9..11]`; qualifier `100` yields `{FF1}`, which is what they carry
+at `[12..14]`.
+
+Checked across all fourteen chassis, against every `BTCECLR` on all five
+discs:
+
+- **trim: 100% known** — every code on every chassis is one BTCECLR lists
+- **paint: fully known on 11 of 14**, with four unlisted codes in total —
+  `7V` on FC3S and FC3C (the same generation), `X2` and `X3` on FD3S. Those
+  look like special-order colours.
+
+Two sanity checks that do not depend on the files at all: `PZ` is the single
+most common FD3S colour at 12,528 cars (23.9%), and Brilliant Black is
+well-documented as the FD's most popular colour; `18G` and `25G` are real FD
+colours (Montego Blue Mica, Competition Yellow).
+
+### Padding is NUL, not space
+
+A two-character paint code is stored `"NU\0"`. A plain `.trim()` leaves the
+NUL attached and the code then matches nothing — which made 16 of the FD3S's
+23 paint codes look absent from a table that lists them. The same padding is
+used in the spec code itself, so the mistake lands on both sides of the
+comparison at once and looks like real disagreement.
+
+### No names
+
+`BTCECLR` carries codes and no text, and none of the sibling tables is a
+colour dictionary: `BTCESNM` holds part-group names in katakana
+(`エンジン & ガスケット セット`), `BTCENTX` part text, `BTCEKAR` numeric codes,
+and the shared root tables `BTCECHR`, `BTCEAI1` and `BTCEPPC` are part
+cross-reference and pricing. A parts catalogue only needs the code to pick the
+right painted panel, so the names may simply not be on these discs.
+
+Codes are emitted as-is rather than guessed at, and the raw 15-character spec
+is kept verbatim in `sc` alongside the split fields so nothing depends on this
+reading being right forever.
+
+## Still not decoded
+
+`[2..6]` the model/spec variant and `[7..8]` the equipment code. The variant
+is clearly meaningful — 43 distinct values on FD3S, each spanning only one to
+three model years, so it encodes grade and era together — but nothing read so
+far names them.

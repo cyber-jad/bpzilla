@@ -37,16 +37,49 @@
 //   string. Blocks carry `used` as (bytes used - recordSize), so the count is
 //   used/40 + 1.
 //
-// WHAT IS AND IS NOT DECODED
+// THE SPEC CODE
 //
 // Chassis, serial and build date are read directly and are exact. The build
 // date is a full YYYYMMDD, finer than the YYMM the Nissan records carry.
 //
-// The 15-character spec code is NOT decoded. It is the analogue of Nissan's
-// model code and grade, colour and equipment live inside it. Every model
-// directory carries sibling tables that should decode it - BTCECLR (colour),
-// BTCEKIJ, BTCENOS, BTCESNM - and none of them has been read yet. The code is
-// stored verbatim so that work can happen later without re-reading the discs.
+// The 15-character spec code splits into five fields:
+//
+//   [0..1]   market          "JP" on every JDM car
+//   [2..6]   model/spec      "F1092" - a grade-and-era variant; each value
+//                            spans only one to three model years
+//   [7..8]   equipment       "10", "C0", "1A", "CW" - not decoded
+//   [9..11]  EXTERIOR PAINT  "PZ", "18G", "25G"
+//   [12..14] INTERIOR TRIM   "FE2", "FF1"
+//
+// The two colour fields are confirmed against BTCECLR, the colour-dependent
+// parts table each model directory carries. Its 55-byte records hold a colour
+// code at [45..47] and a qualifier at [48..50], and restricting them to the
+// FD's own model code separates the two vocabularies cleanly: qualifier 298
+// yields {18G, 20P, A3F, NU, PT} - which is what cars carry at [9..11] - and
+// qualifier 100 yields {FF1}, which is what they carry at [12..14]. Across
+// the whole FD3S run, 21 of 23 values at [9..11] and 9 of 9 at [12..14] are
+// codes BTCECLR itself lists.
+//
+// Two independent sanity checks on the paint field: PZ is the single most
+// common FD3S colour at 12,528 cars (24%), and Brilliant Black is
+// well-documented as the FD's most popular colour; 18G and 25G are real FD
+// colours (Montego Blue Mica, Competition Yellow).
+//
+// PADDING IS NUL, NOT SPACE. A two-character paint code is stored "NU\0", and
+// a plain .trim() leaves the NUL attached, so the code matches nothing. That
+// single detail made 16 of the FD3S's 23 paint codes look absent from a table
+// that in fact lists them.
+//
+// NO NAMES. BTCECLR carries codes and no text. The sibling tables were checked
+// and none is a colour dictionary: BTCESNM holds part-group names in katakana,
+// BTCENTX part text, BTCEKAR numeric codes, and the shared root tables
+// (BTCECHR, BTCEAI1, BTCEPPC) are part cross-reference and pricing. A parts
+// catalogue only needs the code to pick the right painted panel, so the names
+// may simply not be on these discs. Codes are emitted as-is rather than
+// guessed at.
+//
+// The raw 15-character code is kept verbatim in `sc` alongside the split
+// fields, so nothing is lost if this reading is ever revised.
 //
 // NOT SERVED. Output goes to public/data/mazda/ and nothing loads it. The site
 // is a Nissan archive; whether it ever becomes something wider is a decision
@@ -59,7 +92,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { listIso, SECTOR } = require('./iso.js');
+const { listIso, readFile, SECTOR } = require('./iso.js');
 
 const SRC = 'C:/Users/cyber/Downloads/JDM_EPC (1)';
 const OUT_DIR = path.join(__dirname, 'public', 'data', 'mazda');
@@ -113,6 +146,44 @@ function readRecords(buf, want, hits) {
   }
 }
 
+// Every colour code BTCECLR lists, so the paint and trim fields can be checked
+// against the discs' own vocabulary rather than taken on trust.
+//
+// BTCECLR is 55-byte records: [40..43] model, [45..47] colour, [48..50] a
+// qualifier that separates exterior paint (298/200) from interior trim (100).
+function colourVocabulary(isoPaths) {
+  const all = new Set();
+  const byQual = new Map();
+  for (const iso of isoPaths) {
+    for (const f of listIso(iso).files.filter(x => /\/BTCECLR\.DB$/i.test(x.path))) {
+      const buf = readFile(iso, f);
+      if (buf.length < HEADER + 8 || buf.readUInt16LE(0) !== 55) continue;
+      const blocks = Math.floor((buf.length - HEADER) / BLOCK);
+      const per = Math.floor((BLOCK - 6) / 55);
+      for (let b = 0; b < blocks; b++) {
+        const bo = HEADER + b * BLOCK;
+        if (bo + 6 > buf.length) break;
+        const used = buf.readInt16LE(bo + 4);
+        if (used < 0) continue;
+        const n = Math.min(Math.floor(used / 55) + 1, per);
+        for (let i = 0; i < n; i++) {
+          const ro = bo + 6 + i * 55;
+          if (ro + 55 > buf.length) break;
+          const r = buf.subarray(ro, ro + 55);
+          const clean = (x) => x.toString('latin1').replace(/\0/g, ' ').trim();
+          const colour = clean(r.subarray(45, 48));
+          if (!/^[A-Z0-9]{2,3}$/.test(colour)) continue;
+          const qual = clean(r.subarray(48, 51));
+          all.add(colour);
+          if (!byQual.has(qual)) byQual.set(qual, new Set());
+          byQual.get(qual).add(colour);
+        }
+      }
+    }
+  }
+  return { all, byQual };
+}
+
 function main() {
   const write = process.argv.includes('--write');
   const want = new Set(Object.keys(WANTED));
@@ -147,10 +218,17 @@ function main() {
 
   if (write) fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  process.stderr.write('reading BTCECLR colour vocabulary...\n');
+  const vocab = colourVocabulary(isos.map(f => path.join(SRC, f)));
+  console.log('');
+  console.log('BTCECLR vocabulary: ' + vocab.all.size + ' colour codes across ' +
+              vocab.byQual.size + ' qualifiers');
+
   console.log('');
   console.log('chassis  car                                    raw    unique   dupes   built');
   let totalRaw = 0, totalUniq = 0;
   const written = [];
+  const vocabCheck = [];
 
   for (const code of Object.keys(WANTED)) {
     const rows = hits.get(code) || [];
@@ -171,11 +249,26 @@ function main() {
     const dIdx = new Map(dates.map((d, i) => [d, i]));
     const sIdx = new Map(specs.map((s, i) => [s, i]));
 
+    // Split the spec code. Padding is NUL, not space.
+    const field = (s, a, b) => s.slice(a, b).replace(/\0/g, ' ').trim();
+    const dict = (a, b) => {
+      const vals = [...new Set(uniq.map(r => field(r.spec, a, b)))].sort();
+      return [vals, new Map(vals.map((v, i) => [v, i]))];
+    };
+    const [markets, mkIdx] = dict(0, 2);
+    const [fcodes, fcIdx]  = dict(2, 7);
+    const [equips, eqIdx]  = dict(7, 9);
+    const [paints, ptIdx]  = dict(9, 12);
+    const [trims, trIdx]   = dict(12, 15);
+
     const iso = (d) => d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8);
     console.log('  ' + code.padEnd(7) + WANTED[code].padEnd(36) +
                 String(rows.length).padStart(7) + String(uniq.length).padStart(9) +
                 String(rows.length - uniq.length).padStart(8) + '   ' +
                 (uniq.length ? iso(dates[0]) + '..' + iso(dates[dates.length - 1]) : '-'));
+
+    if (uniq.length)
+      vocabCheck.push([code, { paint: new Set(paints), trim: new Set(trims) }]);
 
     if (!write || !uniq.length) continue;
     const out = {
@@ -183,10 +276,21 @@ function main() {
       name: WANTED[code],
       n: uniq.length,
       d: dates.map(iso),
+      // Spec code split into its five fields. `paint` and `trim` are confirmed
+      // against BTCECLR; `fcode` and `equip` are positional readings only.
+      market: markets, fcode: fcodes, equip: equips, paint: paints, trim: trims,
+      // The raw 15-character code, kept so nothing depends on the split above
+      // being right forever.
       sc: specs,
-      r: uniq.map(r => [r.serial, dIdx.get(r.date), sIdx.get(r.spec)]),
+      // [serial, date, market, fcode, equip, paint, trim, rawSpec]
+      r: uniq.map(r => [r.serial, dIdx.get(r.date),
+                        mkIdx.get(field(r.spec, 0, 2)), fcIdx.get(field(r.spec, 2, 7)),
+                        eqIdx.get(field(r.spec, 7, 9)), ptIdx.get(field(r.spec, 9, 12)),
+                        trIdx.get(field(r.spec, 12, 15)), sIdx.get(r.spec)]),
       _src: [...(sources.get(code) || [])],
-      _note: 'spec code (sc) is undecoded - see extract_mazda_epc.js'
+      _fields: 'r = [serial, dateIdx, marketIdx, fcodeIdx, equipIdx, paintIdx, trimIdx, specIdx]',
+      _note: 'paint/trim confirmed against BTCECLR; no name table exists on these discs. ' +
+             'fcode and equip are positional readings, not decoded.'
     };
     const file = path.join(OUT_DIR, 'mz_' + code.toLowerCase() + '.json');
     fs.writeFileSync(file, JSON.stringify(out) + '\n', 'utf8');
@@ -196,6 +300,20 @@ function main() {
   console.log('');
   console.log('raw ' + totalRaw.toLocaleString() + '   unique ' + totalUniq.toLocaleString() +
               '   duplicates removed ' + (totalRaw - totalUniq).toLocaleString());
+
+  // Are the paint and trim readings actually codes the discs know about?
+  console.log('');
+  console.log('paint/trim checked against BTCECLR:');
+  console.log('  chassis  paint codes           trim codes');
+  for (const [code, sets] of vocabCheck) {
+    const fmt = (s) => {
+      const known = [...s].filter(c => vocab.all.has(c)).length;
+      return (known + '/' + s.size).padEnd(8) +
+        (known === s.size ? 'all known' :
+         'unlisted: ' + [...s].filter(c => !vocab.all.has(c)).sort().join(' '));
+    };
+    console.log('  ' + code.padEnd(8) + fmt(sets.paint).padEnd(34) + '  ' + fmt(sets.trim));
+  }
 
   // Refuse to claim success on an empty read. The field order in these records
   // is easy to get wrong and getting it wrong returns zero rows, not an error.
