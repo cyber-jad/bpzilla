@@ -40,7 +40,7 @@ copy short of re-deriving it from the FAST binaries.
 | RS13 / RPS13 | 084 | 17 | 113,305 | done, all five windows |
 | S13          | 087 | 18 | 165,866 | done, from this legend |
 | PS13 / KS13  | 087 | —  | 136,777 | done, from this legend |
-| S14          | 088 | 15 |  84,826 | partial, from FASTOP |
+| S14          | 088 |  3 |  84,826 | partial — FASTOP stops at 9606 |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
@@ -223,3 +223,42 @@ archive carries it, so the export does not include it.
 **What remains**: 1,876 character occurrences, all VS, none of them pack
 codes — A (714), 5 (615), then 7, 6, D, 1, F, 2, 3 and 4 in small numbers.
 Volume 087's own VS pages are where to look next.
+
+## S14 (volume 088) — blocked, and worth writing down why
+
+S14 decodes every option character on 83.5% of its records. The missing
+sixth is not spread evenly: by year it runs 1993 99%, 1994 92%, 1995 100%,
+then 1996 66%, 1997 50%, 1998 26%. Something stops in 1996, and it is the
+source, not the parser.
+
+**FASTOP is the only legend S14 has, and it ends at 9606.** Its windows are
+`9310-9505` and `9505-9606` — nothing after June 1996, which is exactly where
+the decode falls away. For comparison, the same file carries five windows for
+R33 running to 9710 and three for WC34 running to 9808. This was checked
+against the raw `H:\AR-JP\JP\FASTOP` rather than the extracted JSON: the
+extractor missed nothing, the data is not there.
+
+**Volume 088's front matter does not help.** It is three pages, not the
+fifteen this table used to claim, and all three are the Autech Version K's
+MF-T: a list of its model codes (`P80GZ`, `P80MZ`, `P870Z` at positions
+14-18) and two pages of symbol explanation for that one variant. There is no
+general S14 モデル記号 legend in the volume at all — unlike the R32, Z32 and
+180SX volumes, which is what made those closable. None of the three Autech
+codes appears in the S14 or CS14 records.
+
+**SPECDSC.AA1 gives vocabulary but not the mapping.** Nissan's own option
+glossary holds 27 S14 tokens — `ACONWS14` "W/O AIR CON", `DIFF6S14`
+"F/VISCOUS LSD", `GLSSWS14` "F/PRIVACY GLASS", `AUTC2S14` "F/AUTECH JAPAN
+VERSION" and so on. That names the equipment but not which model-code
+character selects it, so it cannot close the gap on its own. It would be
+useful for confirming a reading obtained some other way.
+
+**One hypothesis tested and rejected.** S14 codes end in a three-character
+group and the 180SX turned out to carry a パーソナルオーダーコード in exactly
+that position, so the same was suspected here. It is not: only 966 records end
+in three digits against 83,860 that do not, and the common endings are `D4C`,
+`L-A`, `C-B` — option characters with dash filler, not an order code.
+
+**What remains unnamed**: 20,799 character occurrences, led by `T` (6,397),
+`0` (3,489), `1` (2,274), `Y` (1,315) and `U` (1,207). Closing it needs an
+S14 legend for the 1996 facelift from somewhere outside this disc set.
