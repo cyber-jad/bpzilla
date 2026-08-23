@@ -436,39 +436,42 @@ h1, h2, h3, h4, .font-display {
 /* Nissan Legends.
  *
  * Everything but the Skyline lives behind this one tab — the Silvia, 180SX,
- * Stagea and Z32 families, well over half the archive's chassis. It used to be
- * styled exactly like every other tab and pushed to the far right by
- * margin-left:auto, which reads as an afterthought rather than as the other
- * half of the site.
+ * Stagea and Z32 families, 22 of the 40 chassis. It used to be styled exactly
+ * like every other tab AND pushed to the far right by margin-left:auto, which
+ * read as an afterthought rather than as the other half of the site.
  *
- * It keeps its position (it IS a different scope from the Skyline tabs, and
- * the separator earns its place) but now carries the star in the marque red
- * and a soft outline, so it reads as a destination while inactive. The active
- * state is unchanged and still wins, so this cannot be confused for selection.
+ * It now sits inline with the rest, and is marked in blue rather than red.
+ * Red is the marque colour and it already means "this tab is selected" one
+ * rule up; spending it on a permanent highlight made the tab shout and put
+ * two different meanings on the same colour. Blue separates those: this is
+ * --plate-blue, the shade of the firewall plate the whole site is named for,
+ * so the tab reads as a different PLACE rather than as a warning.
+ *
+ * The active state is untouched, so a selected Legends tab looks exactly like
+ * any other selected tab and the marking can never be mistaken for selection.
  */
 .nav-tab-btn-legends {
-  margin-left: auto;
-  border-left: 1px solid var(--border-subtle);
-  padding-left: 20px;
-  color: var(--text-primary);
+  color: var(--plate-blue);
 }
 
-.nav-tab-btn-legends svg {
-  color: var(--gtr-red);
-}
-
-.nav-tab-btn-legends:not(.active) {
-  background: var(--gtr-red-soft);
-  border-bottom-color: var(--gtr-red-glow);
+/* Scoped to :not(.active) so a selected tab's star turns red with its label
+   instead of staying blue while the text changes colour around it. */
+.nav-tab-btn-legends:not(.active) svg {
+  color: var(--plate-blue);
 }
 
 .nav-tab-btn-legends:not(.active):hover {
-  border-bottom-color: var(--gtr-red);
+  color: var(--plate-blue-deep);
+  border-bottom-color: var(--plate-blue);
+}
+
+.nav-tab-btn-legends:not(.active):hover svg {
+  color: var(--plate-blue-deep);
 }
 
 .nav-tab-btn-legends .tab-badge {
-  border-color: var(--gtr-red-glow);
-  color: var(--text-primary);
+  border-color: var(--nissan-blue-glow);
+  color: var(--plate-blue);
 }
 
 /* Empty until the record count is known — an empty pill is worse than none. */
@@ -1125,10 +1128,10 @@ h1, h2, h3, h4, .font-display {
     padding: 9px 10px;
     font-size: 0.78rem;
   }
+  /* On a phone the tabs wrap, and this one takes its own full-width row with a
+     rule above it. The margin-left/border-left resets that used to be here are
+     gone with the desktop rule they were undoing. */
   .nav-tab-btn-legends {
-    margin-left: 0;
-    border-left: none;
-    padding-left: 10px;
     flex-basis: 100%;
     border-top: 1px solid var(--border-subtle);
     margin-top: 4px;
