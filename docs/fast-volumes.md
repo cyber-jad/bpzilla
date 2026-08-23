@@ -35,14 +35,14 @@ copy short of re-deriving it from the FAST binaries.
 | R30 (DR30)   | 077 | 16 | 44,439  | none yet |
 | R31 (HR31)   | 078 | 36 | 182,351 | none yet |
 | R32          | 079 | 27 | 295,861 | done, from this legend |
-| R33          | 080 |  2 | 180,398 | done, from FASTOP |
-| R34          | 081 | 11 |  67,040 | done, FASTOP + this legend's second window |
+| R33          | 080 |  2 | 180,398 | done, FASTOP incl. [9710- ] |
+| R34          | 081 | 11 |  67,040 | done, FASTOP incl. [200008- ] |
 | RS13 / RPS13 | 084 | 17 | 113,305 | done, all five windows |
 | S13          | 087 | 18 | 165,866 | done, from this legend |
 | PS13 / KS13  | 087 | —  | 136,777 | done, from this legend |
-| S14          | 088 |  3 |  84,826 | partial — FASTOP stops at 9606 |
+| S14          | 088 |  3 |  84,826 | 96.1% — FASTOP all three windows |
 | S15          | 089 | 10 |  39,138 | done, from this legend |
-| WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
+| WC34 (Stagea)| 110 | 3  | 133,408 | done, FASTOP incl. [9808- ] |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
@@ -234,44 +234,81 @@ Volume 087 pages 4 and 5 were checked while looking for these and hold only
 codes the site already had — the [8805-9101], [9101-9201] and [9201- ] VS
 tables for the Silvia.
 
-## S14 (volume 088) — blocked, and worth writing down why
+## S14 — it was never blocked; the extractor was dropping windows
 
-S14 decodes every option character on 83.5% of its records. The missing
-sixth is not spread evenly: by year it runs 1993 99%, 1994 92%, 1995 100%,
-then 1996 66%, 1997 50%, 1998 26%. Something stops in 1996, and it is the
-source, not the parser.
+This section used to say the S14 was blocked at source. It was wrong, and how
+it was wrong is worth more than the conclusion was.
 
-**FASTOP is the only legend S14 has, and it ends at 9606.** Its windows are
-`9310-9505` and `9505-9606` — nothing after June 1996, which is exactly where
-the decode falls away. For comparison, the same file carries five windows for
-R33 running to 9710 and three for WC34 running to 9808. This was checked
-against the raw `H:\AR-JP\JP\FASTOP` rather than the extracted JSON: the
-extractor missed nothing, the data is not there.
+The claim was: **"FASTOP is the only legend S14 has, and it ends at 9606"** —
+and it noted, in its own defence, that this had been checked against the raw
+`H:\AR-JP\JP\FASTOP` rather than the extracted JSON. FASTOP does not end at
+9606. It *opens* a window there: `9606-`, open-ended, 67 codes across all five
+positions, covering every S14 built from the 1996 facelift to the end of
+production.
 
-**Volume 088's front matter does not help.** It is three pages, not the
-fifteen this table used to claim, and all three are the Autech Version K's
-MF-T: a list of its model codes (`P80GZ`, `P80MZ`, `P870Z` at positions
-14-18) and two pages of symbol explanation for that one variant. There is no
-general S14 モデル記号 legend in the volume at all — unlike the R32, Z32 and
-180SX volumes, which is what made those closable. None of the three Autech
-codes appears in the S14 or CS14 records.
+It was invisible because of how an open window is stored. The validity field is
+eight bytes, `YYMMYYMM`; when a window has no end date the second half is four
+SPACES, not zeros. The generator required eight digits, so every open-ended
+record failed its shape test and was skipped without complaint. Every
+generation FASTOP covers has exactly one such window — its last:
+
+| chassis | in FASTOP | shipped before | dropped window |
+|---|---|---|---|
+| R33  | 313 | 258 | `9710-`   |
+| R34  | 119 |  58 | `200008-` |
+| S14  | 137 |  70 | `9606-`   |
+| WC34 | 109 |  76 | `9808-`   |
+
+216 of 678 definitions, and always the newest cars in each family.
+
+Two smaller traps sat alongside it. The description text is 35 bytes, not the
+39 the record's remaining width suggests: bytes 35-36 are a flag field carrying
+`AB` on airbag entries, and reading them as text produces strings like
+`ABS         AB` and `ﾌｪﾝﾀﾞABｰﾐﾗｰ` — a two-letter code spliced into the middle
+of a word. And the sixth mask byte is not a line counter: digits are
+continuation lines of the description, but *letters* are a different column
+entirely, the grade the option applies to, which is how `ｴｱｺﾝﾚｽ` becomes
+`ｴｱｺﾝﾚｽ's標準仕様`.
+
+The R34 shows the cost twice over. That dropped `200008-` window had been
+re-created by hand, page by page, from volume 081 — work that existed only
+because the data was believed missing. The two readings agree, which is the one
+good thing to come of it: FASTOP defines all 50 codes the hand table had, plus
+11 it had missed, and corrects `16桁目 P` from "front and rear strut tower
+bars" to `FRストラットタワーバー`, a *front* strut tower bar for the 25GT-V.
+
+**Result.** Archive option coverage went from 99.233% to 99.606%, and undecoded
+characters from 24,728 to 12,709. S14 went from 91.32% to 96.09%, CS14 from
+96.10% to 99.92%. By S14 build year, 1996 went from 91.66% to 99.98%.
+
+**What still remains on S14** is about 9,164 characters, most of them 1994
+cars, and that part *is* source thinness rather than a parser fault: the
+`9310-9505` window defines only two codes at plate 15 and none at all at plate
+17, where `9505-9606` defines nine and three. Cars built before May 1995 have
+positions their own window never described.
+
+**Volume 088 genuinely does not help**, and that part of the old note stands.
+It is three pages and all three are the Autech Version K's MF-T: a list of its
+model codes (`P80GZ`, `P80MZ`, `P870Z` at positions 14-18) and two pages of
+symbol explanation for that one variant. There is no general S14 モデル記号
+legend in the volume — unlike the R32, Z32 and 180SX volumes, which is what
+made those closable. None of the three Autech codes appears in the records.
 
 **SPECDSC.AA1 gives vocabulary but not the mapping.** Nissan's own option
-glossary holds 27 S14 tokens — `ACONWS14` "W/O AIR CON", `DIFF6S14`
-"F/VISCOUS LSD", `GLSSWS14` "F/PRIVACY GLASS", `AUTC2S14` "F/AUTECH JAPAN
-VERSION" and so on. That names the equipment but not which model-code
-character selects it, so it cannot close the gap on its own. It would be
-useful for confirming a reading obtained some other way.
+glossary holds 27 S14 tokens — `ACONWS14` "W/O AIR CON", `DIFF6S14` "F/VISCOUS
+LSD", `GLSSWS14` "F/PRIVACY GLASS", `AUTC2S14` "F/AUTECH JAPAN VERSION". That
+names the equipment but not which model-code character selects it, so it
+confirms a reading rather than producing one.
 
 **One hypothesis tested and rejected.** S14 codes end in a three-character
-group and the 180SX turned out to carry a パーソナルオーダーコード in exactly
-that position, so the same was suspected here. It is not: only 966 records end
-in three digits against 83,860 that do not, and the common endings are `D4C`,
+group and the 180SX carries a パーソナルオーダーコード in exactly that
+position, so the same was suspected here. It is not: only 966 records end in
+three digits against 83,860 that do not, and the common endings are `D4C`,
 `L-A`, `C-B` — option characters with dash filler, not an order code.
 
-**What remains unnamed**: 20,799 character occurrences, led by `T` (6,397),
-`0` (3,489), `1` (2,274), `Y` (1,315) and `U` (1,207). Closing it needs an
-S14 legend for the 1996 facelift from somewhere outside this disc set.
+The re-reader is `extract_factory_options.js`. It refuses to write a file
+smaller than the one already shipped, or one that loses a definition the
+shipped file had, and it never retranslates an entry that already shipped.
 
 ## S15 (volume 089) — complete, and it was missing entirely
 
