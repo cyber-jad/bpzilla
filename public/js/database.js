@@ -1783,6 +1783,20 @@ const JDM_DATABASE = {
     // on the turbo side and nowhere else — the S15 6MT was Spec-R only — so
     // an alignment error here would have to put the 6MT on the wrong car.
     if (modelId === 'S15') {
+      // A coachbuilt car is its own trim, not a spec of the car it started as.
+      //
+      // These were being counted inside Spec-S and Spec-R, which hid 3,494
+      // cars and made the numbers wrong in both directions: it inflated
+      // Spec-S by 3,001 (a Varietta is not a Spec-S) and left the Autech
+      // variants with no line of their own at all, even though the archive
+      // already names every one of them. Grouped by variant rather than by
+      // option code, because PB4 and PB6 differ only in privacy glass —
+      // that is an option on one trim, not two trims.
+      const grp = String(mc).slice(12, 17);
+      if (grp.length === 5 && grp[4] === 'Z') {
+        const fam = this._s15AutechGrade[grp.slice(0, 3)];
+        if (fam) return fam;
+      }
       const c = mc[4];
       if (c === 'T') return 'Spec-S';
       if (c === 'U') return mc[9] === 'U' ? 'Spec-R' : 'Spec-S Aero';
@@ -3858,6 +3872,17 @@ const JDM_DATABASE = {
   // 「モデルナンバープレートには基準車オプション記号が記載されております」— its plate
   // carries the BASE car's option code, so a Driving Helper is not identifiable
   // from the plate at all. It stays listed in case a record ever shows one.
+  // Autech variants as GRADES. _s15Autech below names them for the plate
+  // readout, at option-code granularity; this collapses those to the trim a
+  // buyer would actually have chosen, for the grade breakdown and rarity.
+  _s15AutechGrade: {
+    PB4: 'Autech Version', PB6: 'Autech Version',
+    UA3: 'Varietta', UA4: 'Varietta',
+    TKA: 'Style-A', TK1: 'Style-A', TKB: 'Style-A', TK2: 'Style-A',
+    LVT: 'Driving Helper',
+    YNZ: 'Autech special build'
+  },
+
   _s15Autech: {
     PB4: 'Autech Version 6-speed manual, without privacy glass',
     PB6: 'Autech Version 6-speed manual, with privacy glass',
