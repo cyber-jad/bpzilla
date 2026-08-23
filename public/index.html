@@ -17,10 +17,37 @@
   <meta name="robots" content="index, follow, noai, noimageai">
   <link rel="stylesheet" href="/css/style.css?v=99205688">
   <link rel="stylesheet" href="/css/components.css?v=c0f48232">
+  <!-- ====================================================================
+       Third-party scripts: pinned, with integrity hashes.
+
+       These were "lucide@latest" and "chart.js" with no version at all —
+       627 KB of code, executing with full privileges on every page, whose
+       contents were whatever the CDN felt like serving that day. The CSP
+       names unpkg and jsDelivr as allowed origins, so it would not have
+       objected to a compromised or simply changed build; naming an origin
+       is trust in the origin forever.
+
+       The integrity hash changes that to trust in these exact bytes. A
+       version bump is now a deliberate edit — change the URL and the hash
+       together, or the browser refuses the file.
+
+       crossorigin="anonymous" is required, not decorative: a cross-origin
+       script with an integrity attribute and no CORS mode is blocked
+       outright. Both CDNs answer with Access-Control-Allow-Origin: *.
+
+       Pinned to exactly what the unpinned URLs were already resolving to,
+       verified by hashing both and comparing — including the detail that
+       jsDelivr's bare chart.js is dist/chart.umd.min.js and not the
+       similarly-sized dist/chart.umd.js four bytes away from it.
+       ==================================================================== -->
   <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@1.33.0/dist/umd/lucide.min.js"
+          integrity="sha384-tCQ4YYVYKuOFYH+pnSIPOS3PaT3+5AmX2okMauzDJlLLxkQfJfSwmgpZPceZWs1F"
+          crossorigin="anonymous"></script>
   <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"
+          integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ"
+          crossorigin="anonymous"></script>
 
   <!-- ====================================================================
        SITE ADDRESS
