@@ -50,7 +50,7 @@ The build date is a full **YYYYMMDD**, finer than the YYMM Nissan FAST carries.
 
 **661 chassis codes, 8,588,055 build records, 1983–2008.** Mostly Demio, MPV,
 Familia, Capella, Bongo and Suzuki-derived kei. Extracted so far are the
-fourteen rotary and roadster codes — **383,742 records**, no duplicates:
+sixteen rotary and roadster codes — **384,491 records**, no duplicates:
 
 | chassis | car | records | built |
 |---|---|---|---|
@@ -66,6 +66,8 @@ fourteen rotary and roadster codes — **383,742 records**, no duplicates:
 | `BG8Z` | Familia GT-R | 10,490 | 1989-07-11 .. 1994-03-31 |
 | `JC3SE` | Eunos Cosmo 13B | 4,549 | 1990-02-24 .. 1994-01-26 |
 | `JCESE` | Eunos Cosmo 20B triple-rotor | 3,576 | 1990-02-23 .. 1994-02-07 |
+| `JC3S` | Eunos Cosmo 13B, 1994- series | 380 | 1994-03-16 .. 1995-09-06 |
+| `JCES` | Eunos Cosmo 20B, 1994- series | 369 | 1994-02-23 .. 1995-09-06 |
 | `FC3C` | Savanna RX-7 Cabriolet | 3,411 | 1987-07-15 .. 1992-12-01 |
 | `SA22C` | Savanna RX-7 (SA/FB) | 3,020 | 1983-08-30 .. 1985-07-31 |
 
@@ -77,7 +79,28 @@ worldwide total.
 A chassis appears in several model directories and across two discs — FD3S is
 spread over six `BTCENVI.DB` tables in RA1 and RB1 — and those ranges turn out
 to be complementary rather than overlapping: **zero duplicates** on
-chassis+serial+date across all 383,742.
+chassis+serial+date across all 384,491.
+
+### Families that span several chassis codes
+
+| family | records | codes |
+|---|---|---|
+| Roadster / MX-5 | 161,471 | `NA6CE` + `NA8C` + `NB6C` + `NB8C` + `NCEC` |
+| RX-7 | 139,450 | `SA22C` + `FC3S` + `FC3C` + `FD3S` |
+| Eunos Cosmo | 8,874 | `JC3SE` + `JC3S` + `JCESE` + `JCES` |
+
+**The Cosmo is four codes, and the first extraction found only two.** `JC3SE`
+and `JCESE` stop in January and February 1994. `JC3S` and `JCES` start
+1994-03-16 and 1994-02-23, with their serials restarting at 100001 — a new
+series, not a different car. They were easy to miss because their paint
+vocabularies barely overlap the earlier ones (no shared code at all on the
+13B, one on the 20B), which is what a facelift colour range looks like.
+
+What settles it is the total: all four together give **8,874** cars against a
+commonly cited Eunos Cosmo production of about 8,875. The two earlier codes
+alone give 8,125, which is 750 short of every published figure — the kind of
+gap that should have been visible from the count before it was visible in the
+data.
 
 ## The spec code, decoded
 
@@ -110,7 +133,7 @@ cleanly. Qualifier `298` yields `{18G, 20P, A3F, NU, PT}`, which is what cars
 carry at `[9..11]`; qualifier `100` yields `{FF1}`, which is what they carry
 at `[12..14]`.
 
-Checked across all fourteen chassis, against every `BTCECLR` on all five
+Checked across all sixteen chassis, against every `BTCECLR` on all five
 discs:
 
 - **trim: 100% known** — every code on every chassis is one BTCECLR lists
