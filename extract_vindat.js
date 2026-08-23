@@ -81,7 +81,43 @@ const LOCATION = {
 
   // S15 Silvia. One chassis code, despite appearances - see the note in
   // findRecords about the phantom RS15 and CS15.
-  S15:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' }
+  S15:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' },
+
+  // ---- Extracted to the archive, deliberately NOT served by the site ------
+  //
+  // S110 and S12 Silvia, and the Z31 300ZX. Held so the data exists and can be
+  // checked, without adding three model ranges to a site whose scope is the
+  // cars above. Same arrangement as the M35 Stagea: the files sit in
+  // public/data and the loader's `prefixes` list does not name them.
+  //
+  // All three families live in the AB3 volume set. Codes were found by walking
+  // every VINDAT file and tallying what is there rather than looking up an
+  // expected list - which is how the two phantoms below were caught.
+
+  // S110 Silvia, 1979-1983. 73,184 records.
+  S110:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  PS110:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+  US110:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+
+  // S12 Silvia, 1983-1988. 28,170 records.
+  //
+  // A 4-character "RS12" also validates, twice, at a run boundary in
+  // VINDAT4.AB3 - and it is not a chassis. RS12 at p and S12 at p+1 place
+  // every field on the same byte, the length-cancellation trap that invented
+  // RS15 and CS15; two records cannot satisfy the contiguity rule that would
+  // otherwise settle it. Dropping them gives 28,170, which is what an
+  // independent count of this family had already produced.
+  S12:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' },
+  JS12:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  US12:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+
+  // Z31 300ZX, 1983-1989. 35,381 records.
+  Z31:    { vindat: 'VINDAT3.AB3', mdlcode: 'MDLCODE.AB3' },
+  GZ31:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  HZ31:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  PZ31:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
+  HGZ31:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+  PGZ31:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' }
 };
 
 // A shipped file is not always one chassis code.
@@ -107,7 +143,23 @@ const GROUPS = {
   hr32:  ['HR32'],
   hcr32: ['HCR32'],
   hnr32: ['HNR32'],
-  bnr32: ['BNR32']
+  bnr32: ['BNR32'],
+
+  // Not served by the site — see the LOCATION note. One file per chassis code
+  // rather than one per family, matching how the Z32 variants are already
+  // split, so any of them could be loaded on its own later without a re-extract.
+  s110:  ['S110'],
+  ps110: ['PS110'],
+  us110: ['US110'],
+  s12:   ['S12'],
+  js12:  ['JS12'],
+  us12:  ['US12'],
+  z31:   ['Z31'],
+  gz31:  ['GZ31'],
+  hz31:  ['HZ31'],
+  pz31:  ['PZ31'],
+  hgz31: ['HGZ31'],
+  pgz31: ['PGZ31']
 };
 
 // Does this family's export keep the colour-trim character at [L+6]?
@@ -122,7 +174,17 @@ const GROUPS = {
 // database.js splits it back out at load: dict.c becomes the paint code and
 // dict.ctr the trim character, keyed on length 4. So keeping it where the
 // family keeps it is what makes the trim character show up on the plate at all.
-const KEEPS_COLOR_PREFIX = new Set(['s13', 'ps13', 'ks13', 'rs13', 'rps13', 's15']);
+// The S110, S12 and Z31 families all keep it, counted rather than assumed:
+// every one of their twelve codes carries a real character here on a
+// meaningful share of records — K, B, G, C, A, T and F — from 475 of 8,586 on
+// PS110 up to 6,755 of 11,965 on GZ31. Dropping it would take a character off
+// every paint code in 136,735 records.
+const KEEPS_COLOR_PREFIX = new Set([
+  's13', 'ps13', 'ks13', 'rs13', 'rps13', 's15',
+  's110', 'ps110', 'us110',
+  's12', 'js12', 'us12',
+  'z31', 'gz31', 'hz31', 'pz31', 'hgz31', 'pgz31'
+]);
 
 const be24 = (b, o) => (b[o] << 16) | (b[o + 1] << 8) | b[o + 2];
 const be16 = (b, o) => (b[o] << 8) | b[o + 1];

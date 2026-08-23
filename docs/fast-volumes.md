@@ -45,6 +45,9 @@ copy short of re-deriving it from the FAST binaries.
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, FASTOP incl. [9808- ] |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
+| S110 Silvia  | 085 | —  |  73,184 | extracted, not loaded |
+| S12 Silvia   | 086 |  2 |  28,170 | extracted, not loaded |
+| Z31 300ZX    | 131 | —  |  35,381 | extracted, not loaded |
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
 
 Note on S13: volumes 087 and 084 together cover the whole family, 415,946
@@ -309,6 +312,50 @@ three digits against 83,860 that do not, and the common endings are `D4C`,
 The re-reader is `extract_factory_options.js`. It refuses to write a file
 smaller than the one already shipped, or one that loses a definition the
 shipped file had, and it never retranslates an entry that already shipped.
+
+## Held but not served: S110, S12, Z31
+
+136,735 records across twelve files, extracted so the data exists and can be
+checked, and deliberately not added to the site. Same arrangement as the M35
+Stagea: the files sit in `public/data` and the loader's `prefixes` list in
+`database.js` does not name them. Serving any of them needs two edits, the
+prefix here and a `models{}` entry — records without a model entry load with
+nothing to display them under.
+
+| family | codes | records | build dates |
+|---|---|---|---|
+| S110 Silvia | `S110` 61,407 · `PS110` 8,586 · `US110` 3,191 | 73,184 | 1980-07 .. 1983-07 |
+| S12 Silvia  | `S12` 14,134 · `JS12` 11,170 · `US12` 2,866 | 28,170 | 1982-11 .. 1988-03 |
+| Z31 300ZX   | `GZ31` 11,965 · `HGZ31` 9,560 · `PGZ31` 6,998 · `HZ31` 3,046 · `PZ31` 1,981 · `Z31` 1,831 | 35,381 | 1982-12 .. 1989-05 |
+
+All three live in the AB3 volume set, spread across `VINDAT3`, `VINDAT4` and
+`VINDAT5`. The codes were found by walking every VINDAT file and tallying what
+is actually there rather than looking up an expected list — 970 distinct codes
+across the disc set — which is what caught the two entries below.
+
+**Two phantoms rejected.** `RS12` validates twice at a run boundary in
+VINDAT4.AB3 and is not a chassis: a 4-character `RS12` at p and a 3-character
+`S12` at p+1 put every field on the same byte, the length-cancellation trap
+that once invented RS15 and CS15, and two records cannot satisfy the
+contiguity rule that would otherwise settle it. Dropping them gives 28,170,
+which is what an independent count of this family had already produced.
+`PS110` also appears in VINDAT5.AB1 with 14 records — dated 1995, when the
+S110 ended in 1983, in a different file from the real run, and carrying a
+four-character paint code where this family uses three. Three independent
+signals, all pointing the same way; only the 8,586 records in VINDAT5.AB3 are
+kept.
+
+**One oddity kept.** Ten of the 61,407 S110 records carry 1995 build dates
+inside the single contiguous run. They are structurally ordinary records in
+the middle of a real run, so they are almost certainly a transcription slip in
+the source rather than a decode error, and removing records because their date
+is surprising is how real data gets lost. 0.016% of the family.
+
+**The colour-trim character is kept for all three**, counted rather than
+assumed — the mistake that once took a character off every paint code in the
+S13 family. Every one of the twelve codes carries a real character at
+`[L+6]` on a meaningful share of records (K, B, G, C, A, T, F), from 475 of
+8,586 on PS110 up to 6,755 of 11,965 on GZ31.
 
 ## What is left undecoded, and what has already been ruled out
 
