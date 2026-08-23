@@ -193,7 +193,7 @@ async function describeRoute(pathname, env) {
     return {
       view: r.view,
       canonical: `${SITE}${decoded}`,
-      title: `${r.title} | BPZILLA`,
+      title: `${r.title} | GTR Registry`,
       description:
         `${r.title} across 1,396,771 Nissan factory records read from the ` +
         `Nissan FAST microfiche — Skyline, Silvia, Stagea and 300ZX.`
@@ -210,7 +210,7 @@ async function describeRoute(pathname, env) {
       view: m.legend ? 'legends-view' : 'database-view',
       model: key,
       canonical: `${SITE}/model/${key}`,
-      title: `${m.name} — ${n(m.count)} factory records | BPZILLA`,
+      title: `${m.name} — ${n(m.count)} factory records | GTR Registry`,
       description:
         `${n(m.count)} ${m.name} records from the Nissan FAST microfiche` +
         `${m.years ? `, built ${m.years}` : ''}. ` +
@@ -244,8 +244,8 @@ async function describeRoute(pathname, env) {
       chassis: id,
       canonical: `${SITE}/chassis/${id}`,
       title: m
-        ? `${id} — ${m.name} factory record | BPZILLA`
-        : `${id} — Nissan factory record | BPZILLA`,
+        ? `${id} — ${m.name} factory record | GTR Registry`
+        : `${id} — Nissan factory record | GTR Registry`,
       description: m
         ? `Factory record for ${id}, a ${m.name}${m.years ? ` (${m.years})` : ''}: ` +
           `build date, factory paint code, grade and decoded build plate, ` +
