@@ -1797,10 +1797,29 @@ const JDM_DATABASE = {
         const fam = this._s15AutechGrade[grp.slice(0, 3)];
         if (fam) return fam;
       }
+      // The grade character alone gives three buckets, and volume 089 says so
+      // in a footnote on the same page as the layout:
+      //
+      //   （注）S/AEROグレードには、spec SのGパッケージ・bパッケージ・
+      //         Lパッケージ・Vパッケージ及びSエアロを含みます。
+      //
+      // "The S/AERO grade includes spec S's G, b, L and V packages, and S
+      // Aero." (The second is printed lowercase on the page.) So 'U' is a
+      // bundle, not a trim, and reading it as plain "Spec-S Aero" was wrong —
+      // it silently merged five things and never showed Spec-R Aero at all.
+      //
+      // What separates them is the aero body itself, at option position 14.
+      // That is a derived split rather than something the legend states, so
+      // it needs justifying: if the kit were a freely-orderable option, base
+      // Spec-S cars would carry it. NOT ONE of the 1,290 does. It only ever
+      // appears on 'U' cars, which is what a grade-linked body kit looks like
+      // and not what an option looks like.
       const c = mc[4];
       if (c === 'T') return 'Spec-S';
-      if (c === 'U') return mc[9] === 'U' ? 'Spec-R' : 'Spec-S Aero';
-      return '';
+      if (c !== 'U') return '';
+      const aero = this._s15HasAeroBody(mc[12]);
+      if (mc[9] === 'U') return aero ? 'Spec-R Aero' : 'Spec-R';
+      return aero ? 'Spec-S Aero' : 'Spec-S package (G/b/L/V)';
     }
     return null;
   },
@@ -3875,6 +3894,20 @@ const JDM_DATABASE = {
   // Autech variants as GRADES. _s15Autech below names them for the plate
   // readout, at option-code granularity; this collapses those to the trim a
   // buyer would actually have chosen, for the grade breakdown and rarity.
+  // Which position-14 option codes carry the aero body — rear spoiler AND
+  // side sill protector together. Read out of _s15Options rather than written
+  // as a list, so correcting the option table corrects this too instead of
+  // leaving a stale set of letters behind.
+  _s15AeroCodes: null,
+  _s15HasAeroBody: function (ch) {
+    if (!this._s15AeroCodes) {
+      const t = (this._s15Options && this._s15Options['14']) || {};
+      this._s15AeroCodes = new Set(Object.keys(t).filter(k =>
+        /rear spoiler/i.test(t[k]) && /side sill/i.test(t[k])));
+    }
+    return this._s15AeroCodes.has(ch);
+  },
+
   _s15AutechGrade: {
     PB4: 'Autech Version', PB6: 'Autech Version',
     UA3: 'Varietta', UA4: 'Varietta',
