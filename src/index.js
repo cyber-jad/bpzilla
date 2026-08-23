@@ -209,6 +209,11 @@ async function describeRoute(pathname, env) {
     return {
       view: m.legend ? 'legends-view' : 'database-view',
       model: key,
+      modelName: m.name,
+      count: m.count,
+      years: m.years,
+      engine: m.engine,
+      body: m.body,
       canonical: `${SITE}/model/${key}`,
       title: `${m.name} — ${n(m.count)} factory records | GTR Registry`,
       description:
@@ -223,13 +228,16 @@ async function describeRoute(pathname, env) {
   if (chassis) {
     const id = chassis[1].toUpperCase();
     const index = await getModels(env);
-    let m = null;
+    let m = null, mId = null;
     if (index) {
       // Longest stamp first, so KPS13 wins over PS13 on "KPS130-000001".
-      const stamps = Object.values(index.models)
-        .filter(x => x.stamp && /^[A-Z0-9]+$/.test(x.stamp))
-        .sort((a, b) => b.stamp.length - a.stamp.length);
-      m = stamps.find(x => id.startsWith(x.stamp)) || null;
+      // Entries rather than values: the key is the model id, and the
+      // breadcrumb needs it to link back to /model/<id>.
+      const stamps = Object.entries(index.models)
+        .filter(([, x]) => x.stamp && /^[A-Z0-9]+$/.test(x.stamp))
+        .sort((a, b) => b[1].stamp.length - a[1].stamp.length);
+      const hit = stamps.find(([, x]) => id.startsWith(x.stamp)) || null;
+      if (hit) { mId = hit[0]; m = hit[1]; }
     }
     // A chassis-shaped string whose prefix matches no chassis in the archive is
     // a typo, not a record. Answering 200 for it would be the soft 404 that
@@ -242,6 +250,8 @@ async function describeRoute(pathname, env) {
     return {
       view: m && m.legend ? 'legends-view' : 'database-view',
       chassis: id,
+      model: mId,
+      modelName: m ? m.name : null,
       canonical: `${SITE}/chassis/${id}`,
       title: m
         ? `${id} — ${m.name} factory record | GTR Registry`
@@ -259,6 +269,68 @@ async function describeRoute(pathname, env) {
 }
 
 /**
+ * Per-route structured data, appended as a second JSON-LD block.
+ *
+ * index.html already carries a site-level graph — a WebSite node and one
+ * Dataset describing the whole archive — and that graph was being served
+ * byte-identical on all 1.25 million URLs. Every model page therefore told
+ * Google it was the same Dataset as every other, which is the one thing
+ * structured data exists to disambiguate.
+ *
+ * A separate block rather than a rewrite of the existing one: the site-level
+ * nodes are still true on every page and are what `isPartOf` points at, and
+ * more than one ld+json block per document is ordinary and well supported.
+ *
+ * Only what the model index actually holds is emitted. No `distribution`,
+ * because /data/ answers 403 to anything without a same-site referer and
+ * advertising a download that refuses to serve is worse than none.
+ */
+function structuredData(route) {
+  const graph = [];
+  const crumbs = [{ name: 'Home', item: `${SITE}/` }];
+
+  if (route.model && route.chassis) {
+    crumbs.push({ name: route.modelName || route.model, item: `${SITE}/model/${route.model}` });
+    crumbs.push({ name: route.chassis, item: route.canonical });
+  } else if (route.chassis) {
+    crumbs.push({ name: route.chassis, item: route.canonical });
+  } else if (route.model) {
+    crumbs.push({ name: route.modelName || route.model, item: route.canonical });
+  } else {
+    crumbs.push({ name: route.title.replace(/ \| GTR Registry$/, ''), item: route.canonical });
+  }
+
+  graph.push({
+    '@type': 'BreadcrumbList',
+    '@id': `${route.canonical}#breadcrumb`,
+    itemListElement: crumbs.map((c, i) => ({
+      '@type': 'ListItem', position: i + 1, name: c.name, item: c.item
+    }))
+  });
+
+  // A model page is a real subset of the archive, with its own size and its
+  // own date range, so it gets its own Dataset pointing back at the whole.
+  if (route.model && !route.chassis) {
+    const about = [route.engine, route.body].filter(Boolean).join(' — ');
+    graph.push({
+      '@type': 'Dataset',
+      '@id': `${route.canonical}#dataset`,
+      name: `${route.modelName} — factory records`,
+      description: route.description,
+      url: route.canonical,
+      isPartOf: { '@id': `${SITE}/#dataset` },
+      ...(route.count ? { size: `${n(route.count)} factory records` } : {}),
+      ...(route.years ? { temporalCoverage: String(route.years).replace(/\s*–\s*/, '/') } : {}),
+      ...(about ? { about } : {}),
+      variableMeasured: ['chassis number', 'build date', 'factory paint code',
+                         'grade', 'factory options']
+    });
+  }
+
+  return { '@context': 'https://schema.org', '@graph': graph };
+}
+
+/**
  * Serve index.html with this route's own metadata swapped in. Everything the
  * page needs to render is already client-side; what changes here is what a
  * search engine indexes and what a link preview shows.
@@ -268,7 +340,18 @@ function withMetadata(response, route) {
   const desc = esc(route.description);
   const url = esc(route.canonical);
 
+  // JSON.stringify inside a <script> has one escape that matters: a literal
+  // "</script>" in any string value ends the block early. None of these values
+  // can contain one today, but the guard costs a replace and removes the class
+  // of bug entirely.
+  const ld = JSON.stringify(structuredData(route)).replace(/<\//g, '<\\/');
+
   return new HTMLRewriter()
+    .on('head', {
+      element(el) {
+        el.append(`<script type="application/ld+json">${ld}</script>`, { html: true });
+      }
+    })
     .on('title', { element(el) { el.setInnerContent(route.title); } })
     .on('meta[name="description"]', { element(el) { el.setAttribute('content', desc); } })
     .on('link[rel="canonical"]', { element(el) { el.setAttribute('href', url); } })

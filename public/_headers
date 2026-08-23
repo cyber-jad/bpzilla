@@ -88,7 +88,17 @@
   # so 'unsafe-eval' is deliberately absent — Chart.js and Lucide both run
   # without it.
   #
+  # static.cloudflareinsights.com is the exception to "enumerated from the
+  # source": it is not in the source. Cloudflare Web Analytics injects
+  # beacon.min.js into the response itself, downstream of anything in this
+  # repo, so the only evidence it exists is the browser console refusing it —
+  # which is exactly what happened, silently, for as long as the policy has
+  # been live. Analytics on the new domain recorded nothing at all.
+  # cloudflareinsights.com (no subdomain) is where the beacon POSTs its
+  # measurements, so connect-src needs it too; allowing the script without the
+  # endpoint loads the beacon and still discards every result.
+  #
   # frame-ancestors duplicates X-Frame-Options for browsers that honour the
   # newer directive; object-src and base-uri close the two gaps that
   # 'unsafe-inline' would otherwise leave worth exploiting.
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
