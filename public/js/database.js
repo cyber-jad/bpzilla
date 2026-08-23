@@ -1722,6 +1722,35 @@ const JDM_DATABASE = {
       if (c === 'J') return 'Type II';
       return '';
     }
+    // S15 — from volume 089's own モデル記号の意味 page, which is the best
+    // provenance any grade on this site has: Nissan naming its own
+    // characters, rather than a total matched against an outside source.
+    //
+    //   6桁目  グレード    T = S,  U = S-AERO, R
+    //   11桁目 燃料装置    E = EGI (NA),  U = ターボ
+    //
+    // Plate position maps to this data at platePos = mc index + 2, so those
+    // are mc[4] and mc[9]. All 39,138 records had been reading as no grade at
+    // all, because nothing here ever looked at mc[4].
+    //
+    // The legend leaves U ambiguous — one character for two grades — and the
+    // fuel character resolves it, because Spec-R is the turbo car and S-AERO
+    // is not. That split is not an assumption; the whole archive agrees with
+    // it and the gearbox proves it independently:
+    //
+    //   T + EGI    4,291   MT5 3,084 / AT4 1,207          Spec-S
+    //   U + turbo 21,377   MT6 20,071 / AT4 1,306         Spec-R
+    //   U + EGI   13,470   MT5 7,874 / AT4 5,596          Spec-S Aero
+    //
+    // 39,138 records, all accounted for, no leftovers. The six-speed appears
+    // on the turbo side and nowhere else — the S15 6MT was Spec-R only — so
+    // an alignment error here would have to put the 6MT on the wrong car.
+    if (modelId === 'S15') {
+      const c = mc[4];
+      if (c === 'T') return 'Spec-S';
+      if (c === 'U') return mc[9] === 'U' ? 'Spec-R' : 'Spec-S Aero';
+      return '';
+    }
     return null;
   },
   // Z32 Twin Turbo (CZ32/GCZ32) — RETRACTED, not decoded. An earlier pass

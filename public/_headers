@@ -54,12 +54,23 @@
   # None of these are used by the site, so they're switched off rather than
   # left available to anything that ends up running on the page.
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
-  # One year, but deliberately without includeSubDomains or preload: www does
-  # not resolve yet, and both of those are painful to walk back once a browser
-  # has cached them. Note this only protects visitors who have already reached
-  # the site over HTTPS once — the plain-HTTP entry point still needs
-  # "Always Use HTTPS" turned on in the Cloudflare dashboard.
-  Strict-Transport-Security: max-age=31536000
+  # One year, now with includeSubDomains.
+  #
+  # It was deliberately left off while www.gtr-registry.org did not resolve:
+  # asserting HTTPS-only for every subdomain while one of them answers nothing
+  # bakes that failure into every browser that sees the header, for a year, and
+  # is painful to walk back. www now exists as a proxied CNAME and 301s to the
+  # apex with path and query preserved, so the assertion is true and safe.
+  #
+  # preload is still off, and that is a separate decision rather than an
+  # oversight: the preload list ships inside browsers, removal takes months,
+  # and it would commit every future subdomain of this domain to HTTPS-only
+  # before any of them exist.
+  #
+  # Note this only protects visitors who have already reached the site over
+  # HTTPS once — the plain-HTTP entry point still needs "Always Use HTTPS"
+  # turned on in the Cloudflare dashboard.
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
   # Content-Security-Policy.
   #
   # This used to say a CSP was not worth having, on the grounds that inline
