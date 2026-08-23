@@ -476,7 +476,25 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       });
 
-      document.getElementById('hero-explore-btn')?.addEventListener('click', () => this.switchTab('database-view'));
+      // "Browse Full VIN Records" — go to the record table for the view the
+      // hero is currently describing, not always the Skyline one.
+      //
+      // The hero is shared: one banner above both #database-view and
+      // #legends-view, retitled to whichever model is active. Sending it
+      // unconditionally to 'database-view' meant that on a Legends car the
+      // button under the words "NISSAN SILVIA (S15) DATABASE" opened the
+      // Skyline table showing BCNR33 GT-Rs. The two views never share a model
+      // list — renderModelStrip filters on isLegend — so the Legends table is
+      // the only place an S15 record can be browsed at all.
+      document.getElementById('hero-explore-btn')?.addEventListener('click', () => {
+        const legends = this.currentTab === 'legends-view';
+        this.switchTab(legends ? 'legends-view' : 'database-view');
+        // Already on the right tab, so nothing moves without this — the click
+        // would otherwise look broken.
+        document.getElementById(this._dbViewConfig[legends ? 'legends' : 'skyline'].prefix +
+                                'chassis-data-table')
+          ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
       document.getElementById('hero-stats-btn')?.addEventListener('click', () => this.switchTab('stats-view'));
       document.getElementById('hero-calc-btn')?.addEventListener('click', () => {
         this.switchTab('stats-view');
@@ -486,6 +504,11 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     switchTab: function(tabId) {
+      // Which view the user is LEAVING. The hero banner sits above both record
+      // views and its buttons lead to other tabs, so the tab being left is the
+      // only thing that says which of the two current models the user was
+      // actually looking at.
+      const fromTab = this.currentTab;
       this.currentTab = tabId;
 
       document.querySelectorAll('.nav-tab-btn').forEach(btn => {
@@ -517,7 +540,15 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (tabId === 'stats-view') {
-        this.renderStatsView(this.currentModel);
+        // This used to be hardcoded to this.currentModel, the SKYLINE model.
+        // The site keeps two independent current models — currentModel for the
+        // VIN Database and currentLegendsModel for Legends — and 22 of the 40
+        // chassis live only in the second one. So every Silvia, 180SX, Stagea
+        // and Z32 owner who pressed "View Color & Trim Statistics" on their
+        // car's page was shown a Skyline GT-R's statistics instead, usually
+        // BCNR33, because that is what currentModel still happened to hold.
+        this.renderStatsView(fromTab === 'legends-view' ? this.currentLegendsModel
+                                                        : this.currentModel);
       }
 
       // Hero banner reflects whichever model was synced last, Skyline or
