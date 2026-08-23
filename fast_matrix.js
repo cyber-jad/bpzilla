@@ -153,7 +153,17 @@ function classify(rows, x0, y0, x1, y1, inset) {
 function readMarks(stream, opt = {}) {
   const width = opt.width || 1280;
   const { rows } = decodeG4(stream, width, opt.maxRows || 5000);
-  const rowLines = findLines(rows, width, 'h', opt.minRowFrac || 0.45);
+  let rowLines = findLines(rows, width, 'h', opt.minRowFrac || 0.45);
+  // `rowBand` limits the walk to one table on a page that stacks several.
+  //
+  // Volume 089 page 5 carries the 16-digit and 17-digit option tables one above
+  // the other, and they do not share a column count - 12 codes against 8. Read
+  // as one grid they come out as neither, so the caller says which vertical
+  // slice it means and gets that table on its own.
+  if (opt.rowBand) {
+    const [y0, y1] = opt.rowBand;
+    rowLines = rowLines.filter(y => y >= y0 && y <= y1);
+  }
   const band = rowLines.length >= 2 ? [rowLines[0], rowLines[rowLines.length - 1]] : null;
   const colLines = findLines(rows, width, 'v', opt.minColFrac || 0.60, band);
   const marks = [];

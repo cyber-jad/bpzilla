@@ -6,19 +6,19 @@
  * the 20-character factory model code. Verified byte-for-byte against that
  * source on 2026-08-18 (see the R31/R30 note below for what changed since).
  *
- * 1,357,633 factory records, 1987–2007. Three different counts describe this
+ * 1,396,771 factory records, 1987–2007. Three different counts describe this
  * archive and they are easy to confuse, so all three are spelled out:
- *   43  fast_*.json files exist in public/data
- *   37  of them are fetched (six are out of scope — see the note below)
- *   33  chassis entries after _mergeExportGroups folds the six Z32 export
+ *   44  fast_*.json files exist in public/data
+ *   38  of them are fetched (six are out of scope — see the note below)
+ *   34  chassis entries after _mergeExportGroups folds the six Z32 export
  *       files into two, which is what `_cols` ends up holding
- *   39  browsable models in models{}
- * "33 chassis" is the post-merge figure this header has always quoted; it read
+ *   40  browsable models in models{}
+ * "34 chassis" is the post-merge figure this header has always quoted; it read
  * 34 while 38 files were being fetched, which was right under that definition.
  *
  * Five families (the site's own totals; each family is the sum of its
  * loaded files, and the five sum exactly to the figure above):
- *   Skyline R32/R33/R34   560,785     Silvia / 180SX S13-S14   500,774
+ *   Skyline R32/R33/R34   560,785     Silvia / 180SX S13-S15   539,912
  *   Stagea C34            133,408     300ZX Z32 export          97,800
  *   Fairlady Z Z32 (JDM)   64,866
  * Largest single files: S13 165,864, HCR32 144,097, PS13 112,312,
@@ -585,6 +585,41 @@ const JDM_DATABASE = {
     },
 
     // =========================================================
+    // NISSAN LEGENDS — S15 GENERATION (1999 – 2002)
+    // =========================================================
+    // Added 2026-08-22. The S15 was missing from this archive outright — all
+    // 39,138 records of it, the last Silvia and the last of the S-chassis.
+    //
+    // It was missed because the completeness audit was scoped to the
+    // generations the site already had (R32, R33, R34, S13, S14, Z32, C34), so
+    // a generation that had never been added could not show up as absent. The
+    // audit answers "is what we have complete", not "is there something we
+    // never thought of", and those are different questions.
+    //
+    // Counting it took two fixes, both the same class of bug the R34 audit hit.
+    // The record walk rejected any match preceded by a letter, a guard meant to
+    // stop "R32" matching inside "ECR32" — but S15 record tails carry data, and
+    // one ends 00 00 12 52 where 0x52 is "R", so the next record was discarded
+    // and a phantom "RS15" was found one byte earlier reading the same fields.
+    // That invented two chassis codes, RS15 and CS15, and lost 4,912 records.
+    // And the two-digit year was read as 1900s, cutting the car off at 1999-12
+    // when it ran to 2002-08.
+    'S15': {
+      id: 'S15', chassisPrefix: 'S15',
+      generation: 'S15 (Silvia)',
+      name: 'Nissan Silvia (S15)',
+      shortName: 'S15',
+      chassisCode: 'GF-S15',
+      bodyStyle: '2-Door Coupe',
+      years: '1998 – 2002',
+      engine: 'SR20DE 2.0L / SR20DET 2.0L Turbo',
+      transmission: '6-Speed Manual / 5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The last Silvia, built October 1998 to August 2002 — and the car that brought the six-speed to the S-chassis. Volume 089 documents it properly: five option positions, each with its own alphabet, so a plate reading C--A- is four standard positions and one option. The same volume names the Autech cars by their option group rather than a separate chassis code — PB4/PB6 is the Autech Version 6MT, UA3/UA4 the Varietta, TKA/TK1/TKB/TK2 the Style-A and LVT the Driving Helper.'
+    },
+
+    // =========================================================
     // NISSAN LEGENDS — S14 GENERATION (1993 – 1998)
     // =========================================================
     'S14': {
@@ -875,7 +910,7 @@ const JDM_DATABASE = {
   // once, here, to be picked up everywhere this distinction matters (the
   // separate VIN browser tab, its own model strip, etc).
   _legendModelIds: [
-    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'RPS13', 'KRPS13', 'S14', 'CS14',
+    'S13', 'PS13', 'KPS13', 'KS13', 'RS13', 'KRS13', 'RPS13', 'KRPS13', 'S14', 'CS14', 'S15',
     'WGC34', 'WHC34', 'WGNC34', 'WGNC34_260RS',
     'Z32', 'GZ32', 'CZ32', 'HZ32', 'GCZ32',
     'Z32_EXPORT', 'GZ32_EXPORT'
@@ -1150,7 +1185,7 @@ const JDM_DATABASE = {
       'bcnr33','bnr34','er34','enr34','hr34',
       'ecr33','er33','enr33','hr33',
       'bnr32','hcr32','hnr32','hr32','fr32','ecr32','er32',
-      's13','ps13','ks13','rs13','rps13','s14','cs14',
+      's13','ps13','ks13','rs13','rps13','s14','cs14','s15',
       // M35 Stagea (nm35, hm35, pm35, pnm35) is deliberately not listed —
       // see the scope note in the file header. The four files stay in
       // public/data; they are simply not fetched.
@@ -3675,6 +3710,152 @@ const JDM_DATABASE = {
     return [all[i], ...all.filter((_, k) => k !== i)];
   },
 
+  // ---- S15 Silvia ---------------------------------------------------------
+  //
+  // Volume 089, pages 2-6. The layout is positional rather than chassis-led:
+  //   [車体形状 G][エンジン BY SR20DE][アクスル A 2WS / B 4WS][R 右ハンドル]
+  //   [グレード T S / U S-AERO,R][変速機 F MT5 / Y MT6 / A AT4] S15
+  //   [燃料装置 E EGI / U ターボ][仕向地 D 標準地 / Z 寒冷地][特装 4][14-18 options]
+  //
+  // Each option position has its OWN alphabet, and a dash means standard, so
+  // a great many codes read like C--A-. Letters skip I and O throughout.
+  _s15Options: {
+    '14': {
+      '-': 'standard',
+      'A': 'rear wiper',
+      'B': 'rear wiper + leather trim, red stitching',
+      'C': 'rear wiper + pillar gauge, boost + titanium meter finisher',
+      'D': 'rear wiper + rear spoiler + side sill protector + leather trim, red stitching + pillar gauge, oil pressure + front fog lamps',
+      'E': 'rear wiper + rear spoiler + side sill protector + pillar gauge, boost + front fog lamps + titanium meter finisher',
+      'F': 'rear wiper + rear fog lamp',
+      'G': 'rear wiper + leather trim, red stitching + rear fog lamp',
+      'H': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp',
+      'J': 'rear wiper + rear spoiler + side sill protector + leather trim, red stitching + pillar gauge, oil pressure + rear fog lamp',
+      'K': 'rear wiper + rear spoiler + side sill protector + pillar gauge, boost + titanium meter finisher + rear fog lamp',
+      'L': 'rear wiper + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior',
+      'M': 'rear wiper + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior',
+      'N': 'rear wiper + pillar gauge, boost + front fog lamps + titanium meter finisher + leather trim, blue stitching + blue interior',
+      'P': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + leather trim, blue stitching + blue interior',
+      'Q': 'rear wiper + front fog lamps + silver interior + leather steering wheel, silver stitching',
+      'R': 'rear wiper + rear fog lamp + silver interior + leather steering wheel, silver stitching',
+      'S': 'rear wiper + pillar gauge, boost + front fog lamps + silver interior + leather steering wheel, silver stitching',
+      'T': 'rear wiper + pillar gauge, boost + rear fog lamp + silver interior + leather steering wheel, silver stitching',
+      'U': 'rear wiper + titanium meter finisher',
+      'V': 'rear wiper + titanium meter finisher + rear fog lamp',
+      'W': 'rear wiper + leather trim, red stitching + punched suede-style seats and door trim',
+      'X': 'rear wiper + leather trim, red stitching + rear fog lamp + punched suede-style seats and door trim',
+      'Y': 'rear wiper + pillar gauge, boost + titanium meter finisher + punched suede-style seats and door trim',
+      'Z': 'rear wiper + pillar gauge, boost + titanium meter finisher + rear fog lamp + punched suede-style seats and door trim'
+    },
+    '15': {
+      '-': 'standard',
+      'A': '16-inch alloy wheels + rear helical LSD',
+      'B': '16-inch alloy wheels',
+      'C': 'rear viscous LSD',
+      'D': '16-inch alloy wheels, chrome',
+      'E': 'steel wheels'
+    },
+    '16': {
+      '-': 'standard',
+      'A': 'sunroof',
+      'B': 'privacy glass',
+      'C': 'sunroof + privacy glass',
+      'D': 'remote door lock',
+      'E': 'sunroof + remote door lock',
+      'F': 'privacy glass + remote door lock',
+      'G': 'sunroof + privacy glass + remote door lock',
+      'H': 'water-repellent door glass deleted',
+      'J': 'sunroof + water-repellent door glass deleted',
+      'K': 'privacy glass + water-repellent door glass deleted',
+      'L': 'sunroof + privacy glass + water-repellent door glass deleted'
+    },
+    '17': {
+      '-': 'standard',
+      'A': 'audio deleted',
+      'B': 'holographic sound system + 7 speakers',
+      'C': 'TV / navigation system, CD',
+      'D': 'TV / navigation system, DVD',
+      'E': 'audio deleted + speakers deleted',
+      'F': 'J-navi navigation system, CD',
+      'G': '1DIN radio with CD and MD'
+    },
+    '18': {
+      '-': 'standard',
+      'A': 'interior package, orange',
+      'B': 'xenon headlamps',
+      'C': 'side airbags',
+      'D': 'interior package, orange + xenon headlamps',
+      'E': 'interior package, orange + side airbags',
+      'F': 'xenon headlamps + side airbags',
+      'G': 'interior package, orange + xenon headlamps + side airbags',
+      'K': 'headlamp inner silver + aluminium pedals',
+      'L': 'xenon headlamps + headlamp inner silver + aluminium pedals',
+      'M': 'one-way trunk through + door mirror titanium clear finish deleted',
+      'N': 'xenon headlamps + one-way trunk through + door mirror titanium clear finish deleted',
+      'P': 'side airbags + one-way trunk through + door mirror titanium clear finish deleted',
+      'Q': 'xenon headlamps + side airbags + one-way trunk through + door mirror titanium clear finish deleted'
+    },
+  },
+
+  // Which of the 14-18 option positions this record carries, and what each says.
+  //
+  // The stored code drops the leading 車体形状, so plate positions 14-18 land at
+  // indexes 12-16 here — the same -1 offset the rest of this file documents.
+  // Anchoring on the "S15" marker instead of a fixed index keeps that honest:
+  // options start three characters past it, after 燃料装置, 仕向地 and 特装.
+  // The Autech-built S15s, from volume 089 page 1.
+  //
+  // They are not a separate chassis code — they are ordinary S15 records whose
+  // OPTION GROUP identifies them, which is why looking for an "Autech S15" in
+  // the chassis codes finds nothing. The page lists them as 14-18 patterns with
+  // a wildcard at 17 and a Z at 18, and that Z is the tell: it appears on 3,494
+  // records and on no ordinary car, because the normal position-18 table has no
+  // Z in it at all.
+  //
+  // Their values at 15 and 16 are outside the standard tables too, so these
+  // cars are named as one thing rather than decoded position by position — the
+  // ordinary tables would either miss or, worse, mislabel them.
+  _s15Autech: {
+    PB4: 'Autech Version, 6-speed manual', PB6: 'Autech Version, 6-speed manual',
+    UA3: 'Varietta (Autech open-top)',     UA4: 'Varietta (Autech open-top)',
+    TKA: 'Style-A (Autech)', TK1: 'Style-A (Autech)',
+    TKB: 'Style-A (Autech)', TK2: 'Style-A (Autech)',
+    LVT: 'Driving Helper (Autech)'
+  },
+
+  _decodeS15Plate: function(modelId, mc, date) {
+    const opts = [];
+    const body = String(mc || '').replace(/[-\s]*S15\s*$/, '');
+    const a = body.indexOf('S15');
+    if (a < 0) return opts;
+    const from = a + 3 + 3;
+
+    const group = body.slice(from, from + 5);
+    const autech = group.length === 5 && group[4] === 'Z'
+      ? this._s15Autech[group.slice(0, 3)] : null;
+    if (autech) {
+      opts.push({ pos: from, platePos: this.platePos(from), char: group,
+                  field: 'Autech', text: autech, verified: true });
+      return opts;
+    }
+
+    for (let k = 0; k < 5; k++) {
+      const pos = from + k;
+      const ch = body[pos];
+      if (ch === undefined) break;
+      const table = this._s15Options[String(14 + k)] || {};
+      const text = table[ch];
+      // Each position has its own alphabet, so the same letter means different
+      // things at 14 and at 18 — the table is picked by position, never shared.
+      // A dash is the legend's own way of writing "no option here" and is in
+      // the table as "standard", so it reports as decoded rather than unknown.
+      opts.push({ pos: pos, platePos: this.platePos(pos), char: ch,
+                  field: 'Option ' + (14 + k), text: text || null,
+                  verified: !!text, undecoded: !text });
+    }
+    return opts;
+  },
+
   _decodeZ32Plate: function(modelId, mc, date) {
     const opts = [];
     const L = this._z32Layout(mc);
@@ -3725,6 +3906,9 @@ const JDM_DATABASE = {
     if (this._r32Chassis.includes(modelId)) return this._decodeR32Plate(modelId, mc, date);
     if (this._s13Chassis.includes(modelId)) return this._decodeS13Plate(modelId, mc, date);
     if (this._z32Chassis.includes(modelId)) return this._decodeZ32Plate(modelId, mc, date);
+    // S15 is its own shape: five option positions, each with its own alphabet,
+    // rather than a VS run followed by a pack code.
+    if (modelId === 'S15') return this._decodeS15Plate(modelId, mc, date);
     if (this.layoutOf(mc) !== 'positional') return opts;
     if (this._optionalEquipmentChassis.includes(modelId)) {
       if (mc[10] === 'Z') opts.push({ pos: 10, platePos: this.platePos(10), char: 'Z',

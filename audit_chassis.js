@@ -25,9 +25,16 @@
 //
 // WHAT IT FOUND, and where it stands as of 2026-08-22
 //
-// Final state: 34 in-scope chassis in the source, 34 accounted for on the
-// site, 0 missing, 0 differing. Every chassis this archive is about now
-// matches the FAST source to the record.
+// Final state: 35 in-scope chassis in the source, 35 accounted for on the
+// site, 0 missing, 0 differing.
+//
+// The most expensive lesson is in that number changing from 34 to 35. GENS
+// listed the generations the site already had, so the audit could only ever
+// answer "is what we have complete". A whole generation that had never been
+// added - the S15 Silvia, 39,138 records - could not show up as absent,
+// because nothing was looking for it. It surfaced only when someone asked for
+// it by name. An audit scoped to what you already know finds omissions, not
+// blind spots.
 //
 // Getting there took three corrections to this tool, and every one of them
 // had first been reported as a fault in the DATA:
@@ -42,6 +49,12 @@
 //   3. Six chassis reported missing or short that were neither. Some shipped
 //      files hold more than one code — see FOLDED_INTO — and the tool now
 //      checks that arithmetic instead of crying wolf on it.
+//   4. Two chassis codes that do not exist. RS15 and CS15 looked real - 2,581
+//      and 116 records passing every shape test - and were neither. They are
+//      S15 records whose preceding byte happens to be R or C, matched one
+//      byte early, reading the identical fields because the extra code
+//      character cancels against the extra offset. The contiguity rule kills
+//      them: their gaps are multiples of 29, S15 stride, not their own 30.
 //
 // The one REAL gap it found, and which is now closed: RPS13 (74,910) and
 // KRPS13 (11,655), the SR20-era 180SX. 86,565 records the site had never
@@ -206,7 +219,12 @@ const site = siteCounts();
 // that has never claimed to cover the Laurel. Their model codes confirm it —
 // "GHARFNC34EDA-----C34" against the Stagea's own — and they start 1992-07,
 // ahead of the Laurel's January 1993 launch.
-const GENS = ['R32', 'R33', 'R34', 'S13', 'S14', 'Z32'];
+// S15 was NOT in this list, and that is exactly how a whole generation went
+// missing: the audit answers 'is what we have complete', and a generation
+// never added cannot show up as absent from it. 39,138 records sat in
+// VINDAT3.AB3 unnoticed until someone asked for them by name. Any generation
+// the discs cover belongs here, whether or not the site has it yet.
+const GENS = ['R32', 'R33', 'R34', 'S13', 'S14', 'S15', 'Z32'];
 const inScope = (code) =>
   GENS.some(g => code.endsWith(g)) ||
   (code.endsWith('C34') && code.startsWith('W')) ||

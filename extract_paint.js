@@ -154,6 +154,18 @@ function stripQualifier(s) {
 // paint-code guide (independent, in agreement); paintscratch.com and
 // importarchive.com for the S13/Z32-era codes.
 const OVERRIDES = {
+  // S15-era. BN5 is the one name in this table with NO disc behind it.
+  //
+  // Adding the S15 brought in 237 records painted BN5, and the colour master
+  // does not have it: all 196 ABBREV tables on the discs were searched and
+  // none carries a #BN5 record. Enthusiast sources give Light Bluish Silver,
+  // with some calling the same colour Aqua Silver.
+  //
+  // So this is corroborated rather than sourced, the same footing as the R33
+  // two-tones 1N3 and 1N4 and marked as such wherever confidence is reported.
+  // Every other entry here is a disc-backed correction; this one is not.
+  BN5: 'Light Bluish Silver',
+
   // R32-era, also shared with S13 / Z32
   KH2: 'Gun Grey Metallic',
   KG1: 'Jet Silver Metallic',
