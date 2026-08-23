@@ -133,6 +133,26 @@ const WANTED = {
   SA22C: 'Savanna RX-7 (SA/FB)'
 };
 
+// String interning.
+//
+// Extracting all 647 chassis means 8.2 million records, and holding one object
+// per record with its own date and spec strings runs to several gigabytes.
+// Dates and spec codes repeat enormously across a catalogue - a whole day's
+// production shares a date, and a model-year shares a handful of specs - so
+// each distinct string is stored once and records carry an integer.
+const pool = { date: new Map(), spec: new Map(), dateList: [], specList: [] };
+function intern(kind, value) {
+  const map = pool[kind];
+  let id = map.get(value);
+  if (id === undefined) {
+    id = map.size;
+    map.set(value, id);
+    pool[kind + 'List'].push(value);
+  }
+  return id;
+}
+
+// `want` is a Set of chassis codes, or null to take everything.
 function readRecords(buf, want, hits) {
   const blocks = Math.floor((buf.length - HEADER) / BLOCK);
   const perBlock = Math.floor((BLOCK - 6) / REC);
@@ -147,16 +167,24 @@ function readRecords(buf, want, hits) {
       if (ro + REC > buf.length) break;
       const s = buf.subarray(ro, ro + REC).toString('latin1');
       const chassis = s.slice(0, 11).trim();
-      if (!want.has(chassis)) continue;
+      if (want && !want.has(chassis)) continue;
+      if (!chassis || !/^[A-Z][A-Z0-9]{1,7}$/.test(chassis)) continue;
+      // The catalogue carries one row under the chassis code "DUMMY", dated
+      // 1984-07-18. It is a placeholder in Mazda's own data, not a car, and it
+      // passes every shape test precisely because it was built to look like a
+      // record. Named here rather than filtered by a cleverer rule, so that
+      // what is being dropped stays obvious.
+      if (chassis === 'DUMMY') continue;
       const serial = s.slice(11, 17).trim();
-      const spec = s.slice(17, 32);
       const date = s.slice(32, 40);
       // Shape check: a real record has a numeric serial and a plausible date.
       if (!/^\d{1,6}$/.test(serial) || !/^(19|20)\d{6}$/.test(date)) continue;
       const mo = +date.slice(4, 6), dy = +date.slice(6, 8);
       if (mo < 1 || mo > 12 || dy < 1 || dy > 31) continue;
-      (hits.get(chassis) || hits.set(chassis, []).get(chassis))
-        .push({ serial: +serial, spec, date });
+      let arr = hits.get(chassis);
+      if (!arr) { arr = []; hits.set(chassis, arr); }
+      // [serial, dateId, specId] — three numbers, no per-record strings.
+      arr.push(+serial, intern('date', date), intern('spec', s.slice(17, 32)));
     }
   }
 }
@@ -201,9 +229,11 @@ function colourVocabulary(isoPaths) {
 
 function main() {
   const write = process.argv.includes('--write');
-  const want = new Set(Object.keys(WANTED));
+  const all = process.argv.includes('--all');
+  // --all takes every chassis on the discs; the default takes the named set.
+  const want = all ? null : new Set(Object.keys(WANTED));
   const hits = new Map();
-  for (const k of want) hits.set(k, []);
+  if (want) for (const k of want) hits.set(k, []);
   const sources = new Map();   // chassis -> Set("iso path")
 
   const isos = fs.readdirSync(SRC).filter(f => /\.iso$/i.test(f)).sort();
@@ -222,7 +252,7 @@ function main() {
         const before = new Map([...hits].map(([k, v]) => [k, v.length]));
         readRecords(buf, want, hits);
         for (const [k, v] of hits) {
-          if (v.length > before.get(k)) {
+          if (v.length > (before.get(k) || 0)) {
             if (!sources.has(k)) sources.set(k, new Set());
             sources.get(k).add(isoName + f.path);
           }
@@ -246,19 +276,31 @@ function main() {
   const vocabCheck = [];
   const counts = new Map();
 
-  for (const code of Object.keys(WANTED)) {
-    const rows = hits.get(code) || [];
-    totalRaw += rows.length;
+  // Named cars first so the report reads sensibly, then everything else by
+  // size. In the default run these are the same list.
+  const named = Object.keys(WANTED).filter(c => hits.has(c));
+  const rest = [...hits.keys()].filter(c => !WANTED[c])
+    .sort((a, b) => (hits.get(b).length - hits.get(a).length) || a.localeCompare(b));
+  const order = [...named, ...rest];
+
+  for (const code of order) {
+    const flat = hits.get(code) || [];
+    const rowCount = flat.length / 3;
+    totalRaw += rowCount;
     // The same car can appear on more than one disc - FD3S is on RA1 and RB1.
     // Identity is chassis + serial + build date; a repeat of all three is the
     // same car catalogued twice, not two cars.
     const seen = new Map();
-    for (const r of rows) {
-      const key = r.serial + '|' + r.date;
-      if (!seen.has(key)) seen.set(key, r);
+    for (let i = 0; i < flat.length; i += 3) {
+      const serial = flat[i], date = pool.dateList[flat[i + 1]];
+      const key = serial + '|' + date;
+      if (!seen.has(key)) seen.set(key, { serial, date, spec: pool.specList[flat[i + 2]] });
     }
     const uniq = [...seen.values()].sort((a, b) => a.serial - b.serial || a.date.localeCompare(b.date));
     totalUniq += uniq.length;
+    // Free the raw rows as each chassis is finished — with 647 of them the
+    // accumulated arrays are the largest thing in the process.
+    hits.set(code, []);
 
     const dates = [...new Set(uniq.map(r => r.date))].sort();
     const specs = [...new Set(uniq.map(r => r.spec))].sort();
@@ -278,10 +320,13 @@ function main() {
     const [trims, trIdx]   = dict(12, 15);
 
     const iso = (d) => d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8);
-    console.log('  ' + code.padEnd(7) + WANTED[code].padEnd(36) +
-                String(rows.length).padStart(7) + String(uniq.length).padStart(9) +
-                String(rows.length - uniq.length).padStart(8) + '   ' +
-                (uniq.length ? iso(dates[0]) + '..' + iso(dates[dates.length - 1]) : '-'));
+    // Only the named cars are listed individually; with --all the other 600-odd
+    // would bury them, so those are summarised at the end instead.
+    if (WANTED[code] || !all)
+      console.log('  ' + code.padEnd(7) + (WANTED[code] || '').padEnd(36) +
+                  String(rowCount).padStart(7) + String(uniq.length).padStart(9) +
+                  String(rowCount - uniq.length).padStart(8) + '   ' +
+                  (uniq.length ? iso(dates[0]) + '..' + iso(dates[dates.length - 1]) : '-'));
 
     counts.set(code, uniq.length);
     if (uniq.length)
@@ -290,7 +335,9 @@ function main() {
     if (!write || !uniq.length) continue;
     const out = {
       m: code,
-      name: WANTED[code],
+      // Only the sixteen curated codes have a confirmed model name. The rest
+      // are emitted with their chassis code alone rather than a guess.
+      name: WANTED[code] || null,
       n: uniq.length,
       d: dates.map(iso),
       // Spec code split into its five fields. `paint` and `trim` are confirmed
