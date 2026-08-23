@@ -1742,6 +1742,17 @@ const JDM_DATABASE = {
     // s-chassis-archive's Japan-market rows) is isolable from any position
     // tried, so those stay folded into K's/Q's.
     if (modelId === 'S14' || modelId === 'CS14') {
+      // Check the coachbuilt group BEFORE the grade character, for the same
+      // reason as the S15: an Autech car still carries the donor car's grade
+      // letter, so reading mc[4] first files every one of them under K's or
+      // Q's and the model page never shows an Autech S14 at all. They were
+      // already decoded - as an OPTION, in _decodeOptions - which named the
+      // car on its own page but left it out of the grade breakdown, the trim
+      // filter and the rarity counts. Nissan's own glossary names it too:
+      // AUTC2 against S14 in SPECDSC reads "F/AUTECH JAPAN VERSION".
+      // See _s14Autech for the plate evidence from volume 088.
+      const built = this._s14AutechGrade[String(mc).slice(12, 17)];
+      if (built) return built;
       const c = mc[4];
       if (c === 'U') return "K's";
       if (c === 'T') return "Q's";
@@ -3986,6 +3997,14 @@ const JDM_DATABASE = {
   // 1,480 of the S14's undecodable characters.
   //
   // The trailing Z is the marker on both generations.
+  // Grade names for the coachbuilt S14s. Separate from _s14Autech because
+  // that carries the full provenance sentence, which is right on a car's own
+  // page and far too long to sit in a grade column or a filter dropdown.
+  _s14AutechGrade: {
+    P870Z: "Autech Version K's MF-T",
+    PR90Z: 'Autech special build'
+  },
+
   _s14Autech: {
     // Volume 088's entire front matter is about this one car, across two
     // pages (その3 and その4, "オーテックバージョンK's MF-T" and "AJバージョン
