@@ -47,6 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
       step('initGlobalSearch', this.initGlobalSearch);
       step('initDatabaseView', this.initDatabaseView);
       step('initLegendsView', this.initLegendsView);
+      step('initLegendsRefine', this.initLegendsRefine);
       step('initStatsView', this.initStatsView);
       step('initFastDecoderView', this.initFastDecoderView);
       step('initRarityCalculatorView', this.initRarityCalculatorView);
@@ -582,6 +583,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // TOOLS SUB-NAV — Paint Index / Spotter's Guide / Compare share one top-
     // level tab, switched independently of the main nav-tab-bar.
     // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    // LEGENDS REFINE FILTERS — open and non-interactive on a wide screen,
+    // an ordinary disclosure on a phone.
+    //
+    // CSS can hide the +/- marker but it cannot force a <details> open, and
+    // the element defaults to closed. So the open state is set here and the
+    // marker is hidden there, and the two have to agree on the breakpoint:
+    // both use 768px, matching renderModelStrip's auto-open rule.
+    //
+    // The obvious version of this listens to matchMedia('(min-width: 769px)')
+    // for a 'change' event. That listener did not fire under test, and the
+    // filters stayed open all the way down to 375px - correct in CSS, wrong in
+    // state. So this drives off 'resize', which always fires, and latches the
+    // last breakpoint so it only ever acts on a CROSSING. That matters: a
+    // phone fires resize just from the address bar sliding away, and without
+    // the latch every one of those would slam the filters shut under someone
+    // who had deliberately opened them.
+    // -------------------------------------------------------------------------
+    initLegendsRefine: function() {
+      const el = document.querySelector('#legends-view .refine-filters-fixed');
+      if (!el || el.tagName !== 'DETAILS') return;
+      let wasWide = null;
+      const apply = () => {
+        const wide = window.innerWidth > 768;
+        if (wide === wasWide) return;
+        wasWide = wide;
+        el.open = wide;
+      };
+      apply();
+      window.addEventListener('resize', apply);
+    },
+
     initToolsSubNav: function() {
       const buttons = document.querySelectorAll('.tool-subtab-btn');
       buttons.forEach(btn => {
