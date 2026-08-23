@@ -178,7 +178,151 @@ const ATTR = {
   BB200: 'no GPS antenna hole', BB201: 'GPS antenna hole',
   BB300: 'no rally version', BB301: 'rally version',
   BB302: 'excluding Custom Built Type A',
-  BD300: 'no DSC', BD301: 'DSC'
+  BD300: 'no DSC', BD301: 'DSC',
+
+  // ---- the rest of the catalogue ------------------------------------------
+  //
+  // 551 attribute codes are used by a variant somewhere. 214 of those are
+  // already Latin or numeric on the disc (displacements, "DX", "CVT", "24V",
+  // engine part numbers) and pass through untouched. These are the 297 that
+  // carry Japanese.
+  //
+  // Recurring suffixes, since they account for most of the vocabulary:
+  //   ナシ / ヲノゾク  without, excluding      ツキ / アリ  with
+  //   シャ (車)  vehicle    キセイ (規制)  regulation
+
+  // maker and origin
+  B2100: 'excluding safety-standard compliant', B2101: 'safety-standard compliant',
+  B2104: 'Mazda', B2105: 'Ford', B2106: 'Suzuki', B21K1: 'Kia-built', B21NS: 'Nissan',
+  B21B0: 'excluding AT-Navi', B21B1: 'AT-Navi',
+  B2201: 'built in Japan', B2202: 'Mazda', B2203: 'built in Mexico',
+  B2M00: 'Mazda', B2M01: 'Ford', B8201: 'Japan',
+  B23AX: 'excluding Urban Brake', B23AY: 'excluding Urban Brake 1',
+  B23AZ: 'excluding Urban Brake 2',
+  B24M1: 'early model', B24M2: 'late model',
+
+  // body
+  B3102: 'saloon', B3106: 'landau top', B3112: 'estate', B3113: 'van',
+  B3114: 'with rear seat', B3116: 'without rear seat', B3121: 'sports wagon',
+  B3134: 'hatchback', B3151: 'truck', B3153: 'bus', B3155: 'double cab',
+  B3158: 'cab plus', B315A: 'single cab', B3182: 'cargo', B3600: 'estate',
+  B3WA4: 'saloon', B3WB2: 'normal hatchback', B3WP2: 'practical hatchback',
+  B3305: '5-door',
+  B3201: 'short', B3202: 'standard', B3203: 'long',
+  B3210: '10-shaku', B3211: '11-shaku', B3214: '14-shaku', B3217: '17-shaku',
+  B3225: '2.5m', B3227: '2.7m',
+  B3228: 'short body', B3231: 'standard body', B3234: 'semi-long body',
+  B3243: 'long body', B3252: 'extra-long body', B3254: 'super-extra-long body',
+  B3256: 'super-long body',
+  B3400: 'standard roof', B3401: 'low roof', B3402: 'high roof',
+  B3403: 'middle roof', B3404: 'normal roof',
+  B3501: 'wide low', B3502: 'low deck', B3503: 'high deck', B3504: 'full wide low',
+  B3505: 'underslung', B3506: 'low-deck underslung', B3507: 'single wide low',
+  B3508: 'full flat low', B3509: 'flat low',
+  B3B01: 'one-way opening', B3B03: 'three-way opening', B3B04: 'no box door',
+  B3C01: 'standard cabin', B3C02: 'wide cabin', B3C04: 'standard body',
+  B3C05: 'wide body', B3C06: 'middle cabin',
+  B3T00: 'non-tilt', B3T01: 'tilt cab', B3T10: 'non-tilt cabin', B3T11: 'tilt cabin',
+  B3701: 'single rear tyres', B3702: 'twin rear tyres',
+  B3951: 'GVW 5.0t or under', B3952: 'GVW over 5.0t', B364U: 'over 4.0t',
+  B3X05: 'five-stud wheels', B3X06: 'six-stud wheels',
+
+  // roof and lamps
+  B3S04: 'canvas top', B3S07: 'panorama roof', B3S08: 'super multi roof',
+  B3S09: 'steel roof', B3S10: 'normal roof', B3S11: 'solar sunroof',
+  B3S12: 'sunroof without solar panel', B3S14: 'auto free top',
+  B3H01: 'retractable headlamps', B3H02: 'fixed headlamps',
+  B3H04: 'normal headlamps', B3H05: 'discharge headlamps',
+  B3L00: 'no fender side repeaters', B3L01: 'fender side repeaters',
+  B3M00: 'no mirror side repeaters', B3M01: 'mirror side repeaters',
+
+  // engine
+  B4102: 'diesel', B4304: 'four-cylinder', B4306: 'six-cylinder', B43V6: 'V6',
+  B4A07: '70A alternator', B4A08: '80A alternator',
+  B4BB3: 'B3 engine', B4BB5: 'B5 engine', B4BB6: 'B6 engine', B4BBP: 'BP engine',
+  B4BKF: 'KF engine', B4BL3: 'L3-VE engine', B4BLF: 'LF-VE engine',
+  B4BLG: 'LF-VD engine', B4BY7: 'Y7 engine', B4BZ5: 'Z5 engine',
+  B4E00: 'no EGI', B4E02: 'carburettor', B4E03: 'SPI', B4E07: 'no EPI',
+  B4E13: 'variable valve timing', B4E14: 'no variable valve timing',
+  B4F06: 'petrol', B4F07: 'diesel', B4F09: 'excluding LPG',
+  B4J02: '2-valve', B4J04: '4-valve',
+  B4L00: 'no lean-burn', B4L01: 'lean-burn',
+  B4P00: 'low power',
+  B4S08: '0.8kW starter', B4S20: '2.0kW starter', B4S22: '2.2kW starter',
+  B4T04: 'turbocharger', B4T05: 'no turbocharger',
+  B4TP1: 'turbo, low power', B4TP2: 'turbo, high power',
+  B4W00: 'no supercharger', B4W01: 'supercharger',
+  B4X00: 'no intercooler', B4X01: 'intercooler',
+  B4Y01: 'front air intake', B4Y02: 'snorkel intake',
+
+  // emissions
+  B4M04: 'no NOx regulation', B4M05: 'NOx regulated',
+  B4M11: 'no EGR', B4M12: 'EGR',
+  B4M17: 'J-MVSS regulated', B4M18: 'not J-MVSS regulated',
+  B4M31: 'low emissions standard', B4M32: 'standard emissions',
+  B4MH5: 'not H6 exhaust regulation', B4MH6: 'H6 exhaust regulation',
+  B4MH7: 'not H10 exhaust regulation', B4MH8: 'H10 exhaust regulation',
+  B6GH0: 'no LEV label', B6GH5: '75% below H12 standard',
+  B6GH6: '50% below H17 standard', B6GH7: '75% below H17 standard',
+  B6GL1: 'good low-emission vehicle', B6GL2: 'excluding low-emission vehicle',
+  B6GL3: 'good low-emission vehicle', B6GL4: 'excellent low-emission vehicle',
+  B6GL5: 'ultra-low-emission vehicle',
+
+  // transmission and drive
+  B5203: '3-speed', B5302: 'column shift',
+  B5607: '3-speed automatic, floor', B5609: '4-speed automatic, floor',
+  B5610: '4-speed automatic, instrument panel',
+  B6U00: 'part-time four-wheel drive', B6U01: 'full-time four-wheel drive',
+  B6U03: 'extra-low range', B6U04: 'high/low range transfer',
+  BS100: 'no Activematic', BS101: 'Activematic',
+  BD100: 'no differential lock',
+
+  // chassis and brakes
+  B6200: 'power steering', B6B00: 'drum brakes', B6B02: 'two-wheel discs',
+  B6C00: 'excluding cold-climate spec', B6C01: 'cold-climate spec',
+  B6C02: 'including cold-climate spec',
+  B6DS0: 'no power sliding door', B6DS1: 'power sliding door',
+  B6H15: '15-inch wheels',
+  B6S05: 'five-link suspension', B6S50: 'independent suspension',
+  B6Y00: 'no self-levelling dampers', B6Y01: 'self-levelling dampers',
+
+  // exterior trim
+  B6600: 'no aero bumper', B6601: 'aero bumper', B66S1: 'side spoiler',
+  B68S0: 'no side skirts', B68S1: 'side skirts',
+  B68W0: 'no wheel lip mouldings', B68W1: 'wheel lip mouldings',
+  BB61C: 'single colour', BB62C: 'two-tone',
+  BB700: 'no roof rails', BB701: 'roof rails',
+  B2P00: 'no roof rails', B2P01: 'roof rails',
+  B2R00: 'no roof rack', B2R01: 'roof rack',
+  BM100: 'California mirrors', BM101: 'standard mirrors',
+
+  // interior and equipment
+  B6X00: 'no air conditioning', B6X01: 'air conditioning',
+  B6P00: 'standard', B6P01: 'child-care vehicle', B6P07: 'seven-seat',
+  B6P41: 'welfare vehicle', B6PA5: 'five-seat', B6PA7: 'seven-seat',
+  B6PA8: 'eight-seat',
+  BB900: 'rear seat No.2 flip-up', BB901: 'hyper slide seat',
+  BB902: 'personal separate seats', BB903: 'no hyper slide seat',
+  BAV00: 'no rear AV system', BAV01: 'rear AV system',
+  BNA00: 'no navigation', BNA01: 'navigation',
+  BC100: 'no immobiliser', BC101: 'immobiliser',
+  BB202: 'front pillar antenna', BB203: 'roof antenna', BB204: 'glass antenna',
+  BAC00: 'excluding NTT', BAC01: 'NTT specification',
+  BA400: 'no power take-off', BA401: 'power take-off',
+  BB303: 'Custom Built Type A',
+  B7102: 'taxi', B71XZ: 'with drop sides',
+
+  // grade and edition names
+  B6I20: 'centre antenna', B6I21: 'side antenna',
+  B6I22: 'Field Break', B6I23: 'excluding Field Break',
+  B6I26: 'excluding Sports F', B6I27: 'Sports F',
+  B6I30: 'excluding Bright Stylish', B6I31: 'Bright Stylish',
+  B6I32: "Bright Stylish M'z Style",
+  B6I7E: 'X-Exterior Package', B6I7F: 'Fun Fun Edition',
+  B6ICD: 'Custom Style DI', B6ICT: 'Custom Style T', B6ICX: 'Custom Style X',
+  B6IFV: 'FX-S Special', B6IFW: 'FT-S Special',
+  B6IG0: 'excluding GL-Super', B6IKG: 'KC agricultural',
+  B6IP3: 'PX Turbo', B6IP4: 'PZ Turbo', B6IP5: 'PZ Turbo Special'
 };
 
 // The fourteen. Names are the JDM market names; where a car is better known
@@ -467,7 +611,16 @@ function main() {
     for (const v of fcodes) {
       const codes = variants.mdv.get(v);
       if (!codes) continue;
-      const words = codes.map(c => ATTR[c] || variants.attr.get(c) || c);
+      // Distinct attribute codes can land on the same English: B4103 and
+      // B4H03 are both "rotary" (engine family and valve layout), B5101 and
+      // B5E04 both "manual" (gearbox type and control type). The disc is not
+      // being redundant, but "rotary · rotary" reads as a bug, so repeats are
+      // collapsed while order is kept.
+      const words = [];
+      for (const c of codes) {
+        const w = ATTR[c] || variants.attr.get(c) || c;
+        if (!words.includes(w)) words.push(w);
+      }
       fspec[v] = words.join(' · ');
     }
 

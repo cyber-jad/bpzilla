@@ -212,11 +212,19 @@ That is an RX-7 **Spirit R Type A**. `F177` is the four-seat Type B and
 arrived at from the discs alone. The same vocabulary picks out the 10th
 Anniversary, the Roadster NR-A, Mazdaspeed cars and limited editions.
 
-**Coverage.** All 6,179 variants across the 660 chassis resolve to an
-attribute list. The 89 attributes the sixteen named cars use are translated,
-so those read **100% English (228 of 228 variants)**. The remaining ~700
-attribute codes are emitted in the disc's own Japanese rather than guessed
-at, which leaves 498 of 6,179 descriptions fully English overall.
+**Coverage: 100%.** All 6,179 variants across the 660 chassis resolve to an
+attribute list, and every one now reads in English.
+
+551 attribute codes are used by a variant somewhere. 214 of those are already
+Latin or numeric on the disc — displacements, , , , engine part
+numbers — and pass through untouched. The other 297 carried Japanese and are
+translated, giving 348 entries in the table.
+
+A detail worth keeping: distinct codes can land on the same English. 
+and  are both otary (engine family and valve layout);  and
+ are both manual (gearbox type and control type). The disc is not
+being redundant, but  reads as a bug, so repeats are
+collapsed while order is preserved.
 
 **A bug worth recording.** Changing the dictionaries to the 4/3 split without
 changing the row-building slices produced no error at all: the dictionaries
