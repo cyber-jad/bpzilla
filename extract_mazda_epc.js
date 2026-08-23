@@ -112,8 +112,23 @@ const WANTED = {
   NB6C:  'Roadster 1.6 (MX-5 NB)',
   NCEC:  'Roadster (MX-5 NC)',
   BG8Z:  'Familia GT-R',
+  // The Cosmo is four codes, not two.
+  //
+  // JC3SE and JCESE run 1990-02 to 1994-01/02 and were the whole of the first
+  // extraction. JC3S and JCES pick up where those stop - 1994-03-16 and
+  // 1994-02-23 - with their serials restarting at 100001, which is a new
+  // series rather than a different car. Their paint vocabularies barely
+  // overlap the earlier ones (no shared code on the 13B, one on the 20B),
+  // which is what a facelift colour range looks like and is why they were not
+  // obviously the same model at a glance.
+  //
+  // What settles it is the total. All four together give 8,874 cars, and
+  // Eunos Cosmo production is commonly cited at about 8,875. The two earlier
+  // codes alone give 8,125, which is 750 short of every published figure.
   JC3SE: 'Eunos Cosmo 13B',
+  JC3S:  'Eunos Cosmo 13B (1994- series)',
   JCESE: 'Eunos Cosmo 20B triple-rotor',
+  JCES:  'Eunos Cosmo 20B triple-rotor (1994- series)',
   FC3C:  'Savanna RX-7 Cabriolet (FC)',
   SA22C: 'Savanna RX-7 (SA/FB)'
 };
@@ -229,6 +244,7 @@ function main() {
   let totalRaw = 0, totalUniq = 0;
   const written = [];
   const vocabCheck = [];
+  const counts = new Map();
 
   for (const code of Object.keys(WANTED)) {
     const rows = hits.get(code) || [];
@@ -267,6 +283,7 @@ function main() {
                 String(rows.length - uniq.length).padStart(8) + '   ' +
                 (uniq.length ? iso(dates[0]) + '..' + iso(dates[dates.length - 1]) : '-'));
 
+    counts.set(code, uniq.length);
     if (uniq.length)
       vocabCheck.push([code, { paint: new Set(paints), trim: new Set(trims) }]);
 
@@ -300,6 +317,21 @@ function main() {
   console.log('');
   console.log('raw ' + totalRaw.toLocaleString() + '   unique ' + totalUniq.toLocaleString() +
               '   duplicates removed ' + (totalRaw - totalUniq).toLocaleString());
+
+  // Families that span more than one chassis code, totalled — the Cosmo's
+  // four codes are the reason this exists, and 8,874 against a published
+  // ~8,875 is the check that says none of them is missing.
+  const FAMILIES = {
+    'Eunos Cosmo':  ['JC3SE', 'JC3S', 'JCESE', 'JCES'],
+    'RX-7':         ['SA22C', 'FC3S', 'FC3C', 'FD3S'],
+    'Roadster/MX-5': ['NA6CE', 'NA8C', 'NB6C', 'NB8C', 'NCEC']
+  };
+  console.log('');
+  console.log('by family:');
+  for (const [fam, codes] of Object.entries(FAMILIES)) {
+    const n = codes.reduce((s, c) => s + (counts.get(c) || 0), 0);
+    console.log('  ' + fam.padEnd(16) + String(n).padStart(8) + '   ' + codes.join(' + '));
+  }
 
   // Are the paint and trim readings actually codes the discs know about?
   console.log('');
