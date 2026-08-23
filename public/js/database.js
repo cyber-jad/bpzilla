@@ -3617,10 +3617,33 @@ const JDM_DATABASE = {
     let tail = L.body.slice(L.optionsFrom);
     let idx = L.optionsFrom;
 
-    // The pack is two digits at the end. Anything before it is VS characters,
-    // and a car can carry VS with no pack at all.
+    // The pack is the last two characters, when the last two characters are a
+    // pack. Anything before it is VS, and a car can carry VS with no pack.
+    //
+    // "Two digits" was the test, and it is right for the Silvia and for the
+    // early 180SX. It is wrong for the later 180SX, whose codes are
+    // alphanumeric: 5A, 5B, 5C, 5D and 6A-6D on the [9710- ] page, B1-B7 on
+    // [9201-9608], 8A-8H and 9A-9H. None of those match \d\d, so the pack was
+    // never split off and its two characters fell through to be reported as
+    // unrecognised VS instead — 4,791 character occurrences on RPS13, which
+    // read as a decoding gap when the tables had the codes all along.
+    //
+    // So ask the tables. A two-character ending that any applicable pack table
+    // knows IS the pack; otherwise fall back to the digit pair, which keeps
+    // every previously-correct reading exactly as it was.
     let pack = null;
-    if (/\d\d$/.test(tail)) { pack = tail.slice(-2); tail = tail.slice(0, -2); }
+    const cand = tail.length >= 2 ? tail.slice(-2) : null;
+    let knows = false;
+    if (cand) {
+      if (modelId === 'RS13' || modelId === 'RPS13') {
+        const RSP = this._s13Legend.RSpack || {};
+        knows = !!(this._s13Legend.RS[cand] || (RSP.W2 || {})[cand] ||
+                   (RSP.W3 || {})[cand] || (RSP.W4 || {})[cand] || (RSP.W5 || {})[cand]);
+      } else {
+        knows = ['W1', 'W2', 'W3', 'W4'].some(w => (this._s13Legend.pack[w] || {})[cand]);
+      }
+    }
+    if (cand && (knows || /\d\d$/.test(tail))) { pack = cand; tail = tail.slice(0, -2); }
 
     for (const ch of tail) {
       const t = this._s13Legend.vs[ch];

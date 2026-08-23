@@ -221,9 +221,18 @@ of the car's life. See `_rs13Window`.
 leather seats, leather steering wheel and fender mirrors. No record in the
 archive carries it, so the export does not include it.
 
-**What remains**: 1,876 character occurrences, all VS, none of them pack
-codes — A (714), 5 (615), then 7, 6, D, 1, F, 2, 3 and 4 in small numbers.
-Volume 087's own VS pages are where to look next.
+**Nothing remains.** The 1,876 characters that looked like unknown VS codes —
+A (714), 5 (615), then 7, 6, D, 1, F — were not VS codes at all. They were
+halves of pack codes the splitter refused to split: it required two DIGITS,
+and the later 180SX packs are alphanumeric (5A, 5B, 5C, 5D, 6A-6D, B1-B7,
+8A-8H, 9A-9H). Tails like G5A and H9A are G or H followed by pack 5A or 9A.
+The tables had those codes all along. The splitter now asks the tables whether
+the last two characters are a pack, falling back to the digit pair, and the
+whole S13 family reads 100% of records with every character named.
+
+Volume 087 pages 4 and 5 were checked while looking for these and hold only
+codes the site already had — the [8805-9101], [9101-9201] and [9201- ] VS
+tables for the Silvia.
 
 ## S14 (volume 088) — blocked, and worth writing down why
 
