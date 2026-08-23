@@ -37,19 +37,19 @@ copy short of re-deriving it from the FAST binaries.
 | R32          | 079 | 27 | 295,861 | done, from this legend |
 | R33          | 080 |  2 | 180,398 | done, from FASTOP |
 | R34          | 081 | 11 |  67,040 | done, FASTOP + this legend's second window |
-| RS13         | 084 | 17 |  26,740 | none yet |
-| S13          | 087 | 18 | 165,864 | none yet — see note |
-| PS13 / KS13  | 087 | —  | 136,777 | none yet — see note |
+| RS13 / RPS13 | 084 | 17 | 113,305 | done, all five windows |
+| S13          | 087 | 18 | 165,866 | done, from this legend |
+| PS13 / KS13  | 087 | —  | 136,777 | done, from this legend |
 | S14          | 088 | 15 |  84,826 | partial, from FASTOP |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
 
-Note on S13: the S13, PS13, KS13 and RS13 files in `public/data` share one model
-code vocabulary — their `mc` dictionaries begin with the same entries (`13JFTW`,
-`13HFW`, `13JAT`) — so volumes 087 and 084 together should cover all 329,381
-records across the four files rather than one file each.
+Note on S13: volumes 087 and 084 together cover the whole family, 415,946
+records across five files. The four Silvia files no longer share one model-code
+dictionary — each was re-extracted with only the codes its own rows use, which
+is why fast_ks13.json shrank from 0.62 MB to 0.48.
 
 ## Neighbouring volumes, for orientation
 
@@ -181,3 +181,45 @@ told from a coupe. CONV is consulted only after the body-typed table fails.
 One transcription oddity is recorded rather than corrected: page 10 prints
 フロス where the equivalent row two windows earlier prints クロス, checked at 3x
 against page 8 in the same font.
+
+## 180SX (volume 084) — complete
+
+The site had only the first of five windows, which is the CA18 RS13 car and
+stops in November 1990. RPS13, the SR20 180SX, is 86,565 records and three
+quarters of all 180SX production, and its four later windows had never been
+read. It decoded 23.3% of records when first added; it now decodes 98.0%.
+
+| pages | contents |
+|---|---|
+| 1-3 | layout diagrams for [8903-9101], [9101-9201], [9201- ] |
+| 4-6 | パック記号 [8903-9101] — the RS table the site already had |
+| 7-9 | パック記号 [9101-9201] |
+| 10 | VS記号 and パーソナルオーダーコード for [9101-9201] |
+| 11-12 | パック記号 [9201-9608] |
+| 13 | VS記号 and パーソナルオーダーコード for [9201- ] |
+| 14 | パック記号 [9608-9710] |
+| 15-16 | パック記号 [9710- ] |
+| 17 | grade specification table, not packs |
+
+**Two VS characters were most of the gap.** Page 13 names them: G is
+TYPE III / TYPE X and H is ABS. G alone appears on 53,786 records and H on
+6,470, and both had decoded to nothing — "GM" is the most common option string
+this chassis has, 27,380 cars. Both went into the shared VS table safely
+because they appear on RPS13 and on no other chassis in the family: zero
+occurrences across S13, PS13, KS13 and RS13, checked before adding.
+
+**The windows are not the Silvia's.** `_s13Window` splits at 9101, 9201 and
+9205; the 180SX splits at 9101, 9201, 9608 and 9710. Same legend file,
+different car. The codes genuinely collide across those windows — 10, 11, 12,
+16 and 17 all appear in both [9101-9201] and [9201-9608] with different
+equipment, and 50 appears in three — so a flat table would be wrong for most
+of the car's life. See `_rs13Window`.
+
+**A field confirmed absent rather than assumed.** The layouts show a
+パーソナルオーダーコード after the pack code: three digits, each 0 or 2, keying
+leather seats, leather steering wheel and fender mirrors. No record in the
+archive carries it, so the export does not include it.
+
+**What remains**: 1,876 character occurrences, all VS, none of them pack
+codes — A (714), 5 (615), then 7, 6, D, 1, F, 2, 3 and 4 in small numbers.
+Volume 087's own VS pages are where to look next.

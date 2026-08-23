@@ -2984,6 +2984,21 @@ const JDM_DATABASE = {
     return { optionsFrom: i, end: body.length, body: body };
   },
 
+  // The 180SX's own pack windows, which are NOT the Silvia's.
+  //
+  // _s13Window below splits at 9101, 9201 and 9205; volume 084 splits the
+  // 180SX at 9101, 9201, 9608 and 9710. Same legend file, different car,
+  // different dates - using the Silvia's boundaries here would read a code
+  // against the wrong table for most of the SR20 car's life.
+  _rs13Window: function(date) {
+    const d = String(date || '');
+    if (!d || d < '1991-01') return 'W1';   // the RS table, [8903-9101]
+    if (d < '1992-01') return 'W2';         // [9101-9201]
+    if (d < '1996-08') return 'W3';         // [9201-9608]
+    if (d < '1997-10') return 'W4';         // [9608-9710]
+    return 'W5';                            // [9710- ]
+  },
+
   _s13Window: function(date) {
     const d = String(date || '');
     if (!d || d < '1991-01') return 'W1';
@@ -3228,7 +3243,148 @@ const JDM_DATABASE = {
         81: '6JJx15 alloy road wheels + ABS + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]',
         82: '6JJx15 alloy road wheels + front window display + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]',
         83: '6JJx15 alloy road wheels + front window display + ABS + spoiler (front and rear) + rear fog lamp + Leather Selection specification [TYPE II Leather Selection, limited edition]'
-      }
+      },
+    // 180SX パック記号 for the four windows after [8903-9101], which is the
+    // RS table above. Read from volume 084 pages 7-9, 11-12, 14-16 by
+    // extract_rs13_packs.js.
+    //
+    // Window-keyed because the codes genuinely collide: 10, 11, 12, 16 and 17
+    // all appear in both [9101-9201] and [9201-9608] with different
+    // equipment, and 50 appears in three separate windows. A flat table would
+    // be wrong for most of this car's life.
+    RSpack: {
+      W2: {
+        '10': '6JJx15 alloy road wheels',
+        '11': '6JJx15 alloy road wheels + front window display',
+        '12': '6JJx15 alloy road wheels + front window display + ABS',
+        '13': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers',
+        '14': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers + electronically controlled active sound system',
+        '15': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers + no audio',
+        '16': '6JJx15 alloy road wheels + front window display + ABS + electronically controlled active sound system',
+        '17': '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        '18': '6JJx15 alloy road wheels + front window display + front and rear spoilers',
+        '19': '6JJx15 alloy road wheels + front window display + front and rear spoilers + electronically controlled active sound system',
+        '20': '6JJx15 alloy road wheels + front window display + front and rear spoilers + no audio',
+        '21': '6JJx15 alloy road wheels + front window display + electronically controlled active sound system',
+        '22': '6JJx15 alloy road wheels + front window display + no audio',
+        '23': '6JJx15 alloy road wheels + ABS',
+        '24': '6JJx15 alloy road wheels + ABS + front and rear spoilers',
+        '25': '6JJx15 alloy road wheels + ABS + front and rear spoilers + electronically controlled active sound system',
+        '26': '6JJx15 alloy road wheels + ABS + front and rear spoilers + no audio',
+        '27': '6JJx15 alloy road wheels + ABS + electronically controlled active sound system',
+        '28': '6JJx15 alloy road wheels + ABS + no audio',
+        '29': '6JJx15 alloy road wheels + front and rear spoilers',
+        '30': '6JJx15 alloy road wheels + front and rear spoilers + electronically controlled active sound system',
+        '31': '6JJx15 alloy road wheels + front and rear spoilers + no audio',
+        '32': '6JJx15 alloy road wheels + electronically controlled active sound system',
+        '33': '6JJx15 alloy road wheels + no audio',
+        '34': 'front window display',
+        '35': 'front window display + ABS',
+        '46': 'ABS',
+        '80': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers + rear fog lamp',
+        '81': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers + electronically controlled active sound system + rear fog lamp',
+        '82': '6JJx15 alloy road wheels + front window display + ABS + front and rear spoilers + no audio + rear fog lamp',
+        '83': '6JJx15 alloy road wheels + front window display + front and rear spoilers + rear fog lamp',
+        '84': '6JJx15 alloy road wheels + front window display + front and rear spoilers + electronically controlled active sound system + rear fog lamp',
+        '85': '6JJx15 alloy road wheels + front window display + front and rear spoilers + no audio + rear fog lamp',
+        '86': '6JJx15 alloy road wheels + ABS + front and rear spoilers + rear fog lamp',
+        '87': '6JJx15 alloy road wheels + ABS + front and rear spoilers + electronically controlled active sound system + rear fog lamp',
+        '88': '6JJx15 alloy road wheels + ABS + front and rear spoilers + no audio + rear fog lamp',
+        '89': '6JJx15 alloy road wheels + front and rear spoilers + rear fog lamp',
+        '90': '6JJx15 alloy road wheels + front and rear spoilers + electronically controlled active sound system + rear fog lamp',
+        '91': '6JJx15 alloy road wheels + front and rear spoilers + no audio + rear fog lamp',
+        '92': 'front window display + ABS + front and rear spoilers + rear fog lamp',
+        '93': 'front and rear spoilers + rear fog lamp'
+      },
+      W3: {
+        '10': '6JJx15 alloy road wheels',
+        '11': '6JJx15 alloy road wheels + front window display',
+        '12': '6JJx15 alloy road wheels + front window display + ABS',
+        '16': '6JJx15 alloy road wheels + front window display + ABS + electronically controlled active sound system',
+        '17': '6JJx15 alloy road wheels + front window display + ABS + no audio',
+        '21': '6JJx15 alloy road wheels + front window display + electronically controlled active sound system',
+        '22': '6JJx15 alloy road wheels + front window display + no audio',
+        '23': '6JJx15 alloy road wheels + ABS',
+        '27': '6JJx15 alloy road wheels + ABS + electronically controlled active sound system',
+        '28': '6JJx15 alloy road wheels + ABS + no audio',
+        '32': '6JJx15 alloy road wheels + electronically controlled active sound system',
+        '33': '6JJx15 alloy road wheels + no audio',
+        '34': 'front window display',
+        '35': 'front window display + ABS',
+        '39': 'front window display + ABS + electronically controlled active sound system',
+        '44': 'front window display + electronically controlled active sound system',
+        '46': 'ABS',
+        '50': 'ABS + electronically controlled active sound system',
+        '55': 'electronically controlled active sound system',
+        'B1': 'front window display + rear fog lamp',
+        'B2': 'front window display + ABS + rear fog lamp',
+        'B3': 'front window display + ABS + electronically controlled active sound system + rear fog lamp',
+        'B4': 'front window display + electronically controlled active sound system + rear fog lamp',
+        'B5': 'ABS + rear fog lamp',
+        'B6': 'ABS + electronically controlled active sound system + rear fog lamp',
+        'B7': 'electronically controlled active sound system + rear fog lamp'
+      },
+      W4: {
+        '50': 'No additional equipment',
+        '51': 'Super Fine Hard Coat',
+        '52': 'no audio',
+        '53': 'no audio + Super Fine Hard Coat',
+        '60': 'No additional equipment',
+        '61': '15-inch alloy road wheels',
+        '62': 'No additional equipment',
+        '63': '15-inch alloy road wheels',
+        '70': 'No additional equipment',
+        '71': 'Super Fine Hard Coat',
+        '72': 'viscous LSD',
+        '73': 'viscous LSD + Super Fine Hard Coat',
+        '74': 'no audio',
+        '75': 'no audio + Super Fine Hard Coat',
+        '76': 'viscous LSD + no audio',
+        '77': 'viscous LSD + no audio + Super Fine Hard Coat'
+      },
+      W5: {
+        '50': 'No additional equipment',
+        '51': 'Super Fine Hard Coat',
+        '52': 'no audio',
+        '53': 'no audio + Super Fine Hard Coat',
+        '5A': 'privacy glass',
+        '5B': 'Super Fine Hard Coat + privacy glass',
+        '5C': 'no audio + privacy glass',
+        '5D': 'no audio + Super Fine Hard Coat + privacy glass',
+        '60': 'No additional equipment',
+        '61': '15-inch alloy road wheels',
+        '62': 'No additional equipment',
+        '63': '15-inch alloy road wheels',
+        '6A': 'privacy glass',
+        '6B': '15-inch alloy road wheels + privacy glass',
+        '6C': 'privacy glass',
+        '6D': '15-inch alloy road wheels + privacy glass',
+        '80': 'No additional equipment',
+        '81': 'Super Fine Hard Coat',
+        '82': 'viscous LSD',
+        '83': 'viscous LSD + Super Fine Hard Coat',
+        '84': 'no audio',
+        '85': 'no audio + Super Fine Hard Coat',
+        '86': 'viscous LSD + no audio',
+        '87': 'viscous LSD + no audio + Super Fine Hard Coat',
+        '8A': 'privacy glass',
+        '8B': 'Super Fine Hard Coat + privacy glass',
+        '8C': 'viscous LSD + privacy glass',
+        '8D': 'viscous LSD + Super Fine Hard Coat + privacy glass',
+        '8E': 'no audio + privacy glass',
+        '8F': 'no audio + Super Fine Hard Coat + privacy glass',
+        '8G': 'viscous LSD + no audio + privacy glass',
+        '8H': 'viscous LSD + no audio + Super Fine Hard Coat + privacy glass',
+        '9A': 'CD selection + rear green glass with ornament',
+        '9B': 'Super Fine Hard Coat + CD selection + rear green glass with ornament',
+        '9C': 'viscous LSD + CD selection + rear green glass with ornament',
+        '9D': 'viscous LSD + Super Fine Hard Coat + CD selection + rear green glass with ornament',
+        '9E': 'CD selection + privacy glass',
+        '9F': 'Super Fine Hard Coat + CD selection + privacy glass',
+        '9G': 'viscous LSD + CD selection + privacy glass',
+        '9H': 'viscous LSD + CD selection + privacy glass'
+      },
+    },
   },
 
   // Pick the legend window a car's build date falls in, clamping at both ends.
@@ -3439,23 +3595,30 @@ const JDM_DATABASE = {
     }
     if (pack !== null) {
       let t, exact = true;
-      // RPS13 is deliberately NOT routed here, even though it is the same car
-      // as RS13 five years on and the RS table is the 180SX's own.
+      // The 180SX reads from its own volume, and now for its whole life.
       //
-      // It was, briefly, on exactly that reasoning. The records disagree: over
-      // the same 4,042 sampled pack codes the RS table matches 72.2% and the
-      // Silvia windows below match 79.8%. Neither number proves which legend
-      // Nissan actually used for the later car — a code that matches the wrong
-      // table yields a confidently wrong label, which is worse than no label —
-      // so this stays on the path every non-RS13 chassis already used rather
-      // than moving on a hunch.
+      // This used to route only RS13 here, because only [8903-9101] had been
+      // read and sending RPS13 to the single RS table decoded barely 60% of
+      // its characters — the note that stood here said volume 084's front
+      // matter would settle it, and it did. Pages 7-9, 11-12 and 14-16 are the
+      // four later windows, now in RSpack.
       //
-      // What would settle it is the 180SX's own front matter in volume 084.
-      // Until then RPS13's later packs decode as "reported", not "verified":
-      // by year, 1990 is 100% confirmed, 1991 93%, and it falls to 24% by 1996
-      // as the car outlives the legend this archive holds.
-      if (modelId === 'RS13') {
-        t = this._s13Legend.RS[pack];
+      // Window first, then the other 180SX windows as a fallback marked
+      // reported rather than verified. The fallback matters because the codes
+      // collide across windows — 10, 11, 12, 16, 17 and 50 all mean different
+      // things in different ones — so a match from the wrong window is a real
+      // possibility rather than a formality.
+      if (modelId === 'RS13' || modelId === 'RPS13') {
+        const RS = this._s13Legend.RS, RSP = this._s13Legend.RSpack || {};
+        const byWin = { W1: RS, W2: RSP.W2, W3: RSP.W3, W4: RSP.W4, W5: RSP.W5 };
+        const here = this._rs13Window(date);
+        t = (byWin[here] || {})[pack];
+        if (!t) {
+          exact = false;
+          for (const w of ['W1', 'W2', 'W3', 'W4', 'W5']) {
+            if (w !== here && (byWin[w] || {})[pack]) { t = byWin[w][pack]; break; }
+          }
+        }
       } else {
         t = this._s13Legend.pack[this._s13Window(date)][pack];
         // The same number means different equipment in different windows, so an
