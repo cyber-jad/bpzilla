@@ -167,6 +167,32 @@ Codes are emitted as-is rather than guessed at, and the raw 15-character spec
 is kept verbatim in `sc` alongside the split fields so nothing depends on this
 reading being right forever.
 
+## All 660 chassis extracted
+
+The full catalogue is now out: **660 chassis codes, 8,588,053 records**,
+1980 to 2008, in `public/data/mazda/`. Nothing is served.
+
+Sixteen of those carry a confirmed model name (the rotary and roadster set
+above). The other 644 are emitted under their chassis code with `name: null`
+rather than a guess — identifying them is a separate job from reading them.
+
+**Size, stated plainly: 242 MB.** That is the data, not the encoding — the
+records are simply 8.6 million rows. Dropping the verbatim spec string and
+its column saves only 15%, and the five split fields reconstruct it exactly
+(1,920 field combinations against 1,920 raw specs on the largest file), so
+the redundancy is cheap to keep and would be cheap to remove later.
+
+**One row excluded.** The catalogue contains a chassis code literally named
+`DUMMY`, a single placeholder dated 1984-07-18. It passes every shape test
+because it was built to look like a record. It is named in the extractor
+rather than filtered by a cleverer rule, so what is dropped stays obvious.
+
+Eleven codes have exactly one record each, including `FB3315` and `FB3316`,
+whose six-digit numeric tails do not look like Mazda chassis codes. They are
+kept — one record is not evidence of a fault, and inventing a rule to remove
+codes that look wrong is how real data gets lost — but they are worth
+suspicion if anything downstream depends on them.
+
 ## Still not decoded
 
 `[2..6]` the model/spec variant and `[7..8]` the equipment code. The variant
