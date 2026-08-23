@@ -117,7 +117,37 @@ const LOCATION = {
   HZ31:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
   PZ31:   { vindat: 'VINDAT4.AB3', mdlcode: 'MDLCODE.AB3' },
   HGZ31:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
-  PGZ31:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' }
+  PGZ31:  { vindat: 'VINDAT5.AB3', mdlcode: 'MDLCODE.AB3' },
+
+  // R30 Skyline, 1980-1990. DR30 - the RS Turbo - had been extracted years
+  // ago and the other seven codes never were: audit_chassis.js was scoped to
+  // the generations the site serves, so 393,364 records in a generation nobody
+  // had asked about could not show up as absent. Widening that audit is what
+  // found them.
+  //
+  // VPJR30 and VSJR30 run to 1989-10, four years past the saloon. That is not
+  // a decode error - the Skyline Van stayed in production after the R30 range
+  // was replaced.
+  DR30:   { vindat: 'VINDAT4.AB2', mdlcode: 'MDLCODE.AB2' },
+  ER30:   { vindat: 'VINDAT4.AB2', mdlcode: 'MDLCODE.AB2' },
+  HR30:   { vindat: 'VINDAT4.AB2', mdlcode: 'MDLCODE.AB2' },
+  FJR30:  { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
+  PJR30:  { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
+  UJR30:  { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
+  VPJR30: { vindat: 'VINDAT6.AB2', mdlcode: 'MDLCODE.AB2' },
+  VSJR30: { vindat: 'VINDAT6.AB2', mdlcode: 'MDLCODE.AB2' },
+
+  // R31 Skyline, 1985-1990. Same story: HR31 was extracted, the other four
+  // were not. WFJR31 and WHJR31 are the wagons.
+  HR31:   { vindat: 'VINDAT4.AB2', mdlcode: 'MDLCODE.AB2' },
+  SR31:   { vindat: 'VINDAT4.AB2', mdlcode: 'MDLCODE.AB2' },
+  FJR31:  { vindat: 'VINDAT5.AB2', mdlcode: 'MDLCODE.AB2' },
+  WFJR31: { vindat: 'VINDAT6.AB2', mdlcode: 'MDLCODE.AB2' },
+  WHJR31: { vindat: 'VINDAT6.AB2', mdlcode: 'MDLCODE.AB2' },
+
+  // M35 Stagea, 2001-2007. The four variant files (NM35, HM35, PM35, PNM35)
+  // were extracted; the base M35 code, the largest of the five, was not.
+  M35:    { vindat: 'VINDAT3.AB2', mdlcode: 'MDLCODE.AB2' }
 };
 
 // A shipped file is not always one chassis code.
@@ -159,7 +189,25 @@ const GROUPS = {
   hz31:  ['HZ31'],
   pz31:  ['PZ31'],
   hgz31: ['HGZ31'],
-  pgz31: ['PGZ31']
+  pgz31: ['PGZ31'],
+
+  // R30 and R31. dr30 and hr31 already had files, written years ago by another
+  // tool; listing them here does not change those files, it puts them under
+  // --verify so this extractor is checked against them too.
+  dr30:   ['DR30'],
+  er30:   ['ER30'],
+  hr30:   ['HR30'],
+  fjr30:  ['FJR30'],
+  pjr30:  ['PJR30'],
+  ujr30:  ['UJR30'],
+  vpjr30: ['VPJR30'],
+  vsjr30: ['VSJR30'],
+  hr31:   ['HR31'],
+  sr31:   ['SR31'],
+  fjr31:  ['FJR31'],
+  wfjr31: ['WFJR31'],
+  whjr31: ['WHJR31'],
+  m35:    ['M35']
 };
 
 // Does this family's export keep the colour-trim character at [L+6]?
@@ -179,11 +227,28 @@ const GROUPS = {
 // meaningful share of records — K, B, G, C, A, T and F — from 475 of 8,586 on
 // PS110 up to 6,755 of 11,965 on GZ31. Dropping it would take a character off
 // every paint code in 136,735 records.
+// The split is by FAMILY, and it is not "does a character exist there" — one
+// does, on every family checked. The Skylines carry it and their exports drop
+// it; the Silvia, Z and Stagea exports keep it. Measured at [L+6]:
+//
+//   dropped   HCR32 138,676 non-blank ("G","K")   HR33 63,726, all "K"
+//             BNR32  25,971 ("G")                 ER34 37,266, none blank
+//   kept      S13   146,681 ("G","C")             S15  39,138, none blank
+//
+// So R30 and R31 drop it, matching every other Skyline and matching the
+// dr30 and hr31 files already on disk — which is what makes --verify able to
+// check this extractor against a tool that was written independently of it.
+// M35, S110, S12 and Z31 keep it, matching their own families.
+//
+// That the Skylines discard a real character on 240,000+ records is worth
+// knowing and is NOT fixed here: it would rewrite files the site serves and
+// change what the plate shows, which is a different job from this one.
 const KEEPS_COLOR_PREFIX = new Set([
   's13', 'ps13', 'ks13', 'rs13', 'rps13', 's15',
   's110', 'ps110', 'us110',
   's12', 'js12', 'us12',
-  'z31', 'gz31', 'hz31', 'pz31', 'hgz31', 'pgz31'
+  'z31', 'gz31', 'hz31', 'pz31', 'hgz31', 'pgz31',
+  'm35'
 ]);
 
 const be24 = (b, o) => (b[o] << 16) | (b[o + 1] << 8) | b[o + 2];
@@ -367,7 +432,12 @@ function compare(code) {
 const args = process.argv.slice(2);
 
 if (args.includes('--verify')) {
-  const known = ['FR32', 'HR32', 'HCR32', 'HNR32', 'BNR32', 'ECR32', 'ER32', 's13', 'ps13', 'ks13', 'rs13'];
+  // dr30 and hr31 were written years ago by a different tool. Checking this
+  // extractor against them is worth more than checking it against its own
+  // output: agreement between two independent readers of the same bytes is
+  // evidence the bytes are being read right.
+  const known = ['FR32', 'HR32', 'HCR32', 'HNR32', 'BNR32', 'ECR32', 'ER32',
+                 's13', 'ps13', 'ks13', 'rs13', 'dr30', 'hr31'];
   let ok = 0;
   for (const code of known) {
     const r = compare(code);

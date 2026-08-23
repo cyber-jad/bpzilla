@@ -32,8 +32,8 @@ copy short of re-deriving it from the FAST binaries.
 
 | chassis | volume | front-matter pages | records | option decode |
 |---|---|---|---|---|
-| R30 (DR30)   | 077 | 16 | 44,439  | none yet |
-| R31 (HR31)   | 078 | 36 | 182,351 | none yet |
+| R30 Skyline  | 077 | 16 | 437,803 | extracted (8 codes), not loaded |
+| R31 Skyline  | 078 | 36 | 285,676 | extracted (5 codes), not loaded |
 | R32          | 079 | 27 | 295,861 | done, from this legend |
 | R33          | 080 |  2 | 180,398 | done, FASTOP incl. [9710- ] |
 | R34          | 081 | 11 |  67,040 | done, FASTOP incl. [200008- ] |
@@ -44,7 +44,7 @@ copy short of re-deriving it from the FAST binaries.
 | S15          | 089 | 10 |  39,138 | done, from this legend |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, FASTOP incl. [9808- ] |
 | Z32          | 132 | 12 | 162,666 | done, all five pack windows |
-| M35          | 153 | 22 |  30,487 | out of scope — not loaded |
+| M35 Stagea   | 153 | 22 |  58,489 | extracted (5 codes), not loaded |
 | S110 Silvia  | 085 | —  |  73,184 | extracted, not loaded |
 | S12 Silvia   | 086 |  2 |  28,170 | extracted, not loaded |
 | Z31 300ZX    | 131 | —  |  35,381 | extracted, not loaded |
@@ -312,6 +312,66 @@ three digits against 83,860 that do not, and the common endings are `D4C`,
 The re-reader is `extract_factory_options.js`. It refuses to write a file
 smaller than the one already shipped, or one that loses a definition the
 shipped file had, and it never retranslates an entry that already shipped.
+
+## The archive is now complete against the source
+
+`audit_chassis.js` reports **65 of 65 in-scope chassis accounted for, 0 not
+extracted, 0 differing**. Getting there meant widening the audit itself, and
+that is the part worth remembering.
+
+The tool used to compare the source against what the SITE loads. That was fine
+while those were the same thing and stopped being fine the moment families
+were extracted but deliberately not served — against a site-scoped baseline
+every one of them reads as missing data when the data is on disk. It now
+compares against the ARCHIVE, every `fast_*.json` in `public/data`, and
+reports served/held as a separate column.
+
+Widening the generation list at the same time immediately found **524,691
+records that had never been extracted at all**, in generations nobody had
+asked about:
+
+| family | had | was missing |
+|---|---|---|
+| R30 Skyline | `DR30` only | `HR30` 185,975 · `FJR30` 108,676 · `PJR30` 34,115 · `VPJR30` 31,375 · `ER30` 15,156 · `VSJR30` 11,595 · `UJR30` 6,472 |
+| R31 Skyline | `HR31` only | `FJR31` 73,692 · `WFJR31` 14,921 · `SR31` 12,524 · `WHJR31` 2,188 |
+| M35 Stagea | 4 variant codes | `M35` 28,002, the base code and the largest of the five |
+
+This is the same blind spot that once hid the entire S15: an audit scoped to
+what you already have finds omissions, not absences. All twelve are now
+extracted. `VPJR30` and `VSJR30` run to 1989-10, four years past the saloon,
+which is correct — the Skyline Van outlived the R30 range.
+
+### The colour-trim character, and a finding not acted on
+
+Adding `DR30` and `HR31` to `--verify` produced a mismatch on exactly 7,218
+and 43,988 rows — precisely their non-blank counts at `[L+6]`. Those two files
+DROP the character; the first attempt kept it.
+
+Checking which is right turned up something broader: **the byte is not empty on
+the families that discard it.** Measured across the source:
+
+| | at `[L+6]` |
+|---|---|
+| dropped | HCR32 138,676 non-blank · HR33 63,726 (all `K`) · ER34 37,266 (none blank) · BNR32 25,971 |
+| kept | S13 146,681 · S15 39,138 (none blank) |
+
+So the rule is by family — Skylines discard it, Silvia/Z/Stagea keep it — not
+by whether anything is there. R30 and R31 therefore drop it, matching every
+other Skyline and matching the two files already on disk, which is what lets
+`--verify` check this extractor against a tool written independently of it:
+**13/13 exact, including those two.**
+
+That the Skylines discard a real character on 240,000+ records is recorded
+here and deliberately NOT changed. Fixing it would rewrite files the site
+serves and change what a plate displays, which is a different job.
+
+### Held, not served
+
+30 chassis, 918,703 records: R30 437,803 · R31 285,676 · S110 73,184 ·
+M35 58,489 · Z31 35,381 · S12 28,170. Every one is decoded and checkable and
+none is wired into the site. Serving any needs two edits — the prefix in
+`database.js` and a `models{}` entry — and that is a scope decision, not a
+data one.
 
 ## Held but not served: S110, S12, Z31
 
