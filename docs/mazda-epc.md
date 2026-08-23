@@ -216,15 +216,34 @@ Anniversary, the Roadster NR-A, Mazdaspeed cars and limited editions.
 attribute list, and every one now reads in English.
 
 551 attribute codes are used by a variant somewhere. 214 of those are already
-Latin or numeric on the disc — displacements, , , , engine part
+Latin or numeric on the disc — displacements, `DX`, `CVT`, `24V`, engine part
 numbers — and pass through untouched. The other 297 carried Japanese and are
 translated, giving 348 entries in the table.
 
-A detail worth keeping: distinct codes can land on the same English. 
-and  are both otary (engine family and valve layout);  and
- are both manual (gearbox type and control type). The disc is not
-being redundant, but  reads as a bug, so repeats are
-collapsed while order is preserved.
+The vocabulary is mostly systematic once the recurring suffixes are clear:
+ナシ and ヲノゾク for *without* and *excluding*, ツキ and アリ for *with*,
+シャ for *vehicle*, キセイ for *regulation*. That covers body styles and
+lengths, roof types, cab tilt, deck heights, emissions standards (H6, H10,
+H12, H17 and the LEV grades), engine families, valve counts, starters,
+alternators, drive types, seating, and a long tail of grade names — Field
+Break, Bright Stylish, Custom Style, PZ Turbo, FX-S Special.
+
+A detail worth keeping: distinct codes can land on the same English. `B4103`
+and `B4H03` are both "rotary" — the engine family and the valve layout;
+`B5101` and `B5E04` are both "manual" — the gearbox type and the control
+type. The disc is not being redundant, but `rotary · rotary` reads as a bug,
+so repeats are collapsed while order is preserved.
+
+Two cars that can be checked against what they actually were:
+
+    Familia GT-R   rally version · excluding Custom Built Type A ·
+                   no sunroof · hatchback · 3-door · EGI · DOHC ·
+                   high power · turbo · petrol · 1800cc
+
+    Roadster NC    no DSC · no retractable hardtop · petrol · 2000cc ·
+                   manual · 6-speed · normal dampers · open differential ·
+                   ABS · 16-inch wheels · normal suspension
+
 
 **A bug worth recording.** Changing the dictionaries to the 4/3 split without
 changing the row-building slices produced no error at all: the dictionaries
