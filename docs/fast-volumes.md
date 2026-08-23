@@ -310,6 +310,50 @@ The re-reader is `extract_factory_options.js`. It refuses to write a file
 smaller than the one already shipped, or one that loses a definition the
 shipped file had, and it never retranslates an entry that already shipped.
 
+## What is left undecoded, and what has already been ruled out
+
+12,709 option characters across the whole archive, 0.394% of the 3,223,521 the
+decoders claim. Shape of the residue:
+
+| | |
+|---|---|
+| digits | 9,144 |
+| single letters | 3,252 |
+| two-character pack codes | 313 |
+| in a record whose other positions decoded | 11,341 |
+| in a record where nothing decoded | 1,368 |
+
+Concentrated at plates 15-18 (11,821 of 12,709) and led by `0` (3,661), `1`
+(2,426), `Y` (1,510) and `Z` (1,059).
+
+**`0` is not an option code anywhere in FASTOP.** The option alphabet is 1-9
+and A-Z with I and O skipped — the usual avoidance of characters that read as
+1 and 0 — and across all 8,203 definitions for all 53 chassis, `0` is never
+assigned at any of the five positions.
+
+**It is not filler either, and that was tested rather than assumed.** The
+obvious reading is that `0` plays the role `-` plays and means "nothing fitted
+here", which would close 29% of the residue with one line. It does not survive
+contact with the records: 25 of the 27 chassis/positions where `0` appears use
+`-` heavily *as well*, and in most of them `0` turns up in single digits — 5
+records on BCNR33 plate 16, 1 on HR33 plate 15, 2 on ER34 plate 15 — against
+tens of thousands of dashes. A position does not have two fillers. Those look
+like bad records rather than a code.
+
+The exception is the S14, which carries 2,157 zeros at plate 15, 1,013 at 16
+and 315 at 17, alongside 37,135 dashes at plate 15. Three and a half thousand
+is too many to dismiss as noise and it is not explained yet. Whatever it is, it
+is specific to the S14 rather than a property of the format.
+
+**`H:\AR-JP\AR\FASTOPPE`, the second FASTOP file, does not help** and is now
+checked off: 17 chassis, all export or later models — `P11E`, `V36`, `J10E`,
+`Y31`, `E24`, `A33`, `CD22`, `K12E` — with no overlap with anything this site
+covers.
+
+`Y` and `Z` at plate 18 (2,529 together) are defined by FASTOP at that position
+for other chassis but never for the ones that carry them here, so they are an
+ordinary table gap rather than a structural puzzle.
+
 ## S15 (volume 089) — complete, and it was missing entirely
 
 The S15 Silvia was not in this archive at all: 39,138 records, the last Silvia
