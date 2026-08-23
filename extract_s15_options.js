@@ -66,7 +66,7 @@ const TABLES = [
       L('SMET5', 'titanium meter finisher'),
       L('LMRF2', 'rear fog lamp'),
       L('WHSTC', 'leather trim, blue stitching'),
-      L('STTMQ', 'blue interior'),
+      L('STTMQ', 'interior, orange or blue'),
       L('STTMW', 'silver interior'),
       L('WHST3', 'leather steering wheel, silver stitching'),
       L('STTMR', 'punched suede-style seats and door trim')
@@ -115,7 +115,7 @@ const TABLES = [
     codes: ['-','A','B','C','D','E','F','G','K','L','M','N','P','Q'],
     rows: [
       L('-',     'standard'),
-      L('STTMQ', 'interior package, orange'),
+      L('STTMQ', 'interior, orange or blue'),
       L('LMPHW', 'xenon headlamps'),
       L('ABAGS', 'side airbags'),
       L('LMPRC', 'headlamp inner silver'),
