@@ -2638,12 +2638,23 @@ const JDM_DATABASE = {
     const a = body.indexOf('Z32');
     if (a < 0) return null;
     let i = a + 3;
-    if (body[i] === 'J') i++;                       // 車格 GL
+    // 車格. The [8907-9309] diagram lists only J, and this read only J for a
+    // long time — correctly for 62,256 records, because W1 through W3 are 100%
+    // J. The [9810- ] diagram on page 3 adds two more: T is VR and X is ZX.
+    //
+    // Missing them was not a small omission. With X unrecognised the parser
+    // advanced nothing, so a code like "XAS70" had its X, A and S all read as
+    // VS characters — meaning the grade, the gearbox AND the turbo were each
+    // wrong, and three unknown "options" were reported instead. 717 records,
+    // almost all of the [9810- ] window, decoded that way.
+    const gradeCh = 'JTX'.indexOf(body[i]) >= 0 ? body[i] : '';
+    if (gradeCh) i++;
     const trans = body[i] === 'A' ? 'AT' : 'MT';    // 変速機
     if (body[i] === 'A') i++;
     const turbo = body[i] === 'S' ? 'TT' : 'NT';    // 過給
     if (body[i] === 'S') i++;
-    return { optionsFrom: i, end: body.length, body: body, trans: trans, turbo: turbo };
+    return { optionsFrom: i, end: body.length, body: body,
+             trans: trans, turbo: turbo, gradeCh: gradeCh };
   },
 
   _z32Legend: {
@@ -2731,7 +2742,196 @@ const JDM_DATABASE = {
           F7: 'Fender mirrors + cruise control (ASCD) + rear spoiler + power seat'
         }
       }
-    }
+    },
+    // パック記号 [9309-9410], page 7. Named by WINDOW rather than by number:
+    // the R32 legend in this same file uses pack1/pack2 for the first and
+    // second DIGIT of one code, which is a different idea entirely.
+    //
+    // Columns group by 車型タイプ, and unlike packW1 the transmission header
+    // spans MT and AT together - so a code here means the same on both
+    // gearboxes and only the body type keys it. LIMITED is the 首都圏限定車
+    // pair from the small second table on the same page.
+    packW2: {
+      NT: {
+        '11': 'No additional equipment',
+        '12': 'rear spoiler',
+        '13': 'rear spoiler + keyless entry',
+        '14': 'rear spoiler + CD player',
+        '15': 'rear spoiler + keyless entry + CD player',
+        '16': 'keyless entry + CD player',
+        '17': 'keyless entry',
+        '18': 'CD player',
+        '91': 'fender mirrors'
+      },
+      TT: {
+        '11': 'rear spoiler deleted',
+        '12': 'rear spoiler',
+        '13': 'rear spoiler + keyless entry',
+        '14': 'rear spoiler + CD player',
+        '15': 'rear spoiler + keyless entry + CD player',
+        '16': 'rear spoiler deleted + keyless entry + CD player',
+        '17': 'rear spoiler deleted + keyless entry',
+        '18': 'rear spoiler deleted + CD player',
+        '92': 'rear spoiler + fender mirrors'
+      },
+      CONV: {
+        '16': 'keyless entry + CD player',
+        '17': 'keyless entry',
+        '97': 'keyless entry + fender mirrors'
+      },
+      LIMITED: {
+        '52': 'rear spoiler',
+        '59': 'rear spoiler + audio deleted'
+      }
+    },
+    // パック記号 [9410-9701], pages 8 and 9. These pages carry no body or gearbox split at all:
+    // the code alone keys the table.
+    packW3: {
+      '21': 'no audio + electronic audio deleted + manual air conditioning + rear spoiler + sports seats + Version S',
+      '22': 'no audio + electronic audio deleted + manual air conditioning + BBS wheels + rear spoiler + sports seats + Version S',
+      '23': 'electronic audio + manual air conditioning + rear spoiler + sports seats + Version S',
+      '24': 'electronic audio + CD player + manual air conditioning + rear spoiler + sports seats + Version S',
+      '25': 'electronic audio + manual air conditioning + BBS wheels + rear spoiler + sports seats + Version S',
+      '26': 'electronic audio + CD player + manual air conditioning + BBS wheels + rear spoiler + sports seats + Version S',
+      '31': 'no audio + electronic audio deleted + BBS wheels + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '32': 'electronic audio + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '33': 'electronic audio + CD player + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '34': 'electronic audio + BBS wheels + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '35': 'electronic audio + CD player + BBS wheels + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '36': 'electronic audio + multi remote entry system + new cross-linked fluorine paint',
+      '37': 'electronic audio + CD player + multi remote entry system + new cross-linked fluorine paint',
+      '38': 'electronic audio + BBS wheels + multi remote entry system + new cross-linked fluorine paint',
+      '39': 'electronic audio + CD player + BBS wheels + multi remote entry system + new cross-linked fluorine paint',
+      '41': 'electronic audio + manual air conditioning + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '42': 'electronic audio + CD player + manual air conditioning + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '43': 'electronic audio + manual air conditioning + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '44': 'electronic audio + CD player + manual air conditioning + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '45': 'BOSE audio + automatic air conditioning + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '46': 'BOSE audio + CD player + automatic air conditioning + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '47': 'BOSE audio + automatic air conditioning + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '48': 'BOSE audio + CD player + automatic air conditioning + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '53': 'BOSE audio + automatic air conditioning + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '54': 'BOSE audio + CD player + automatic air conditioning + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '55': 'BOSE audio + automatic air conditioning + cruise control (ASCD, automatic only) + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '56': 'BOSE audio + CD player + automatic air conditioning + cruise control (ASCD, automatic only) + rear spoiler + Recaro seats + mirror-coat T-bar roof + new cross-linked fluorine paint + Version S with Recaro seats',
+      '58': 'no audio + electronic audio deleted + cloth seats + multi remote entry system deleted + new cross-linked fluorine paint deleted + Version S',
+      '61': 'electronic audio + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '62': 'electronic audio + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '63': 'electronic audio + CD player + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '64': 'electronic audio + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '65': 'electronic audio + CD player + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '66': 'electronic audio + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '67': 'electronic audio + CD player + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '68': 'electronic audio + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '69': 'electronic audio + CD player + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '71': 'BOSE audio + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '72': 'BOSE audio + CD player + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '73': 'BOSE audio + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '74': 'BOSE audio + CD player + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '75': 'BOSE audio + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '76': 'BOSE audio + CD player + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '77': 'BOSE audio + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '78': 'BOSE audio + CD player + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '79': 'electronic audio + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '81': 'BOSE audio + cruise control (ASCD, automatic only) + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '82': 'BOSE audio + CD player + cruise control (ASCD, automatic only) + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '83': 'BOSE audio + cruise control (ASCD, automatic only) + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '84': 'BOSE audio + CD player + cruise control (ASCD, automatic only) + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '85': 'BOSE audio + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '86': 'BOSE audio + CD player + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + driver power seat + multi remote entry system + new cross-linked fluorine paint',
+      '87': 'BOSE audio + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint',
+      '88': 'BOSE audio + CD player + cruise control (ASCD, automatic only) + BBS wheels + rear spoiler + driver power seat + driver and passenger power seats + multi remote entry system + new cross-linked fluorine paint'
+    },
+    // パック記号 [9701-9810], page 10. These pages carry no body or gearbox split at all:
+    // the code alone keys the table.
+    packW4: {
+      '21': 'deck-less with 4 speakers + rear spoiler + manual air conditioning + Version S specification, standard paint',
+      '22': 'deck-less with 4 speakers + BBS wheels + rear spoiler + manual air conditioning + Version S specification, standard paint',
+      '23': 'AM/FM cassette + rear spoiler + manual air conditioning + Version S specification, standard paint',
+      '25': 'AM/FM cassette + BBS wheels + rear spoiler + manual air conditioning + Version S specification, standard paint',
+      '31': 'BBS wheels + deck-less with 2 speakers + keyless entry deleted + cloth seats + Super Fine Hard Coat deleted',
+      '32': 'AM/FM cassette + keyless entry deleted + cloth seats + Super Fine Hard Coat deleted',
+      '34': 'AM/FM cassette + BBS wheels + keyless entry deleted + cloth seats + Super Fine Hard Coat deleted',
+      '58': 'deck-less with 2 speakers + keyless entry deleted + cloth seats + Super Fine Hard Coat deleted',
+      '61': 'driver power seat + keyless entry',
+      '62': 'rear spoiler + driver power seat + keyless entry',
+      '66': 'BBS wheels + rear spoiler + driver power seat + keyless entry',
+      'A1': 'driver power seat + high-performance glass pack + keyless entry',
+      'A2': 'rear spoiler + driver power seat + high-performance glass pack + keyless entry',
+      'A3': 'BBS wheels + rear spoiler + driver power seat + high-performance glass pack + keyless entry',
+      'B1': 'driver and passenger power seats + leather seats + keyless entry',
+      'B2': 'rear spoiler + driver and passenger power seats + leather seats + keyless entry',
+      'B3': 'BBS wheels + rear spoiler + driver and passenger power seats + leather seats + keyless entry',
+      'B4': 'driver and passenger power seats + leather seats + high-performance glass pack + keyless entry',
+      'B5': 'rear spoiler + driver and passenger power seats + leather seats + high-performance glass pack + keyless entry',
+      'B6': 'BBS wheels + rear spoiler + driver and passenger power seats + leather seats + high-performance glass pack + keyless entry',
+      'C1': 'deck-less with 4 speakers + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C2': 'deck-less with 4 speakers + rear spoiler + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C3': 'deck-less with 4 speakers + BBS wheels + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C4': 'deck-less with 4 speakers + BBS wheels + rear spoiler + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C5': 'AM/FM cassette + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C6': 'AM/FM cassette + rear spoiler + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C7': 'AM/FM cassette + BBS wheels + manual air conditioning + Version R specification, standard paint + Recaro seats',
+      'C8': 'AM/FM cassette + BBS wheels + rear spoiler + manual air conditioning + Version R specification, standard paint + Recaro seats'
+    },
+    // パック記号 [9810- ], pages 11 and 12. These pages carry no body or gearbox split at all:
+    // the code alone keys the table.
+    packW5: {
+      '70': 'No additional equipment',
+      '71': 'xenon headlamps',
+      '72': 'AM/FM cassette stereo',
+      '73': 'rear spoiler',
+      '74': 'xenon headlamps + AM/FM cassette stereo',
+      '75': 'xenon headlamps + rear spoiler',
+      '76': 'AM/FM cassette stereo + rear spoiler',
+      '77': 'xenon headlamps + AM/FM cassette stereo + rear spoiler',
+      '78': 'leather seats',
+      '79': 'xenon headlamps + leather seats',
+      '80': 'rear spoiler + leather seats',
+      '81': 'xenon headlamps + rear spoiler + leather seats',
+      '82': 'BBS alloy wheels',
+      '83': 'xenon headlamps + BBS alloy wheels',
+      '84': 'AM/FM cassette stereo + BBS alloy wheels',
+      '85': 'rear spoiler + BBS alloy wheels',
+      '86': 'xenon headlamps + AM/FM cassette stereo + BBS alloy wheels',
+      '87': 'xenon headlamps + rear spoiler + BBS alloy wheels',
+      '88': 'leather seats + BBS alloy wheels',
+      '89': 'xenon headlamps + leather seats + BBS alloy wheels',
+      '90': 'rear spoiler + leather seats + BBS alloy wheels',
+      '91': 'xenon headlamps + rear spoiler + leather seats + BBS alloy wheels',
+      '92': 'bright-polished alloy wheels',
+      '93': 'xenon headlamps + bright-polished alloy wheels',
+      '94': 'AM/FM cassette stereo + bright-polished alloy wheels',
+      '95': 'rear spoiler + bright-polished alloy wheels',
+      '96': 'xenon headlamps + AM/FM cassette stereo + bright-polished alloy wheels',
+      '97': 'xenon headlamps + rear spoiler + bright-polished alloy wheels',
+      '98': 'AM/FM cassette stereo + rear spoiler + bright-polished alloy wheels',
+      '99': 'xenon headlamps + AM/FM cassette stereo + rear spoiler + bright-polished alloy wheels',
+      'D1': 'leather seats + bright-polished alloy wheels',
+      'D2': 'xenon headlamps + leather seats + bright-polished alloy wheels',
+      'D3': 'rear spoiler + leather seats + bright-polished alloy wheels',
+      'D4': 'xenon headlamps + rear spoiler + leather seats + bright-polished alloy wheels',
+      'E1': 'Super Fine Hard Coat',
+      'E2': 'xenon headlamps + Super Fine Hard Coat',
+      'E3': 'AM/FM cassette stereo + Super Fine Hard Coat',
+      'E4': 'rear spoiler + Super Fine Hard Coat',
+      'E5': 'xenon headlamps + AM/FM cassette stereo + Super Fine Hard Coat',
+      'E6': 'xenon headlamps + rear spoiler + Super Fine Hard Coat',
+      'E7': 'AM/FM cassette stereo + rear spoiler + Super Fine Hard Coat',
+      'E8': 'xenon headlamps + AM/FM cassette stereo + rear spoiler + Super Fine Hard Coat',
+      'F1': 'BBS alloy wheels + Super Fine Hard Coat',
+      'F2': 'xenon headlamps + BBS alloy wheels + Super Fine Hard Coat',
+      'F3': 'AM/FM cassette stereo + BBS alloy wheels + Super Fine Hard Coat',
+      'F4': 'xenon headlamps + AM/FM cassette stereo + BBS alloy wheels + Super Fine Hard Coat',
+      'G1': 'bright-polished alloy wheels + Super Fine Hard Coat',
+      'G2': 'xenon headlamps + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G3': 'AM/FM cassette stereo + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G4': 'rear spoiler + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G5': 'xenon headlamps + AM/FM cassette stereo + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G6': 'xenon headlamps + rear spoiler + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G7': 'AM/FM cassette stereo + rear spoiler + bright-polished alloy wheels + Super Fine Hard Coat',
+      'G8': 'xenon headlamps + AM/FM cassette stereo + rear spoiler + bright-polished alloy wheels + Super Fine Hard Coat'
+    },
   },
 
   // ---- S13 family: Silvia and 180SX -----------------------------------------
@@ -3252,6 +3452,48 @@ const JDM_DATABASE = {
     return opts;
   },
 
+  // Which パック記号 table applies, by build date.
+  //
+  // All five windows are now read. Before, only [8907-9309] existed and every
+  // later date got an empty table - which did more damage than simply leaving
+  // those packs unnamed. With no table the two-character code was never split
+  // off the tail at all, so "Z32JAHE7" decoded its E and its 7 as two separate
+  // unrecognised VS characters instead of one pack code E7. Every Z32 built
+  // from September 1993 on, 8,348 records, read that way.
+  //
+  // The windows disagree about what keys a code, so this returns a flat
+  // code->text map and lets the caller stay simple:
+  //   [8907-9309]  body type AND gearbox    pack1[turbo][trans]
+  //   [9309-9410]  body type only           packW2[turbo], + the 首都圏限定車 pair
+  //   [9410-    ]  nothing - the code alone
+  //
+  // The convertible is a known blind spot. Its codes live under CONV, but the
+  // roof character is the one the FAST export drops, so a convertible cannot
+  // be told from a coupe here. CONV is therefore consulted only as a fallback,
+  // after the body-typed table has failed - which is right for 97, unique to
+  // the convertible, and unavoidable for 16 and 17, which it shares.
+  // Returns the window's own table first, then the others as fallbacks.
+  //
+  // A changeover month contains cars of both kinds, and the counts say so
+  // plainly: of the 128 records built in 1993-09, 100 carry a code from the
+  // window that opens that month and 28 from the one that closes it. 1994-10
+  // splits 72 to 54. So there is no boundary that is simply right, and moving
+  // it only trades one set of misses for another.
+  //
+  // The window that owns the date is therefore tried first and its match is
+  // verified; a match found in any other window is still reported, but as
+  // "reported" rather than confirmed - the same distinction the R32 and S13
+  // decoders already draw for an out-of-window pack.
+  _z32PackTables: function(L, d) {
+    const Z = this._z32Legend;
+    const w1 = (Z.pack1[L.turbo] || {})[L.trans] || {};
+    const w2 = Object.assign({}, Z.packW2.CONV, Z.packW2[L.turbo], Z.packW2.LIMITED);
+    const all = [w1, w2, Z.packW3, Z.packW4, Z.packW5];
+    if (!d) return [{}, ...all];
+    const i = d < '1993-09' ? 0 : d < '1994-10' ? 1 : d < '1997-01' ? 2 : d < '1998-10' ? 3 : 4;
+    return [all[i], ...all.filter((_, k) => k !== i)];
+  },
+
   _decodeZ32Plate: function(modelId, mc, date) {
     const opts = [];
     const L = this._z32Layout(mc);
@@ -3263,11 +3505,15 @@ const JDM_DATABASE = {
     // Pack first, off the end. Codes here are one OR two characters — E and F
     // are codes in their own right alongside E1..E8 and F1..F8 — so the longer
     // match is tried first and only a code the table actually holds is taken.
-    let packTxt = null, packStr = null;
-    const tab = (d && d < '1993-09') ? ((this._z32Legend.pack1[L.turbo] || {})[L.trans] || {}) : {};
-    if (tail.length >= 2 && tab[tail.slice(-2)]) { packStr = tail.slice(-2); }
-    else if (tail.length >= 1 && tab[tail.slice(-1)]) { packStr = tail.slice(-1); }
-    if (packStr) { packTxt = tab[packStr]; tail = tail.slice(0, -packStr.length); }
+    let packTxt = null, packStr = null, packExact = true;
+    const tabs = this._z32PackTables(L, d);
+    for (let t = 0; t < tabs.length && !packStr; t++) {
+      const tab = tabs[t];
+      if (tail.length >= 2 && tab[tail.slice(-2)]) packStr = tail.slice(-2);
+      else if (tail.length >= 1 && tab[tail.slice(-1)]) packStr = tail.slice(-1);
+      if (packStr) { packTxt = tab[packStr]; packExact = (t === 0); }
+    }
+    if (packStr) tail = tail.slice(0, -packStr.length);
 
     // VS characters. The later window codes airbag combinations as two
     // characters (HT, DT, LT, RT, BT, TW, PT), so match greedily.
@@ -3287,7 +3533,7 @@ const JDM_DATABASE = {
     }
     if (packStr) {
       opts.push({ pos: idx, platePos: this.platePos(idx), char: packStr, field: 'Pack',
-                  text: packTxt, verified: true });
+                  text: packTxt, verified: packExact, reported: !packExact });
     }
     return opts;
   },

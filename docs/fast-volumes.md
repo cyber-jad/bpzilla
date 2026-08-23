@@ -42,7 +42,7 @@ copy short of re-deriving it from the FAST binaries.
 | PS13 / KS13  | 087 | —  | 136,777 | none yet — see note |
 | S14          | 088 | 15 |  84,826 | partial, from FASTOP |
 | WC34 (Stagea)| 110 | 3  | 133,408 | done, from FASTOP |
-| Z32          | 132 | 12 | 162,666 | none yet |
+| Z32          | 132 | 12 | 162,666 | done, all five pack windows |
 | M35          | 153 | 22 |  30,487 | out of scope — not loaded |
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
 
@@ -122,45 +122,62 @@ two, split at 1986-09, and the JSON above is keyed E / L accordingly.
   applying a sedan table to a coupe would be wrong rather than merely missing.
   That axis needs handling before any of this goes live.
 
-## Z32 (volume 132) — work in progress
+## Z32 (volume 132) — complete
+
+All five pack windows are read. 99.92% of the 64,866 JDM Z32 records now
+decode every option character, against 87.0% before.
 
 **Model code**, from pages 1-3, which give three windows:
 
 ```
 [ルーフ][エンジン][シーター] Z32 [車格][変速機][過給][VS記号][パック記号]
 ルーフ    スペース 標準ルーフ / K Tバールーフ / C コンバーチブル (from 9208)
-エンジン   R VG30DE系      シーター スペース 2シーター / G 2+2シーター
-車格 J GL   変速機 スペース MT / A AT   過給 スペース ノンターボ / S ツインターボ
+エンジン   R VG30DE系      シーター  スペース 2シーター / G 2+2シーター
+車格      J GL/VS / T VR / X ZX
+変速機    スペース MT / A AT      過給  スペース ノンターボ / S ツインターボ
 ```
 
-The layout diagrams stop at VS記号 and do not draw a パック記号 box, but pages
-5-12 are パック記号 tables and the records carry both — `RGZ32JASHE7` is
-VS `H` then pack `E7`, and `RGZ32JAE7` is the same pack with no VS at all.
+**車格 is not just J.** Page 1 lists only J and this archive read only J for a
+long time, which is right for windows 1-3 — they are 100% J. Page 3, the
+[9810- ] diagram, adds T for VR and X for ZX. Missing them was not a small
+omission: with X unrecognised the parser advanced nothing, so XAS70 had its
+X, A and S all read as VS characters, making the grade, the gearbox and the
+turbo flag each wrong at once. 717 records, nearly all of [9810- ].
 
-**VS記号** (page 4), two windows, and the later one uses two-character codes:
+**VS記号** (page 4), two windows, the later using two-character codes:
 
 ```
-[8907-9208]  B BOSE audio · H 4WAS (ABS) · P BOSE + leather · W leather · Z cold region
+[8907-9208]  B BOSE audio · H 4WAS/ABS · P BOSE + leather · W leather · Z cold region
 [9208-    ]  H ABS · D ABS+BOSE · L ABS+leather · R ABS+BOSE+leather
-             HT/DT/LT/RT are those four plus airbag
+             HT / DT / LT / RT are those four plus airbag
              B BOSE · W leather · P BOSE+leather · T airbag · BT · TW · PT · Z cold region
 ```
 
 **Pack windows**: [8907-9309] pages 5-6, [9309-9410] page 7, [9410-9701] pages
 8-9, [9701-9810] page 10, [9810- ] pages 11-12. Five, more than any other
-chassis here.
+chassis here. Read by extract_z32_packs.js, which transcribes the row labels
+and column codes by eye and lets fast_matrix.js find the marks, then refuses to
+write unless the machine-read grid matches the transcription exactly.
 
-**Two things checked and settled.** Codes E1-E8 and F1-F8 look like they belong
-to the [9810- ] window because page 12 lists them, but page 5 lists them too:
-they are original 1989 codes that ran the whole way through, which is why E7
-appears on 36,245 records dated 1989-01 to 1999-12. And the three table symbols
-are not decoration — ◎標準, ○オプション, △レスオプション — so fast_matrix.js was
-taught to tell them apart before any of this was read.
+**What each window keys on differs**, which is the part worth knowing:
 
-**What blocks it.** The pack tables are keyed by more than the code. Page 5 is
-split 車型タイプ (300ZX non-turbo) then トランスミッション MT / AT, and the same
-code appears under both with different marks. Both axes ARE recoverable from the
-model code — 過給 and 変速機 are characters in it — so this is solvable, but the
-multi-level header defeats the column detector in fast_matrix.js, which reads
-page 5 as having zero columns. The detector needs to handle a header spanning
-several rows before these pages can be read reliably.
+- [8907-9309] keys by 車型タイプ AND トランスミッション — the same code means
+  different equipment on MT and AT.
+- [9309-9410] keys by 車型タイプ only. Its transmission header spans MT and AT
+  together, so a code means the same on both.
+- The last three key on nothing but the code.
+
+**Boundary months contain both.** Of the 128 cars built in 1993-09, 100 carry a
+code from the window opening that month and 28 from the one closing it; 1994-10
+splits 72 to 54. There is no cutoff that is simply right, so the window owning
+the date is tried first and its match is verified, while a match found in
+another window is reported rather than confirmed. That accounts for 0.1% of
+characters.
+
+**Still open.** 83 option characters across 64,866 records remain unnamed, and
+the convertible is a permanent blind spot: its codes are known (16, 17, 97) but
+the roof character is the one the FAST export drops, so a convertible cannot be
+told from a coupe. CONV is consulted only after the body-typed table fails.
+One transcription oddity is recorded rather than corrected: page 10 prints
+フロス where the equivalent row two windows earlier prints クロス, checked at 3x
+against page 8 in the same font.
