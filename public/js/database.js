@@ -3838,12 +3838,37 @@ const JDM_DATABASE = {
   // Their values at 15 and 16 are outside the standard tables too, so these
   // cars are named as one thing rather than decoded position by position — the
   // ordinary tables would either miss or, worse, mislabel them.
+  // Pages 7-10 give each variant TWO codes side by side — Autech's own
+  // 架装車種記号 and the モデルナンバープレート車種記号 that is actually stamped.
+  // They differ on the Style-A, where Autech's TKA/TKB reaches the plate as
+  // TK1/TK2, which is why the records hold TK1 and TK2 and no TKA at all. Both
+  // forms are listed so either reads.
+  //
+  // The pages also separate the pairs within each variant, so these are named
+  // to that level rather than lumped:
+  //   PB4 / PB6   Autech Version, without / with privacy glass   (page 7)
+  //   UA3 / UA4   Varietta, front cloth / front leather seats    (page 8)
+  //   TK1 / TK2   Style-A, SR20DET+SR20DE without / SR20DE with privacy glass
+  //
+  // LVT is the Driving Helper and appears on no record, which page 10 explains:
+  // 「モデルナンバープレートには基準車オプション記号が記載されております」— its plate
+  // carries the BASE car's option code, so a Driving Helper is not identifiable
+  // from the plate at all. It stays listed in case a record ever shows one.
   _s15Autech: {
-    PB4: 'Autech Version, 6-speed manual', PB6: 'Autech Version, 6-speed manual',
-    UA3: 'Varietta (Autech open-top)',     UA4: 'Varietta (Autech open-top)',
-    TKA: 'Style-A (Autech)', TK1: 'Style-A (Autech)',
-    TKB: 'Style-A (Autech)', TK2: 'Style-A (Autech)',
-    LVT: 'Driving Helper (Autech)'
+    PB4: 'Autech Version 6-speed manual, without privacy glass',
+    PB6: 'Autech Version 6-speed manual, with privacy glass',
+    UA3: 'Varietta (Autech open-top), front cloth seats',
+    UA4: 'Varietta (Autech open-top), front leather seats',
+    TKA: 'Style-A (Autech)', TK1: 'Style-A (Autech), without privacy glass',
+    TKB: 'Style-A (Autech)', TK2: 'Style-A (Autech), with privacy glass',
+    LVT: 'Driving Helper (Autech)',
+    // 477 records — 333 as YNZ1Z and 144 as YNZ2Z — carry the Autech marker Z
+    // at position 18 but a prefix that volume 089 does not list anywhere: not
+    // on page 1's summary, nor on the four variant pages. The Z is the whole
+    // basis for calling it Autech-built, and that much the records do show,
+    // since no ordinary car has a Z there. The variant itself is not named
+    // here because the source does not name it.
+    YNZ: 'Autech special build (code YNZ, not named in volume 089)'
   },
 
   _decodeS15Plate: function(modelId, mc, date) {
