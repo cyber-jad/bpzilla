@@ -1495,6 +1495,7 @@ const JDM_DATABASE = {
       colorHex: hex,
       interiorCode: col.dict.t[col.ti[i]] || '',
       transmission: this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') || (model ? model.transmission : ''),
+      bodyStyle: this._decodeBody(physicalId, col.dict.mc[col.mci[i]] || ''),
       destination: 'Japan Domestic Market (JDM)',
       status: '✅ Genuine FAST Record',
       notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
@@ -2347,6 +2348,41 @@ const JDM_DATABASE = {
     // on PS13.
     'S15':   { 'Y': '6-Speed Manual' }
   },
+  // ---- Body style, R32 only, from volume 079's own model-code legend -------
+  // モデル記号の意味 (その1) [8905-9108], AJDMC10R32, places a door field
+  // immediately after the R32 platform fragment: a space is 4ドア (4-door), an
+  // 'R' is 2ドア (2-door). The FAST export drops the space, so the character
+  // sitting where _chassisSpan ends is either 'R' (2-door) or the next field's
+  // vehicle-spec letter D/G/X (4-door, space dropped). This is the same
+  // position _decodeTransmission already steps over with its
+  // "skip = mc[span.end] === 'R' ? 2 : 1".
+  //
+  // Direction is not assumed - it is read off the legend and then checked
+  // against bodies that cannot be argued with: every one of the 43,893 BNR32
+  // GT-Rs (coupe only, in reality) reads 2-door, and the FR32 and ER32 base
+  // sedans read 4-door with zero exceptions. HR32/HCR32/HNR32/ECR32 split
+  // cleanly across both.
+  //
+  // The 2-door was a coupe on most R32s and a hardtop on the ECR32; the
+  // 4-door was always a sedan. Instead of hardcoding that, the model profile's
+  // own body listing ("2-Door Coupe & 4-Door Sedan") is split on ' & ' and the
+  // half matching the decoded door count is returned, so each chassis keeps
+  // its own word. Only R32 has a verified legend for this, so nothing else is
+  // decoded rather than guessed.
+  _r32BodyChassis: ['BNR32', 'HCR32', 'HNR32', 'ECR32', 'HR32', 'ER32', 'FR32'],
+  _decodeBody: function(modelId, mc) {
+    if (!mc || !this._r32BodyChassis.includes(modelId)) return '';
+    const MD = window.MODEL_DECODER;
+    const span = MD && MD._chassisSpan(mc, 'R32');
+    if (!span) return '';
+    const ch = mc[span.end];
+    const doors = ch === 'R' ? '2-Door' : ('DGX'.includes(ch) ? '4-Door' : '');
+    if (!doors) return '';
+    const M = this.models[modelId] || {};
+    const parts = String(M.bodyStyle || '').split(/\s*&\s*/).map(p => p.trim());
+    return parts.find(p => p.startsWith(doors)) || doors;
+  },
+
   _decodeTransmission: function(modelId, mc) {
     if (!mc) return '';
     // The S15 Autech Version is the one car whose position and whose name

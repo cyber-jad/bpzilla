@@ -594,6 +594,9 @@ const MODEL_DECODER = {
 
     // physical, not record.modelId: _decodeTransmission keys on the physical
     // chassis id, so a grade-split browsable id (ER34_GT) would miss.
+    const decodedBody = (physical && DB._decodeBody)
+      ? DB._decodeBody(physical.physicalId, record.modelCode || '')
+      : '';
     const decodedGearbox = (physical && DB._decodeTransmission)
       ? DB._decodeTransmission(physical.physicalId, record.modelCode || '')
       : '';
@@ -645,7 +648,11 @@ const MODEL_DECODER = {
         // character from the model code - that omission is the reason plate
         // positions map onto this data at -1 - so an HCR32 record cannot tell
         // a coupe from a sedan, and should not pretend to.
-        ['Body', this._listedNotStated(M.bodyStyle)],
+        // Decoded per car where the chassis has a verified body field (R32,
+        // from volume 079's legend). Everywhere else the code does not carry
+        // it - the FAST export drops the leading body character - so the
+        // profile's listing is labelled rather than asserted.
+        ['Body', decodedBody || this._listedNotStated(M.bodyStyle)],
         ['Grade', record.grade || 'not recorded in the code'],
         ['Built', record.buildDate || '—'],
         ['Series', record.series || '—'],
