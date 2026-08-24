@@ -527,6 +527,27 @@ const MODEL_DECODER = {
     return `${code} — ${n.toLocaleString()} cars, ${pct}`;
   },
 
+  // A model profile lists every gearbox and body style the chassis was ever
+  // built with - "5-Speed Manual (FS5W71C) / 4-Speed Auto", "2-Door Coupe &
+  // 4-Door Sedan". Printed straight into a spec table under one car's chassis
+  // number, that reads as a statement about THAT car, which is how the plate
+  // for a single automatic HCR32 came to claim both gearboxes and both body
+  // styles at once.
+  //
+  // Where the car's own code answers the question, ask it (see the gearbox
+  // row). Where it cannot, say so rather than listing the possibilities as if
+  // they were facts.
+  _listedNotStated: function(value) {
+    const v = String(value || '').trim();
+    if (!v) return '\u2014';
+    const parts = v.split(/\s*[/&]\s*/).map(x => x.trim()).filter(Boolean);
+    if (parts.length < 2) return v;
+    const listed = parts.length === 2
+      ? parts.join(' or ')
+      : parts.slice(0, -1).join(', ') + ' or ' + parts[parts.length - 1];
+    return listed + ' \u2014 the code does not say which';
+  },
+
   // ---- Plain-English build summary for one car ----------------------------
   explainBuild: function(record) {
     const DB = window.JDM_DATABASE;
@@ -571,6 +592,12 @@ const MODEL_DECODER = {
       });
     }
 
+    // physical, not record.modelId: _decodeTransmission keys on the physical
+    // chassis id, so a grade-split browsable id (ER34_GT) would miss.
+    const decodedGearbox = (physical && DB._decodeTransmission)
+      ? DB._decodeTransmission(physical.physicalId, record.modelCode || '')
+      : '';
+
     if (record.modelCode) {
       const body = record.modelCode.slice(0, -3);
       for (let p = 0; p < body.length; p++) {
@@ -606,8 +633,19 @@ const MODEL_DECODER = {
         ['Model', M.name || record.modelName],
         ['Engine', engineSpec],
         ['Drivetrain', M.drivetrain || '—'],
-        ['Gearbox', M.transmission || '—'],
-        ['Body', M.bodyStyle || '—'],
+        // Decoded from this car's own model code where the chassis has a
+        // transmission position - 21 of them do, most at full coverage. The
+        // data layer already worked this out and _materialize has carried it
+        // on every record all along; this row was reading the model profile
+        // instead and throwing it away. Falls back to the profile listing for
+        // the chassis with no decodable position (S15, every Z32), which the
+        // helper then labels rather than asserts.
+        ['Gearbox', decodedGearbox || this._listedNotStated(M.transmission)],
+        // Never decodable. The FAST export drops the leading body-style
+        // character from the model code - that omission is the reason plate
+        // positions map onto this data at -1 - so an HCR32 record cannot tell
+        // a coupe from a sedan, and should not pretend to.
+        ['Body', this._listedNotStated(M.bodyStyle)],
         ['Grade', record.grade || 'not recorded in the code'],
         ['Built', record.buildDate || '—'],
         ['Series', record.series || '—'],
