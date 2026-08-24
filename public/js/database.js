@@ -1241,7 +1241,12 @@ const JDM_DATABASE = {
           ci:  new Uint16Array(n),
           ti:  new Uint8Array(n),
           mci: new Uint16Array(n),
-          dict: { b: doc.b || ['0'], d: doc.d || [], c: doc.c || [], t: doc.t || [], mc: doc.mc || [] },
+          // Body-style index, present only on files add_body_field.js has
+          // annotated (R33/R34 so far): the model-plate body character the
+          // original export dropped, recovered from MDLCODE. Older files have
+          // no `bd`, and everything below tolerates its absence.
+          bdi: doc.bd ? new Uint8Array(n) : null,
+          dict: { b: doc.b || ['0'], d: doc.d || [], c: doc.c || [], t: doc.t || [], mc: doc.mc || [], bd: doc.bd || null },
           ranges: {}
         };
 
@@ -1264,6 +1269,7 @@ const JDM_DATABASE = {
           col.ci[i]  = row[3];
           col.ti[i]  = row[4];
           col.mci[i] = row[5];
+          if (col.bdi) col.bdi[i] = row[6] || 0;
         }
 
         // Rows arrive sorted by (block, serial); record each block's span so a
@@ -1495,7 +1501,8 @@ const JDM_DATABASE = {
       colorHex: hex,
       interiorCode: col.dict.t[col.ti[i]] || '',
       transmission: this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') || (model ? model.transmission : ''),
-      bodyStyle: this._decodeBody(physicalId, col.dict.mc[col.mci[i]] || ''),
+      bodyStyle: this._decodeBody(physicalId, col.dict.mc[col.mci[i]] || '',
+        (col.bdi && col.dict.bd) ? col.dict.bd[col.bdi[i]] : ''),
       destination: 'Japan Domestic Market (JDM)',
       status: '✅ Genuine FAST Record',
       notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
@@ -2370,7 +2377,38 @@ const JDM_DATABASE = {
   // its own word. Only R32 has a verified legend for this, so nothing else is
   // decoded rather than guessed.
   _r32BodyChassis: ['BNR32', 'HCR32', 'HNR32', 'ECR32', 'HR32', 'ER32', 'FR32'],
-  _decodeBody: function(modelId, mc) {
+  // Turn a decoded door count into the chassis's own word for that body. A
+  // profile lists both ("2-Door Coupe & 4-Door Sedan"); the matching half is
+  // returned, so the ECR32 keeps "Hardtop" and the R33/R34 GT-Rs keep "Coupe"
+  // without any of it being hardcoded here.
+  _bodyNameForDoors: function(modelId, doors) {
+    const M = this.models[modelId] || {};
+    const parts = String(M.bodyStyle || '').split(/\s*&\s*/).map(p => p.trim());
+    const hit = parts.find(p => p.startsWith(doors));
+    if (hit) return hit;
+    // The profile does not list this body - a rare variant its header does not
+    // advertise, like the ~416 four-door BCNR33 Autech GT-Rs, or a physical id
+    // (ER34) that carries no profile because the browsable models are its
+    // grade split. Name it generically. This is safe: the only non-coupe
+    // 2-door in the archive is the R32 ECR32 hardtop, whose profile DOES list
+    // it, so the fallback never has to guess coupe-vs-hardtop.
+    return doors + (doors === '2-Door' ? ' Coupe' : ' Sedan');
+  },
+  // Body style, from two different but equally sourced routes:
+  //
+  //   R33/R34 - `bodyChar` is the model-plate body character itself ('B' =
+  //   4-door sedan, 'G' = 2-door coupe), recovered from MDLCODE by
+  //   add_body_field.js after the original export dropped it. Verified against
+  //   bodies that cannot be argued with: every BNR34 GT-R reads coupe, and the
+  //   416 four-door BCNR33s are the real R33 GT-R Autech sedan.
+  //
+  //   R32 - no stored char, but volume 079's legend puts a door field right
+  //   after the platform ('R' = 2-door, a dropped space = 4-door), which
+  //   survives in the code. Confirmed the same way (BNR32 all coupe, the base
+  //   sedans all four-door).
+  _decodeBody: function(modelId, mc, bodyChar) {
+    if (bodyChar === 'G') return this._bodyNameForDoors(modelId, '2-Door');
+    if (bodyChar === 'B') return this._bodyNameForDoors(modelId, '4-Door');
     if (!mc || !this._r32BodyChassis.includes(modelId)) return '';
     const MD = window.MODEL_DECODER;
     const span = MD && MD._chassisSpan(mc, 'R32');
@@ -2378,9 +2416,7 @@ const JDM_DATABASE = {
     const ch = mc[span.end];
     const doors = ch === 'R' ? '2-Door' : ('DGX'.includes(ch) ? '4-Door' : '');
     if (!doors) return '';
-    const M = this.models[modelId] || {};
-    const parts = String(M.bodyStyle || '').split(/\s*&\s*/).map(p => p.trim());
-    return parts.find(p => p.startsWith(doors)) || doors;
+    return this._bodyNameForDoors(modelId, doors);
   },
 
   _decodeTransmission: function(modelId, mc) {
