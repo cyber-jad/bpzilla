@@ -742,7 +742,7 @@ const MODEL_DECODER = {
         // DB.models at all, so the example records came back with the raw
         // id as their name and an em-dash for engine and every other spec.
         if (examples.length < 6) {
-          examples.push(DB._materialize(DB._virtualModelFor(modelId, code), i));
+          examples.push(DB._materialize(DB._virtualModelFor(modelId, code, DB._engineCharAt(DB._cols[modelId]||{}, i)), i));
         }
       }
     });

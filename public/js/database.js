@@ -326,8 +326,15 @@ const JDM_DATABASE = {
       badgeClass: 'badge-nissan',
       description: 'Factory AWD turbocharged R32.'
     },
+    // HR32 is one physical file holding two engines, so it is two browsable
+    // models — the same pattern as ER34_GT / ER34_GTT. The split is on the
+    // recovered engine letter (add_r32_engine.js), not a model-code position,
+    // because a GTE and a GTS here can carry an identical stored code: the only
+    // thing that ever separated them is the character the export dropped. The
+    // legend's engine field settles it, H = RB20E, R = RB20DE, and the data
+    // splits 31,921 / 41,400 with nothing else in the slot.
     'HR32': {
-      id: 'HR32', chassisPrefix: 'HR32',
+      id: 'HR32', chassisPrefix: 'HR32', gradeFilter: 'engine:R',
       generation: 'R32 (8th Gen)',
       name: 'Skyline GTS (HR32)',
       shortName: 'R32 GTS',
@@ -338,7 +345,21 @@ const JDM_DATABASE = {
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
-      description: 'Naturally aspirated R32 GTS.'
+      description: 'The twin-cam RB20DE GTS, the naturally aspirated DOHC R32. Shares the HR32 file with the SOHC GTE, split out here by the engine character recovered from the factory model code.'
+    },
+    'HR32_GTE': {
+      id: 'HR32_GTE', chassisPrefix: 'HR32', gradeFilter: 'engine:H',
+      generation: 'R32 (8th Gen)',
+      name: 'Skyline GTE (HR32)',
+      shortName: 'R32 GTE',
+      chassisCode: 'E-HR32',
+      bodyStyle: '2-Door Coupe & 4-Door Sedan',
+      years: '1989 – 1994',
+      engine: 'RB20E 2.0L SOHC (125 PS)',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The single-cam RB20E GTE, the base six-cylinder R32 — not the twin-cam GTS it used to be filed under. Separated from the GTS by the engine character in the factory model code (H = RB20E).'
     },
     // ECR32 and ER32 — the RB25DE cars, added 2026-08-22.
     //
@@ -387,19 +408,25 @@ const JDM_DATABASE = {
       badgeClass: 'badge-nissan',
       description: 'The same RB25DE GTS25 without Super HICAS — the suspension character is simply absent from its model code, which is the whole difference from ECR32. Much the rarer of the two at 2,011 records against 15,475, and unusually uniform: every one is a 4-door sedan and every one is the 5-speed automatic.'
     },
+    // FR32 was named GTE here, but its factory code is 100% D — GXI in the
+    // legend — and its engine field is 100% F, which the legend gives as
+    // CA18i, not the RB20E a GTE carries. So this is the four-cylinder GXi base
+    // sedan, the cheapest R32, and both the name and the engine were wrong. The
+    // actual RB20E GTE is HR32_GTE above. (Corrected 2026-08-24 from a reader
+    // report; verified against the volume 079 legend and every FR32 record.)
     'FR32': {
       id: 'FR32', chassisPrefix: 'FR32',
       generation: 'R32 (8th Gen)',
-      name: 'Skyline GTE (FR32)',
-      shortName: 'R32 GTE',
+      name: 'Skyline GXi (FR32)',
+      shortName: 'R32 GXi',
       chassisCode: 'E-FR32',
       bodyStyle: '4-Door Sedan',
-      years: '1989 – 1994',
-      engine: 'RB20E 2.0L SOHC (125 PS)',
+      years: '1989 – 1993',
+      engine: 'CA18i 1.8L SOHC EGI (91 PS)',
       transmission: '4-Speed Auto / 5-Speed Manual',
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
-      description: 'Base SOHC R32 Skyline sedan.'
+      description: 'The entry-level R32: the 1.8-litre CA18i four-cylinder GXi sedan, the only four-cylinder R32. Previously mislabelled here as the RB20E GTE — the GTE is the six-cylinder HR32.'
     },
 
     // R31 (HR31) is intentionally not included — see the file header note.
@@ -1246,7 +1273,11 @@ const JDM_DATABASE = {
           // original export dropped, recovered from MDLCODE. Older files have
           // no `bd`, and everything below tolerates its absence.
           bdi: doc.bd ? new Uint8Array(n) : null,
-          dict: { b: doc.b || ['0'], d: doc.d || [], c: doc.c || [], t: doc.t || [], mc: doc.mc || [], bd: doc.bd || null },
+          // Engine-letter index, present only where add_r32_engine.js has
+          // annotated (HR32, the one R32 file that mixes two engines). Same
+          // recovered-dropped-character idea as `bd`.
+          edi: doc.ed ? new Uint8Array(n) : null,
+          dict: { b: doc.b || ['0'], d: doc.d || [], c: doc.c || [], t: doc.t || [], mc: doc.mc || [], bd: doc.bd || null, ed: doc.ed || null },
           ranges: {}
         };
 
@@ -1269,7 +1300,11 @@ const JDM_DATABASE = {
           col.ci[i]  = row[3];
           col.ti[i]  = row[4];
           col.mci[i] = row[5];
+          // row[6] carries whichever recovered character this file was
+          // annotated with — the body index on R33/R34, the engine index on
+          // HR32. A file has at most one of the two.
           if (col.bdi) col.bdi[i] = row[6] || 0;
+          if (col.edi) col.edi[i] = row[6] || 0;
         }
 
         // Rows arrive sorted by (block, serial); record each block's span so a
@@ -1346,8 +1381,15 @@ const JDM_DATABASE = {
   // position and/or a negation as "pos:char" or "pos:!char" — e.g. WGNC34's
   // 260RS split lives at position 12, not 4, so it's "12:P" / "12:!P".
   // Shared by _rowMatches and _virtualModelFor so both stay in sync.
-  _matchesFilter: function(mc, filterChar) {
+  _matchesFilter: function(mc, filterChar, engineChar) {
     if (!filterChar) return false;
+    // "engine:X" splits on the recovered engine letter rather than a model-code
+    // position, because that letter is not in the stored code at all — it is
+    // the character the export dropped (see add_r32_engine.js). HR32's GTE and
+    // GTS can share an identical model code, so no positional filter could tell
+    // them apart; this is the whole reason the letter had to be recovered.
+    const eng = /^engine:(.+)$/.exec(filterChar);
+    if (eng) return (engineChar || '') === eng[1];
     const m = /^(\d+):(!?)(.+)$/.exec(filterChar);
     if (m) {
       const pos = parseInt(m[1], 10);
@@ -1358,21 +1400,26 @@ const JDM_DATABASE = {
     return mc[4] === filterChar;
   },
 
+  // The recovered engine letter for row i, or '' where the file carries none.
+  _engineCharAt: function(col, i) {
+    return (col.edi && col.dict.ed) ? (col.dict.ed[col.edi[i]] || '') : '';
+  },
+
   _rowMatches: function(col, i, filterChar) {
     if (!filterChar) return true;
     const mc = col.dict.mc[col.mci[i]] || '';
-    return this._matchesFilter(mc, filterChar);
+    return this._matchesFilter(mc, filterChar, this._engineCharAt(col, i));
   },
 
   // Given a physical chassis prefix and a specific factory code, which
   // browsable model does it belong to? For split chassis this picks the
   // sibling whose gradeFilter matches; for everything else there's exactly
   // one models entry per chassisPrefix, so it's returned directly.
-  _virtualModelFor: function(physicalId, mc) {
+  _virtualModelFor: function(physicalId, mc, engineChar) {
     const candidates = Object.keys(this.models).filter(k =>
       (this.models[k].chassisPrefix || k) === physicalId);
     if (candidates.length <= 1) return candidates[0] || physicalId;
-    const match = candidates.find(k => this._matchesFilter(mc || '', this.models[k].gradeFilter));
+    const match = candidates.find(k => this._matchesFilter(mc || '', this.models[k].gradeFilter, engineChar));
     return match || candidates[0];
   },
 
@@ -1489,7 +1536,8 @@ const JDM_DATABASE = {
       modelCode: col.dict.mc[col.mci[i]] || '',
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
-      grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
+      grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)
+        || this._decodeR32EngineGrade(physicalId, this._engineCharAt(col, i)),
       // Standard-for-grade equipment, which is deliberately absent from the
       // plate — see _bnr32GradeStandard.
       gradeStandard: this.gradeStandard(physicalId, this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)),
@@ -1541,7 +1589,7 @@ const JDM_DATABASE = {
       if (!col.vinIndex) continue;
       const i = col.vinIndex.get(clean);
       if (i === undefined) continue;
-      const virtualId = this._virtualModelFor(physicalId, col.dict.mc[col.mci[i]] || '');
+      const virtualId = this._virtualModelFor(physicalId, col.dict.mc[col.mci[i]] || '', this._engineCharAt(col, i));
       return this._materialize(virtualId, i);
     }
     return null;
@@ -1620,7 +1668,7 @@ const JDM_DATABASE = {
         for (let k = lo2; k <= hi2; k++) {
           if (!rowBelongs(k)) continue;
           const mc = col.dict.mc[col.mci[k]] || '';
-          found.push(this._materialize(this._virtualModelFor(physicalId, mc), k));
+          found.push(this._materialize(this._virtualModelFor(physicalId, mc, this._engineCharAt(col, k)), k));
         }
       }
       return found;
@@ -2147,7 +2195,19 @@ const JDM_DATABASE = {
   // resolving before either is written into a grade field.
   _r32GradeCodes: {
     ECR32: { G: 'GTS25' },
-    ER32:  { G: 'GTS25' }
+    ER32:  { G: 'GTS25' },
+    FR32:  { D: 'GXi' }
+  },
+
+  // HR32's G bucket is the one the legend cannot resolve on the code alone —
+  // GTE and GTS share it. The recovered engine letter does resolve it: H is the
+  // RB20E GTE, R the RB20DE GTS. Read here rather than in _r32GradeCodes because
+  // the deciding character is not in the model code.
+  _decodeR32EngineGrade: function(physicalId, engineChar) {
+    if (physicalId !== 'HR32') return '';
+    if (engineChar === 'H') return 'GTE';
+    if (engineChar === 'R') return 'GTS';
+    return '';
   },
 
   // The grade character does not sit at a fixed index on an R32 code: it moves
@@ -4765,7 +4825,7 @@ const JDM_DATABASE = {
         // physical file, so ER34's colors land under ER34_GT / ER34_GTT
         // rather than a plain "ER34" that no longer exists in this.models.
         const mc = col.dict.mc[col.mci[i]] || '';
-        const virtualId = this._virtualModelFor(physicalId, mc);
+        const virtualId = this._virtualModelFor(physicalId, mc, this._engineCharAt(col, i));
         if (!byCode.has(code)) byCode.set(code, { count: 0, byModel: new Map() });
         const entry = byCode.get(code);
         entry.count++;
