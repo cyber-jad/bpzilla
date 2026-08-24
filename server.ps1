@@ -1,7 +1,10 @@
 # Lightweight Local Static Web Server for GTR-Registry
 $port = 5588
 $root = $PSScriptRoot
-if (-not $root) { $root = "C:\Users\cyber\.gemini\antigravity\scratch\gtr-registry" }
+# $PSScriptRoot is empty when this is pasted into a console rather than run
+# as a file, so fall back to wherever the shell already is. It used to fall
+# back to one hardcoded absolute path, which only ever worked on one machine.
+if (-not $root) { $root = (Get-Location).Path }
 # Site files live in public/ — the only folder Cloudflare Workers Builds
 # deploys from, so serving anything outside it locally would mask a file
 # that's actually missing in production.
