@@ -4507,21 +4507,30 @@ const JDM_DATABASE = {
                 !code.includes(q) && !name.includes(q)) continue;
           } else {
             const block = col.dict.b[col.blk[i]] || '0';
-            const serial = String(col.ser[i]).padStart(6, '0');
-            const fastKey = `${stamp}${block}-${serial}`;   // BNR340-000055
-            const plate = `${stamp}-${serial}`;             // BNR34-000055
+            const ser = col.ser[i];
+            // The number as DISPLAYED - stamp, dash, block digit, then the
+            // 5-digit serial - is what the reader sees and types. A block-2
+            // car reads "HCR32-261110", not "HCR32-061110". This search used
+            // to build only the old block-dropped / block-before-dash forms,
+            // so every car outside block 0 was unfindable by its own printed
+            // number even though the plate decoder resolved it (that path was
+            // already corrected; this one was missed). All three forms are
+            // accepted: the current display, plus the two legacy shapes old
+            // links may still carry.
+            const display = `${stamp}-${block}${String(ser).padStart(5, '0')}`; // HCR32-261110
+            const legacyPlate = `${stamp}-${String(ser).padStart(6, '0')}`;     // HCR32-061110
+            const legacyKey   = `${stamp}${block}-${String(ser).padStart(6, '0')}`; // HCR322-061110
             const mc = (col.dict.mc[col.mci[i]] || '').toUpperCase();
-            if (!fastKey.includes(q) && !plate.includes(q) &&
-                !fastKey.replace(/-/g, '').includes(qBare) &&
-                !plate.replace(/-/g, '').includes(qBare) &&
+            const cand = [display, legacyPlate, legacyKey];
+            if (!cand.some(s => s.includes(q)) &&
+                !cand.some(s => s.replace(/-/g, '').includes(qBare)) &&
                 !code.includes(q) && !name.includes(q) && !mc.includes(q)) continue;
             // Typing a whole chassis number should land on that car. Substring
             // matching is what makes partial searches useful, but it also means
             // "BNR34-000101" matches BNR34-001010 through -001019, since those
             // strings contain it once the dashes come out. Exact hits are
             // flagged here and, if any exist, everything else is dropped below.
-            if (fastKey === q || plate === q ||
-                fastKey.replace(/-/g, '') === qBare || plate.replace(/-/g, '') === qBare) {
+            if (cand.some(s => s === q || s.replace(/-/g, '') === qBare)) {
               exactMatches.push(matches.length);
             }
           }
