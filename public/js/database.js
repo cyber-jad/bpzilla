@@ -2312,6 +2312,16 @@ const JDM_DATABASE = {
     'BCNR33': 5, 'ECR33': 5, 'ER33': 5, 'ENR33': 5, 'HR33': 5,
     'BNR34':  5, 'ENR34': 5, 'HR34': 5, 'ER34': 5,
     'S13': 3, 'PS13': 4, 'KS13': 3, 'RS13': 4, 'RPS13': 5, 'S14': 5, 'CS14': 5,
+    // S15 is the one entry here that comes from a printed legend rather than
+    // from a derived F/A split: volume 089 page 2 gives
+    // [7 変速機 F MT5 / Y MT6 / A AT4], and plate position 7 is mc[5] under
+    // the same -1 rule that puts the legend's grade (position 6) on mc[4].
+    // Four positions either side line up under that rule on a real code -
+    // engine BY, axle A, right-hand drive R, grade T - so the alignment is
+    // not in question. The distribution agrees: only F, Y and A appear
+    // across all 39,138, Spec-R is Y or A and never F, Spec-S is F or A and
+    // never Y, which is the real 6-speed/5-speed grade split.
+    'S15': 5,
     'WGC34': 5, 'WHC34': 5, 'WGNC34': 5
   },
   transmissionR32Models: ['BNR32', 'HCR32', 'HNR32', 'HR32', 'FR32', 'ECR32', 'ER32'],
@@ -2331,10 +2341,37 @@ const JDM_DATABASE = {
     // the same letter is a 6-speed manual on BNR34 and something else again on
     // PS13, so it stays out of the shared table and is named per model.
     'ECR32': { 'Y': '5-Speed Automatic' },
-    'ER32':  { 'Y': '5-Speed Automatic' }
+    'ER32':  { 'Y': '5-Speed Automatic' },
+    // Named per model for the same reason: 'Y' is a 6-speed manual here and
+    // on BNR34, a 5-speed automatic on ECR32/ER32, and something else again
+    // on PS13.
+    'S15':   { 'Y': '6-Speed Manual' }
   },
   _decodeTransmission: function(modelId, mc) {
     if (!mc) return '';
+    // The S15 Autech Version is the one car whose position and whose name
+    // disagree. All 1,875 of them read 'F' at mc[5] - five speeds by the
+    // legend - while Nissan's own glossary calls the car AUTECH VERSION(6MT)
+    // and this archive's own option text for the group reads "Autech Version
+    // 6-speed manual". Confirmed as a six-speed.
+    //
+    // Both sources are right about different moments. Position 7 records what
+    // came off Nissan's line, and the donor is a Spec-S, which is a five-speed
+    // car; the six-speed is part of what Autech did to it. A FAST plate
+    // describes the base car, so for a coachbuilt one the position is the
+    // wrong field to read - the coachwork group is the more specific
+    // statement and wins.
+    //
+    // Only the Autech Version. The Varietta, Style-A and the unnamed builds
+    // carry no six-speed claim anywhere, and their positions vary normally,
+    // so they are read straight.
+    if (modelId === 'S15') {
+      const grp = String(mc).slice(12, 17);
+      if (grp.length === 5 && grp[4] === 'Z' &&
+          this._s15AutechGrade[grp.slice(0, 3)] === 'Autech Version') {
+        return '6-Speed Manual';
+      }
+    }
     let ch;
     // KPS13 records live inside the physical 'PS13' file with a leading 'K'
     // ("KS13HFW..." vs "S13HFW...") that shifts every field after it by one
