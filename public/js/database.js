@@ -1455,8 +1455,29 @@ const JDM_DATABASE = {
       // numbering sequence. That is usually the physical file's prefix, but not
       // always: KPS13 runs its own sequence inside the PS13 file and carries
       // its own stamp, so it must not borrow PS13's (see the KPS13 entry).
-      chassisNumber: `${stamp}${block}-${String(serial).padStart(6, '0')}`,
-      plateNumber: `${stamp}-${String(serial).padStart(6, '0')}`,
+      // The block digit sits between the code and the serial, because that is
+      // where the FAST record puts it: [chassis code][block digit][serial], and
+      // it is what is stamped on the car. A BNR32 in block 2 with serial 15432
+      // is BNR32-215432.
+      //
+      // Both of these used to be wrong, in different directions, and the pair
+      // of them is what made search look broken. plateNumber - the one the
+      // table and every detail view actually show - DROPPED the block and
+      // padded the serial to six, so that car read BNR32-015432. Search for
+      // BNR32-215432 and it found the right record, then displayed it with a 2
+      // turned into a 0. It also made the number ambiguous: block 0 serial
+      // 15432 is a different car and rendered identically.
+      // chassisNumber kept the block but put it before the dash, giving
+      // BNR322-015432 - a seven-digit number no car carries.
+      //
+      // Five digits is not a guess. The serial is its own field in the binary
+      // and the largest across all 1,396,771 records is 99999, so a six-digit
+      // tail is always block + serial.
+      //
+      // The two fields stay separate because plenty of call sites read one or
+      // the other, but they now hold the same, correct number.
+      chassisNumber: `${stamp}-${block}${String(serial).padStart(5, '0')}`,
+      plateNumber: `${stamp}-${block}${String(serial).padStart(5, '0')}`,
       modelId: modelId,
       seriesBlock: block,
       modelCode: col.dict.mc[col.mci[i]] || '',
@@ -1599,6 +1620,23 @@ const JDM_DATABASE = {
 
     const block = m[2];
     const serialStr = m[3];
+
+    // A six-digit tail with no block set off before the dash is block+serial,
+    // and that reading is tried FIRST. The serial is its own field in the
+    // binary and its largest value anywhere in the archive is 99999, so a
+    // sixth digit can never belong to it - the leading digit is the block.
+    //
+    // This used to be a last-resort fallback, tried only when a plain
+    // whole-token serial search came up empty, and that got the common case
+    // backwards. "BNR34-000051" is a real car's number: block 0, serial 51.
+    // Read as a plain serial it means "51 in any block", which also matches
+    // BNR34-400051 - a different car. Roughly one number in ten came back
+    // with a stranger attached that way.
+    if (!block && serialStr.length === 6) {
+      const folded = search(serialStr[0], parseInt(serialStr.slice(1), 10));
+      if (folded.length) return folded;
+    }
+
     const hits = search(block, parseInt(serialStr, 10));
     if (hits.length) return hits;
 
@@ -1610,7 +1648,7 @@ const JDM_DATABASE = {
     // leading zero a written-out block+serial pairing would need simply
     // dropped). Retry once with the first digit of the serial reinterpreted
     // as the block, rather than silently reporting no match for a real car.
-    if (!block && serialStr.length >= 6) {
+    if (!block && serialStr.length > 6) {
       return search(serialStr[0], parseInt(serialStr.slice(1), 10));
     }
     return hits;
