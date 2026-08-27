@@ -1088,7 +1088,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size: 3rem; margin-bottom: 16px;">&#128269;</div>
           <h2 style="color: var(--gtr-red); margin-bottom: 8px;">VIN Not Found in FAST Database</h2>
           <p style="color: var(--text-secondary); margin-bottom: 16px;">
-            <code style="font-family: monospace; font-size: 1.1rem; color: var(--text-primary);">${query}</code>
+            <code style="font-family: monospace; font-size: 1.1rem; color: var(--text-primary);">${this._escapeHtml(query)}</code>
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto 24px;">
             This VIN was not found in the genuine Nissan FAST microfiche records sourced from <strong>H:\\AR-JP\\JP</strong>.
