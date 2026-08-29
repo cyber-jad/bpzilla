@@ -481,16 +481,16 @@ const JDM_DATABASE = {
     'WHJR31': {
       id: 'WHJR31', chassisPrefix: 'WHJR31',
       generation: 'R31 (7th Gen)',
-      name: 'Nissan Skyline Wagon RB20 (WHJR31)',
-      shortName: 'R31 Wagon RB20',
+      name: 'Nissan Skyline Wagon RB20 Turbo (WHJR31)',
+      shortName: 'R31 Wagon Turbo',
       chassisCode: 'E-WHJR31',
       bodyStyle: '5-Door Wagon',
       years: '1985 – 1990',
-      engine: 'RB20E 2.0L SOHC',
+      engine: 'RB20ET 2.0L Turbo SOHC',
       transmission: '5-Speed Manual / 4-Speed Auto',
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
-      description: 'The six-cylinder RB20 R31 estate.'
+      description: 'The turbocharged six-cylinder R31 estate - every car in this file carries the RB20ET, the GTS-X turbo wagon.'
     },
     'WFJR31': {
       id: 'WFJR31', chassisPrefix: 'WFJR31',
@@ -2331,10 +2331,23 @@ const JDM_DATABASE = {
   // (The famous Calsonic works racer HR31-128388 is coded as an ordinary GTS-X,
   // RR31RHFSICN, and is NOT one of the 823 - the race cars were built separately.)
   _r31GtsrCode: /^RR31RHFS(MGR|IGR)/,
+  // The grade character names a TRIM in the legend, consistently across
+  // engines: H/V/Y are all エクセル (Excel), G/J both パサージュ (Passage). The
+  // marketing names GTS / GTS-X are the "(GTS)"/"(GTSX)" the legend prints only
+  // on the RB20 and RD28 rows - the CA18 (Y) Excel row carries no such name, so
+  // the four-cylinder cars are called Excel / Passage, not GTS. The 'X' grade
+  // on the CA18 cars is NOT in the legend at all, so it is left undecoded
+  // rather than guessed. (This engine-awareness was added after a data-verify
+  // pass caught the first version labelling CA18 cars "GTS".)
+  _r31EngineFamily: function(modelId) {
+    if (modelId === 'FJR31' || modelId === 'WFJR31') return 'CA18';
+    if (modelId === 'SR31') return 'RD28';
+    return 'RB20';                                    // HR31, WHJR31
+  },
   _decodeR31Grade: function(modelId, mc, date) {
     if (!this._r31Family(modelId)) return null;
     const c = String(mc || '').replace(/\s+R31\s*$/, '');
-    if (this._r31GtsrCode.test(c)) {
+    if (modelId === 'HR31' && this._r31GtsrCode.test(c)) {
       return (date && date <= '1987-05') ? 'GTS-R Prototype' : 'GTS-R';
     }
     const k = c.indexOf('R31');
@@ -2342,12 +2355,13 @@ const JDM_DATABASE = {
     let post = c.slice(k + 3);
     if (post[0] === 'R') post = post.slice(1);       // drop the 2-door marker
     const grade = post[0];
-    const induction = post[2];
-    const turbo = induction === 'S' || induction === 'T';
-    let name;
-    if (grade === 'H' || grade === 'V' || grade === 'Y') name = 'GTS';       // Excel
-    else if (grade === 'G' || grade === 'J') name = 'GTS-X';                 // Passage
-    else return '';
+    const turbo = post[2] === 'S' || post[2] === 'T';
+    let trim;
+    if (grade === 'H' || grade === 'V' || grade === 'Y') trim = 'Excel';
+    else if (grade === 'G' || grade === 'J') trim = 'Passage';
+    else return '';                                  // 'X' and anything else: not in the legend
+    const ca18 = this._r31EngineFamily(modelId) === 'CA18';
+    let name = ca18 ? trim : (trim === 'Excel' ? 'GTS' : 'GTS-X');
     return turbo ? name + ' Turbo' : name;
   },
   _r31Family: function(modelId) {
@@ -2362,20 +2376,30 @@ const JDM_DATABASE = {
   // (a small share of HR31), this returns '' and the model's range string
   // stands in.
   _decodeR31Engine: function(modelId, mc, grade) {
+    // CA18 and RD28 files carry no turbo in the induction slot (the position
+    // holds an option character there, not E/T/S), so they are named flat.
     if (modelId === 'FJR31' || modelId === 'WFJR31') return 'CA18S 1.8L SOHC';
     if (modelId === 'SR31') return 'RD28 2.8L SOHC Diesel I6';
-    if (modelId === 'WHJR31') return 'RB20E 2.0L SOHC';
-    if (modelId !== 'HR31') return '';
     if (grade === 'GTS-R' || grade === 'GTS-R Prototype')
       return 'RB20DET-R 2.0L Turbo DOHC (Nismo Group A homologation)';
+    // RB20 files (HR31, WHJR31): the engine character before R31 gives SOHC vs
+    // DOHC, and the induction slot (E = injection, T/S = turbo) whether it is
+    // turbocharged. WHJR31 is entirely RB20ET - every wagon in that file reads
+    // turbo - so it resolves the same way rather than being hardcoded NA.
+    if (modelId !== 'HR31' && modelId !== 'WHJR31') return '';
     const c = String(mc || '').replace(/\s+R31\s*$/, '');
     const k = c.indexOf('R31');
     if (k < 0) return '';
-    const eng = c.slice(0, k).slice(-1);             // char immediately before R31
+    // Engine is the character before the R31 fragment, but a 'J' there is the
+    // 5-link suspension marker (WHJR31 codes read "HJR31...") - step past it to
+    // the real engine letter.
+    const pre = c.slice(0, k);
+    let eng = pre.slice(-1);
+    if (eng === 'J') eng = pre.slice(-2, -1);
     let post = c.slice(k + 3);
     if (post[0] === 'R') post = post.slice(1);
     const turbo = post[2] === 'S' || post[2] === 'T';
-    if (eng === 'H') return 'RB20E 2.0L SOHC';
+    if (eng === 'H') return turbo ? 'RB20ET 2.0L Turbo SOHC' : 'RB20E 2.0L SOHC';
     if (eng === 'R') return turbo ? 'RB20DET 2.0L Turbo DOHC' : 'RB20DE 2.0L DOHC';
     return '';                                        // engine char dropped
   },

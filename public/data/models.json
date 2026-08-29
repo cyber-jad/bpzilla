@@ -245,11 +245,11 @@
    "count": 12524
   },
   "WHJR31": {
-   "name": "Nissan Skyline Wagon RB20 (WHJR31)",
-   "short": "R31 Wagon RB20",
+   "name": "Nissan Skyline Wagon RB20 Turbo (WHJR31)",
+   "short": "R31 Wagon Turbo",
    "code": "E-WHJR31",
    "years": "1985 – 1990",
-   "engine": "RB20E 2.0L SOHC",
+   "engine": "RB20ET 2.0L Turbo SOHC",
    "body": "5-Door Wagon",
    "stamp": "WHJR31",
    "legend": false,
