@@ -1,6 +1,6 @@
 {
- "generated": "2026-08-23",
- "total": 1396771,
+ "generated": "2026-08-29",
+ "total": 1682447,
  "models": {
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
@@ -165,7 +165,18 @@
    "body": "2-Door Coupe & 4-Door Sedan",
    "stamp": "HR32",
    "legend": false,
-   "count": 73321
+   "count": 41400
+  },
+  "HR32_GTE": {
+   "name": "Skyline GTE (HR32)",
+   "short": "R32 GTE",
+   "code": "E-HR32",
+   "years": "1989 – 1994",
+   "engine": "RB20E 2.0L SOHC (125 PS)",
+   "body": "2-Door Coupe & 4-Door Sedan",
+   "stamp": "HR32",
+   "legend": false,
+   "count": 31921
   },
   "ECR32": {
    "name": "Skyline GTS25 (ECR32)",
@@ -190,15 +201,70 @@
    "count": 2011
   },
   "FR32": {
-   "name": "Skyline GTE (FR32)",
-   "short": "R32 GTE",
+   "name": "Skyline GXi (FR32)",
+   "short": "R32 GXi",
    "code": "E-FR32",
-   "years": "1989 – 1994",
-   "engine": "RB20E 2.0L SOHC (125 PS)",
+   "years": "1989 – 1993",
+   "engine": "CA18i 1.8L SOHC EGI (91 PS)",
    "body": "4-Door Sedan",
    "stamp": "FR32",
    "legend": false,
    "count": 16881
+  },
+  "HR31": {
+   "name": "Nissan Skyline (HR31)",
+   "short": "R31",
+   "code": "E-HR31",
+   "years": "1985 – 1990",
+   "engine": "RB20E 2.0L SOHC / RB20DE 2.0L DOHC / RB20DET 2.0L Turbo",
+   "body": "4-Door Sedan / 4-Door Hardtop / 2-Door Coupe",
+   "stamp": "HR31",
+   "legend": false,
+   "count": 182351
+  },
+  "FJR31": {
+   "name": "Nissan Skyline CA18 (FJR31)",
+   "short": "R31 CA18",
+   "code": "E-FJR31",
+   "years": "1985 – 1990",
+   "engine": "CA18S 1.8L SOHC",
+   "body": "4-Door Sedan / 4-Door Hardtop",
+   "stamp": "FJR31",
+   "legend": false,
+   "count": 73692
+  },
+  "SR31": {
+   "name": "Nissan Skyline RD28 Diesel (SR31)",
+   "short": "R31 Diesel",
+   "code": "E-SR31",
+   "years": "1985 – 1990",
+   "engine": "RD28 2.8L SOHC Diesel I6",
+   "body": "4-Door Sedan / 4-Door Hardtop",
+   "stamp": "SR31",
+   "legend": false,
+   "count": 12524
+  },
+  "WHJR31": {
+   "name": "Nissan Skyline Wagon RB20 (WHJR31)",
+   "short": "R31 Wagon RB20",
+   "code": "E-WHJR31",
+   "years": "1985 – 1990",
+   "engine": "RB20E 2.0L SOHC",
+   "body": "5-Door Wagon",
+   "stamp": "WHJR31",
+   "legend": false,
+   "count": 2188
+  },
+  "WFJR31": {
+   "name": "Nissan Skyline Wagon CA18 (WFJR31)",
+   "short": "R31 Wagon CA18",
+   "code": "E-WFJR31",
+   "years": "1985 – 1990",
+   "engine": "CA18S 1.8L SOHC",
+   "body": "5-Door Wagon",
+   "stamp": "WFJR31",
+   "legend": false,
+   "count": 14921
   },
   "S13": {
    "name": "Nissan Silvia (S13)",

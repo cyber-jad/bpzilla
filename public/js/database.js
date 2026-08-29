@@ -429,7 +429,83 @@ const JDM_DATABASE = {
       description: 'The entry-level R32: the 1.8-litre CA18i four-cylinder GXi sedan, the only four-cylinder R32. Previously mislabelled here as the RB20E GTE — the GTE is the six-cylinder HR32.'
     },
 
-    // R31 (HR31) is intentionally not included — see the file header note.
+    // =========================================================
+    // R31 (7th-gen Skyline, 1985-1990) — brought in scope 2026-08-28
+    // =========================================================
+    // Five physical files. Model codes are chassis-led like the R32, decoded
+    // from volume 078's own モデル記号の意味 legend (AJDMC10R31): engine before
+    // the R31 fragment, then door (R = 2-door), grade, transmission, induction.
+    // Grade names and the GTS-R identification live in _decodeR31Grade.
+    'HR31': {
+      id: 'HR31', chassisPrefix: 'HR31',
+      generation: 'R31 (7th Gen)',
+      name: 'Nissan Skyline (HR31)',
+      shortName: 'R31',
+      chassisCode: 'E-HR31',
+      bodyStyle: '4-Door Sedan / 4-Door Hardtop / 2-Door Coupe',
+      years: '1985 – 1990',
+      engine: 'RB20E 2.0L SOHC / RB20DE 2.0L DOHC / RB20DET 2.0L Turbo',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD (HICAS on some grades)',
+      badgeClass: 'badge-nissan',
+      description: 'The RB20-engined R31 Skyline - the six-cylinder range, from the GTS up to the homologation-special GTS-R. 182,351 records, the single largest chassis in this archive.'
+    },
+    'FJR31': {
+      id: 'FJR31', chassisPrefix: 'FJR31',
+      generation: 'R31 (7th Gen)',
+      name: 'Nissan Skyline CA18 (FJR31)',
+      shortName: 'R31 CA18',
+      chassisCode: 'E-FJR31',
+      bodyStyle: '4-Door Sedan / 4-Door Hardtop',
+      years: '1985 – 1990',
+      engine: 'CA18S 1.8L SOHC',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The four-cylinder CA18 R31 - the entry-level petrol range on the 5-link chassis.'
+    },
+    'SR31': {
+      id: 'SR31', chassisPrefix: 'SR31',
+      generation: 'R31 (7th Gen)',
+      name: 'Nissan Skyline RD28 Diesel (SR31)',
+      shortName: 'R31 Diesel',
+      chassisCode: 'E-SR31',
+      bodyStyle: '4-Door Sedan / 4-Door Hardtop',
+      years: '1985 – 1990',
+      engine: 'RD28 2.8L SOHC Diesel I6',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The RD28 straight-six diesel R31.'
+    },
+    'WHJR31': {
+      id: 'WHJR31', chassisPrefix: 'WHJR31',
+      generation: 'R31 (7th Gen)',
+      name: 'Nissan Skyline Wagon RB20 (WHJR31)',
+      shortName: 'R31 Wagon RB20',
+      chassisCode: 'E-WHJR31',
+      bodyStyle: '5-Door Wagon',
+      years: '1985 – 1990',
+      engine: 'RB20E 2.0L SOHC',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The six-cylinder RB20 R31 estate.'
+    },
+    'WFJR31': {
+      id: 'WFJR31', chassisPrefix: 'WFJR31',
+      generation: 'R31 (7th Gen)',
+      name: 'Nissan Skyline Wagon CA18 (WFJR31)',
+      shortName: 'R31 Wagon CA18',
+      chassisCode: 'E-WFJR31',
+      bodyStyle: '5-Door Wagon',
+      years: '1985 – 1990',
+      engine: 'CA18S 1.8L SOHC',
+      transmission: '5-Speed Manual / 4-Speed Auto',
+      drivetrain: 'RWD',
+      badgeClass: 'badge-nissan',
+      description: 'The four-cylinder CA18 R31 estate.'
+    },
 
     // R30 (DR30) is intentionally not included — see the file header note.
 
@@ -1229,6 +1305,11 @@ const JDM_DATABASE = {
       // would take to serve them — but each also needs an entry in models{}
       // below, or it loads records with nothing to display them under.
       'wgc34','whc34','wgnc34',
+      // R31 (1985-1990), brought in scope 2026-08-28: the five extracted-and-
+      // verified R31 files, headlined by the HR31 GTS-R (823 cars, identified
+      // exactly - see _decodeR31Grade). HR31 is the single largest chassis in
+      // the archive at 182,351 records.
+      'hr31','sr31','fjr31','wfjr31','whjr31',
       'z32','gz32','cz32','hz32','gcz32',
       'z32_us','gz32_us','z32_ca','gz32_ca','gz32_el','gz32_er'
     ];
@@ -1551,6 +1632,12 @@ const JDM_DATABASE = {
       transmission: this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') || (model ? model.transmission : ''),
       bodyStyle: this._decodeBody(physicalId, col.dict.mc[col.mci[i]] || '',
         (col.bdi && col.dict.bd) ? col.dict.bd[col.bdi[i]] : ''),
+      // Per-record engine, currently R31 only (the one loaded generation whose
+      // single file spans several engines a car code can be read down to).
+      // Empty elsewhere, and the model profile's engine stands in - see
+      // modelDecoder's engineSpec.
+      engine: this._decodeR31Engine(physicalId, col.dict.mc[col.mci[i]] || '',
+        this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)),
       destination: 'Japan Domestic Market (JDM)',
       status: '✅ Genuine FAST Record',
       notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
@@ -2222,7 +2309,80 @@ const JDM_DATABASE = {
     return table[body[L.grade]] || null;
   },
 
+  // ---- R31 grade, from volume 078's legend + the GTS-R VIN research --------
+  // The chassis-led R31 code, R31 fragment stripped of the trailing suffix, is
+  // [engine][susp] R31 [door R?][grade][transmission][induction][options].
+  // Grade char: H/V/Y = Excel (GTS), G/J = Passage (GTS-X); induction S/T = a
+  // turbo. That is all volume 078 states.
+  //
+  // The GTS-R is the crown jewel and it is NOT a distinct grade in the code -
+  // the microfiche records it as an Excel-grade (H) turbo coupe, no different
+  // from an ordinary one in the model code. It was pinned another way, and the
+  // method is worth remembering: the FAST data alone could not do it, and the
+  // web VIN list alone could not (that site is now offline). Together they did.
+  // Known GTS-R VINs from the (former) gtr-registry.com HR31 register - the 4
+  // prototypes HR31-103103/104/105/106 and production cars 122876, 132608 -
+  // resolve in FAST to exactly two full model codes, RR31RHFSMGR and
+  // RR31RHFSIGR, and those two codes hold EXACTLY 823 block-1 cars: the
+  // documented production to the car (819 + 4 prototypes). The build months
+  // seal it - 4 in 1987-05 (the prototypes) then 187/316/316 across Aug/Sep/Nov
+  // 1987 - a homologation batch, where an ordinary GTS-X code runs on into 1989.
+  // The prototypes are the four 1987-05 cars, labelled apart per request.
+  // (The famous Calsonic works racer HR31-128388 is coded as an ordinary GTS-X,
+  // RR31RHFSICN, and is NOT one of the 823 - the race cars were built separately.)
+  _r31GtsrCode: /^RR31RHFS(MGR|IGR)/,
+  _decodeR31Grade: function(modelId, mc, date) {
+    if (!this._r31Family(modelId)) return null;
+    const c = String(mc || '').replace(/\s+R31\s*$/, '');
+    if (this._r31GtsrCode.test(c)) {
+      return (date && date <= '1987-05') ? 'GTS-R Prototype' : 'GTS-R';
+    }
+    const k = c.indexOf('R31');
+    if (k < 0) return '';
+    let post = c.slice(k + 3);
+    if (post[0] === 'R') post = post.slice(1);       // drop the 2-door marker
+    const grade = post[0];
+    const induction = post[2];
+    const turbo = induction === 'S' || induction === 'T';
+    let name;
+    if (grade === 'H' || grade === 'V' || grade === 'Y') name = 'GTS';       // Excel
+    else if (grade === 'G' || grade === 'J') name = 'GTS-X';                 // Passage
+    else return '';
+    return turbo ? name + ' Turbo' : name;
+  },
+  _r31Family: function(modelId) {
+    return modelId === 'HR31' || modelId === 'FJR31' || modelId === 'SR31'
+        || modelId === 'WHJR31' || modelId === 'WFJR31';
+  },
+  // Per-car engine for the R31, so a GTS-R reads RB20DET-R and an ordinary
+  // HR31 reads the specific RB20 it carries rather than the whole range. The
+  // engine character sits just before the R31 fragment (H = RB20 SOHC, R =
+  // RB20 DOHC), and the induction field a few characters on says whether the
+  // DOHC is turbocharged. Where the engine character was dropped from the code
+  // (a small share of HR31), this returns '' and the model's range string
+  // stands in.
+  _decodeR31Engine: function(modelId, mc, grade) {
+    if (modelId === 'FJR31' || modelId === 'WFJR31') return 'CA18S 1.8L SOHC';
+    if (modelId === 'SR31') return 'RD28 2.8L SOHC Diesel I6';
+    if (modelId === 'WHJR31') return 'RB20E 2.0L SOHC';
+    if (modelId !== 'HR31') return '';
+    if (grade === 'GTS-R' || grade === 'GTS-R Prototype')
+      return 'RB20DET-R 2.0L Turbo DOHC (Nismo Group A homologation)';
+    const c = String(mc || '').replace(/\s+R31\s*$/, '');
+    const k = c.indexOf('R31');
+    if (k < 0) return '';
+    const eng = c.slice(0, k).slice(-1);             // char immediately before R31
+    let post = c.slice(k + 3);
+    if (post[0] === 'R') post = post.slice(1);
+    const turbo = post[2] === 'S' || post[2] === 'T';
+    if (eng === 'H') return 'RB20E 2.0L SOHC';
+    if (eng === 'R') return turbo ? 'RB20DET 2.0L Turbo DOHC' : 'RB20DE 2.0L DOHC';
+    return '';                                        // engine char dropped
+  },
+
   _decodeGrade: function(modelId, mc, date) {
+    const r31 = this._decodeR31Grade(modelId, mc, date);
+    if (r31 !== null) return r31;
     const r32 = this._decodeR32Grade(modelId, mc);
     if (r32 !== null) return r32;
     const silvia = this._decodeSilviaGrade(modelId, mc);
@@ -2469,6 +2629,18 @@ const JDM_DATABASE = {
   _decodeBody: function(modelId, mc, bodyChar) {
     if (bodyChar === 'G') return this._bodyNameForDoors(modelId, '2-Door');
     if (bodyChar === 'B') return this._bodyNameForDoors(modelId, '4-Door');
+    // R31: the wagons are their own files; HR31/FJR31/SR31 carry the door
+    // marker ('R' right after the R31 fragment) for the 2-door coupe, and are
+    // otherwise a 4-door. Volume 078 distinguishes sedan from hardtop with a
+    // body character that the export drops on most codes, so this reports the
+    // door count rather than guessing which 4-door shell.
+    if (modelId === 'WHJR31' || modelId === 'WFJR31') return '5-Door Wagon';
+    if (modelId === 'HR31' || modelId === 'FJR31' || modelId === 'SR31') {
+      const c = String(mc || '').replace(/\s+R31\s*$/, '');
+      const k = c.indexOf('R31');
+      if (k < 0) return '';
+      return c[k + 3] === 'R' ? '2-Door Coupe' : '4-Door';
+    }
     if (!mc || !this._r32BodyChassis.includes(modelId)) return '';
     const MD = window.MODEL_DECODER;
     const span = MD && MD._chassisSpan(mc, 'R32');
@@ -2503,6 +2675,18 @@ const JDM_DATABASE = {
           this._s15AutechGrade[grp.slice(0, 3)] === 'Autech Version') {
         return '6-Speed Manual';
       }
+    }
+    // R31: transmission is the character after the grade (volume 078: F =
+    // manual, A = automatic), so read it off the R31 fragment rather than a
+    // fixed position, which moves as leading fields are dropped.
+    if (this._r31Family(modelId)) {
+      const c = String(mc).replace(/\s+R31\s*$/, '');
+      const k = c.indexOf('R31');
+      if (k < 0) return '';
+      let post = c.slice(k + 3);
+      if (post[0] === 'R') post = post.slice(1);     // 2-door marker
+      const t = post[1];
+      return t === 'F' ? '5-Speed Manual' : t === 'A' ? '4-Speed Automatic' : '';
     }
     let ch;
     // KPS13 records live inside the physical 'PS13' file with a leading 'K'

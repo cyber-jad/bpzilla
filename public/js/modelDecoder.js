@@ -561,7 +561,7 @@ const MODEL_DECODER = {
     // turbo 25GT-t) are split into separate browsable models (ER34_GT /
     // ER34_GTT — see database.js), each with its own correct static engine
     // spec, so no per-record override is needed here any more.
-    const engineSpec = M.engine || '—';
+    const engineSpec = record.engine || M.engine || '—';
 
     // how unusual is this paint on this chassis
     let paintShare = null;
