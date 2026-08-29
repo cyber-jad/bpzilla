@@ -1637,7 +1637,8 @@ const JDM_DATABASE = {
       // Empty elsewhere, and the model profile's engine stands in - see
       // modelDecoder's engineSpec.
       engine: this._decodeR31Engine(physicalId, col.dict.mc[col.mci[i]] || '',
-        this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)),
+        this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
+        this._engineCharAt(col, i)),
       destination: 'Japan Domestic Market (JDM)',
       status: '✅ Genuine FAST Record',
       notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
@@ -2375,33 +2376,38 @@ const JDM_DATABASE = {
   // DOHC is turbocharged. Where the engine character was dropped from the code
   // (a small share of HR31), this returns '' and the model's range string
   // stands in.
-  _decodeR31Engine: function(modelId, mc, grade) {
+  _decodeR31Engine: function(modelId, mc, grade, engChar) {
     // CA18 and RD28 files carry no turbo in the induction slot (the position
     // holds an option character there, not E/T/S), so they are named flat.
     if (modelId === 'FJR31' || modelId === 'WFJR31') return 'CA18S 1.8L SOHC';
     if (modelId === 'SR31') return 'RD28 2.8L SOHC Diesel I6';
     if (grade === 'GTS-R' || grade === 'GTS-R Prototype')
       return 'RB20DET-R 2.0L Turbo DOHC (Nismo Group A homologation)';
-    // RB20 files (HR31, WHJR31): the engine character before R31 gives SOHC vs
-    // DOHC, and the induction slot (E = injection, T/S = turbo) whether it is
-    // turbocharged. WHJR31 is entirely RB20ET - every wagon in that file reads
-    // turbo - so it resolves the same way rather than being hardcoded NA.
+    // RB20 files (HR31, WHJR31). The engine letter (SOHC vs DOHC) is taken from
+    // the recovered `ed` character where the file carries it - fast_hr31.json,
+    // annotated by add_hr31_engine.js, so the ~6% of codes that dropped the
+    // engine letter still resolve. Falls back to reading it out of the model
+    // code for any RB20 file without the annotation. The induction slot (E =
+    // injection, T/S = turbo) says whether it is turbocharged; WHJR31 is
+    // entirely RB20ET.
     if (modelId !== 'HR31' && modelId !== 'WHJR31') return '';
     const c = String(mc || '').replace(/\s+R31\s*$/, '');
     const k = c.indexOf('R31');
     if (k < 0) return '';
-    // Engine is the character before the R31 fragment, but a 'J' there is the
-    // 5-link suspension marker (WHJR31 codes read "HJR31...") - step past it to
-    // the real engine letter.
-    const pre = c.slice(0, k);
-    let eng = pre.slice(-1);
-    if (eng === 'J') eng = pre.slice(-2, -1);
+    let eng = (engChar === 'H' || engChar === 'R') ? engChar : '';
+    if (!eng) {
+      // no recovered character: a 'J' just before R31 is the 5-link marker
+      // (WHJR31 codes read "HJR31..."), so step past it to the engine letter.
+      const pre = c.slice(0, k);
+      eng = pre.slice(-1);
+      if (eng === 'J') eng = pre.slice(-2, -1);
+    }
     let post = c.slice(k + 3);
     if (post[0] === 'R') post = post.slice(1);
     const turbo = post[2] === 'S' || post[2] === 'T';
     if (eng === 'H') return turbo ? 'RB20ET 2.0L Turbo SOHC' : 'RB20E 2.0L SOHC';
     if (eng === 'R') return turbo ? 'RB20DET 2.0L Turbo DOHC' : 'RB20DE 2.0L DOHC';
-    return '';                                        // engine char dropped
+    return '';                                        // engine char truly unavailable
   },
 
   _decodeGrade: function(modelId, mc, date) {
