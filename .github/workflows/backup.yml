@@ -1,0 +1,71 @@
+name: Weekly archive backup
+
+# Runs entirely in GitHub's cloud, independent of any local machine. Bundles
+# the full git history plus a SHA-256 of the bundle and of every file in
+# public/data, and publishes them as a GitHub Release - a durable, off-machine
+# copy that outlives this repo's working copy. Needs no secrets: the built-in
+# GITHUB_TOKEN is enough to create a release on this same repo.
+#
+# See docs/restore-runbook.md for how to restore from one of these.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Sundays, 03:00 UTC
+  workflow_dispatch: {}    # allow a manual "Run workflow" click too
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build bundle, checksums and report
+        id: build
+        run: |
+          set -euo pipefail
+          stamp=$(date -u +%Y%m%d-%H%M%S)
+          echo "stamp=$stamp" >> "$GITHUB_OUTPUT"
+
+          git bundle create "bpzilla-$stamp.bundle" --all
+          git bundle verify "bpzilla-$stamp.bundle"
+
+          sha256sum "bpzilla-$stamp.bundle" > "bpzilla-$stamp.sha256"
+          find public/data -type f -print0 | sort -z \
+            | xargs -0 sha256sum >> "bpzilla-$stamp.sha256"
+
+          {
+            echo "BPZILLA ARCHIVE BACKUP (automated, from GitHub Actions)"
+            echo "========================================================"
+            echo "Taken  : $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            echo "Commit : $(git rev-parse HEAD)"
+            echo "Subject: $(git log -1 --pretty=%s)"
+            echo "Data   : $(find public/data -type f | wc -l) files, $(du -sh public/data | cut -f1)"
+            echo ""
+            echo "RESTORE"
+            echo "  git clone bpzilla-$stamp.bundle bpzilla"
+            echo ""
+            echo "VERIFY"
+            echo "  sha256sum -c bpzilla-$stamp.sha256"
+            echo "  (first line is the bundle; the rest are public/data files"
+            echo "   individually, so a single corrupted JSON can be pinpointed)"
+            echo ""
+            echo "See docs/restore-runbook.md in the repo for the full runbook."
+          } > "bpzilla-$stamp.txt"
+
+      - name: Publish as a GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          stamp="${{ steps.build.outputs.stamp }}"
+          gh release create "backup-$stamp" \
+            "bpzilla-$stamp.bundle" "bpzilla-$stamp.sha256" "bpzilla-$stamp.txt" \
+            --repo "${{ github.repository }}" \
+            --title "Backup $stamp" \
+            --notes "Automated weekly bundle + checksums. Commit $(git rev-parse --short HEAD)."
