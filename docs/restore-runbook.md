@@ -4,6 +4,29 @@ What to hand a future AI assistant (or yourself) if this archive, or the FAST
 data behind it, ever needs to be rebuilt. Read this before touching anything —
 it names the traps that already cost real time once.
 
+## Off-machine backups are automatic (as of 2026-08-31)
+
+Two things now run in the cloud with no local machine or manual step needed:
+
+- **GitLab stays in sync with GitHub on its own**, via GitLab's native Pull
+  Mirroring (Settings → Repository → Mirroring repositories on the
+  `jdm-imports-group/gtr-registry` project, pulling from
+  `https://github.com/cyber-jad/bpzilla.git`). No token is needed — the
+  GitHub repo is public. GitLab polls it periodically; a manual "Update now"
+  is always available in that same settings panel if you don't want to wait.
+- **A weekly verifiable backup publishes itself as a GitHub Release**, via
+  `.github/workflows/backup.yml`. Every Sunday 03:00 UTC (and on-demand from
+  the Actions tab → "Weekly archive backup" → "Run workflow"), it bundles the
+  full git history and hashes every file in `public/data`, then attaches the
+  bundle, the `.sha256`, and a plain-text report to a new release tagged
+  `backup-<timestamp>` at github.com/cyber-jad/bpzilla/releases. It needs no
+  secrets — it authenticates with GitHub's own built-in token.
+
+`backup.ps1` and the local `bpzilla-backups/` folder still work and are still
+useful for an immediate, no-network local copy — but nothing depends on
+either running for the off-machine copy to exist. If both GitHub Actions and
+GitLab's mirror are ever unavailable at once, fall back to `backup.ps1`.
+
 ## The two things that must both exist
 
 This is worth restating because `backup.ps1` says it too: the data can be
