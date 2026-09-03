@@ -1358,6 +1358,11 @@ const JDM_DATABASE = {
           // annotated (HR32, the one R32 file that mixes two engines). Same
           // recovered-dropped-character idea as `bd`.
           edi: doc.ed ? new Uint8Array(n) : null,
+          // `b` defaulting to ['0'] matters, not just "no crash on missing data":
+          // col.blk is a Uint8Array and every entry zero-inits to index 0, so a
+          // file shipped with no block dictionary at all (single-block chassis)
+          // needs a real '0' sitting at dict.b[0] for every row to resolve to
+          // block "0" instead of an out-of-range lookup.
           dict: { b: doc.b || ['0'], d: doc.d || [], c: doc.c || [], t: doc.t || [], mc: doc.mc || [], bd: doc.bd || null, ed: doc.ed || null },
           ranges: {}
         };
@@ -1373,6 +1378,12 @@ const JDM_DATABASE = {
         }
         if (doc.exportInfo) col.exportInfo = doc.exportInfo;
 
+        // Each row is a fixed-position tuple, not a keyed object — this is the
+        // one place the shape is spelled out: [block, serial, dateDictIdx,
+        // colorDictIdx, trimDictIdx, modelCodeDictIdx, recoveredCharIdx?].
+        // Every dict-index field is an index INTO col.dict, not the value
+        // itself — that indirection is what lets a repeated date/color/model
+        // code cost one integer per record instead of one string.
         for (let i = 0; i < n; i++) {
           const row = doc.r[i];
           col.blk[i] = row[0];

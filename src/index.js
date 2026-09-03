@@ -245,6 +245,8 @@ async function describeRoute(pathname, env) {
     // reported to search engines as a real page. Export models are the
     // exception: their identifier is a 17-character VIN with no chassis prefix
     // to match, so those are let through.
+    // Standard 17-char VIN alphabet: I, O, Q are excluded (ISO 3779) so they
+    // can't be mistaken for 1, 0, 0.
     const looksLikeVin = /^[A-HJ-NPR-Z0-9]{17}$/.test(id);
     if (!m && !looksLikeVin) return null;
     return {

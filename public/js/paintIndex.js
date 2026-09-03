@@ -3,6 +3,13 @@
  * Authentic paint formulas, color swatches, production volume, and model applications for all Skyline generations.
  */
 
+// This is a hand-curated list of hero colors, not derived from the FAST
+// records the way JDM_DATABASE's colorBreakdown is. totalProduced and
+// rarityScore here come from outside sourcing and will not necessarily match
+// the archive-wide paint table rendered alongside it (app.js's
+// renderAllColorsTable) — the two are deliberately kept separate rather than
+// reconciled, since this list also covers pre-FAST cars the archive has no
+// records for at all (see the Hakosuka/Kenmeri entries below).
 const PAINT_INDEX = [
   {
     code: 'TV2',
@@ -103,6 +110,10 @@ const PAINT_INDEX = [
     rarityScore: 'Definitive Godzilla R32 Color',
     notes: 'The definitive color of Godzilla. 100% of the 560 factory Group A NISMO homologation cars were painted in KH2 Gun Grey.'
   },
+  // Hakosuka/Kenmeri codes below use synthetic ids (WHITE_703, not a
+  // real 3-character FAST code) because these cars predate the loaded FAST
+  // archive entirely — there is no chassis record to cross-reference them
+  // against, unlike every other entry in this file.
   {
     code: 'WHITE_703',
     name: 'Grand Prix White (Code 703)',

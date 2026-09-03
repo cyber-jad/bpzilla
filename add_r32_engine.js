@@ -33,6 +33,8 @@ function sourceEngineMap() {
     const blk = buf[s + L]; if (blk < 0x30 || blk > 0x39) continue;
     const ser = be24(buf, s + L + 1);
     const ptr = be24(buf, s + L + 19);
+    // ptr < 4 would read before the start of MDLCODE when the 4-byte prefix
+    // below is taken at ptr-4.
     if (ptr < 4 || ptr + 20 > mdl.length) continue;
     const mc = ascii(mdl, ptr, 20);
     if (!mc.endsWith('R32')) continue;

@@ -147,6 +147,9 @@ const MODEL_DECODER = {
     // block. Those characters are constant within the generation, but calling
     // them "no information" hides what they plainly are.
     const genAt = code.indexOf(gen);
+    // Every code ends with the generation suffix, so indexOf would also match
+    // that trailing occurrence. The "< code.length - 3" check excludes it,
+    // keeping this branch for a genuine mid-code repeat only.
     if (genAt >= 0 && pos >= genAt && pos < genAt + gen.length && genAt + gen.length < code.length - 3) {
       return {
         kind: 'derived',
@@ -213,9 +216,13 @@ const MODEL_DECODER = {
 
     for (const chassis of info.chassis.keys()) {
       // try the whole chassis id first, then progressively shorter tails
+      // (stop at 3 chars - shorter than that and the "match" is too generic
+      // to trust, e.g. an unrelated option letter matching by coincidence)
       for (let cut = 0; cut <= chassis.length - 3; cut++) {
         const needle = chassis.slice(cut);
         const at = code.indexOf(needle);
+        // chassis-led codes open with the chassis id, so require the match
+        // to start within the first 3 characters, not just appear anywhere
         if (at >= 0 && at <= 2) {
           return { start: at, end: at + needle.length, text: needle, chassis: chassis };
         }
@@ -238,6 +245,9 @@ const MODEL_DECODER = {
     if (!DB) return null;
     if (!chassisList || chassisList.length !== 1) return null;
     const modelId = chassisList[0];
+    // 4 is the R33/R34 positional-layout grade slot, and must stay in sync
+    // with the same default in database.js's _decodeGrade — this only
+    // decides whether to trust the table, that function does the decoding.
     const expectedPos = (DB.gradePositions || {})[modelId] || 4;
     if (pos !== expectedPos) return null;
     const table = DB.gradeCodes[modelId];
@@ -561,6 +571,12 @@ const MODEL_DECODER = {
     // turbo 25GT-t) are split into separate browsable models (ER34_GT /
     // ER34_GTT — see database.js), each with its own correct static engine
     // spec, so no per-record override is needed here any more.
+    // HR31 is the one remaining exception: it was never split, and its single
+    // physical file spans RB20E/RB20DE/RB20DET across 182,351 records, so
+    // M.engine there is genuinely a range, not a fact about this car.
+    // _materialize sets record.engine from the decoded grade for that chassis
+    // only (see database.js), which is why it must win when present rather
+    // than M.engine silently overriding a real per-car answer with a range.
     const engineSpec = record.engine || M.engine || '—';
 
     // how unusual is this paint on this chassis

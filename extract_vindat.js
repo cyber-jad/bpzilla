@@ -378,6 +378,8 @@ function extract(name) {
         intern(c, ci, keepPrefix ? ascii(buf, o + L + 6, 4).trim()
                                  : ascii(buf, o + L + 7, 3)),
         intern(t, ti, String.fromCharCode(buf[o + L + 14])),
+        // Guard a corrupt/out-of-range pointer rather than throwing and
+        // losing the whole extract over one bad record.
         intern(mc, mci, ptr + 20 <= mdl.length ? ascii(mdl, ptr, 20) : '')
       ]);
     }
