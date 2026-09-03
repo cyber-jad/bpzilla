@@ -103,7 +103,7 @@ function validAt(buf, o, L) {
     else if (seenDigit) return false;           // letters never follow digits
   }
   if (!seenDigit) return false;
-  const blk = buf[o + L];
+  const blk = buf[o + L];  // [L] block digit, per extract_vindat.js's layout
   if (blk < 0x30 || blk > 0x39) return false;
   const ymm = be16(buf, o + L + 4);
   const mo = ymm % 100, yr = Math.floor(ymm / 100);
@@ -113,6 +113,7 @@ function validAt(buf, o, L) {
   // 24,000 records short and called its completeness unproven; the site had
   // been right all along. Any two-digit year is a year.
   if (mo < 1 || mo > 12 || yr > 99) return false;
+  // [L+7..L+9] is the paint code, per extract_vindat.js's layout.
   for (let k = 7; k < 10; k++) {
     const ch = buf[o + L + k];
     if (!((ch >= 65 && ch <= 90) || (ch >= 48 && ch <= 57))) return false;

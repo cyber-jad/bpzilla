@@ -33,12 +33,19 @@ const RARITY_CALCULATOR = {
     const grades = hasRealGrades
       ? stats.gradeBreakdown
       : [{ grade: 'Standard', count: totalProd, percent: '100.0' }];
+    // Falls back to the top grade rather than erroring on an unrecognized
+    // `trim`. runRarityCalculation's UI defaults ('V-Spec II', 'TV2') are
+    // BNR34-specific and get passed through unchanged if the model select
+    // changes without a matching trim/color update, so this has to degrade
+    // gracefully rather than blank the whole card on a mismatch.
     const gradeObj = grades.find(g => g.grade === trim) || grades[0];
     const trimObj = { trim: gradeObj.grade, count: gradeObj.count, percent: gradeObj.percent };
     const trimCount = trimObj.count;
     const trimRatio = trimCount / totalProd;
 
     // Find color data
+    // Same fallback reasoning as gradeObj above: a stale colorCode from the
+    // UI degrades to the model's top color rather than returning null.
     const colorObj = stats.colorBreakdown.find(c => c.code === colorCode) || stats.colorBreakdown[0];
     if (!colorObj) return null;
     const colorCount = colorObj.count;
@@ -70,6 +77,11 @@ const RARITY_CALCULATOR = {
     const exactPercentage = +((matchingUnits / totalProd) * 100).toFixed(3);
 
     // Determine Tier
+    // The breakpoints below (19, 80, 250, 800) are editorial cutoffs for the
+    // certificate's tier badge, not a statistical test the way modelDecoder's
+    // MIN_SAMPLE/MIN_SHARE/MIN_LIFT are - matchingUnits itself is the real,
+    // counted number and is what should be trusted; the tier is just a label
+    // on top of it.
     let tierName = 'Core Production';
     let tierBadge = 'badge-standard';
     let tierDescription = 'Standard factory high-volume configuration.';

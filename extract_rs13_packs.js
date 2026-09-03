@@ -80,6 +80,8 @@ const img = fs.readFileSync(path.join(SRC, 'MAEIMG.084'));
 
 function read(spec) {
   const r = note.subarray((spec.page - 1) * REC, spec.page * REC);
+  // MAENOTE.NNN record layout (see fast_image.js): [48-50] image offset in
+  // 256-byte blocks, [52-53] image byte length.
   const off = ((r[48] << 16) | (r[49] << 8) | r[50]) * 256;
   const len = (r[52] << 8) | r[53];
   const hdr = spec.headerRows || 1;

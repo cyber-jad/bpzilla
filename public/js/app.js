@@ -941,6 +941,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tbody.innerHTML = '';
       records.forEach(rec => {
         const tr = document.createElement('tr');
+        // Both checked because 'BCNR33' does not contain 'BNR' as a substring
+        // — the two prefixes aren't one another's superset, so either alone
+        // misses a GT-R family.
         const isGTR = rec.chassisNumber.includes('BNR') || rec.chassisNumber.includes('BCNR');
 
         tr.innerHTML = `
@@ -1022,6 +1025,10 @@ document.addEventListener('DOMContentLoaded', () => {
           record's model code.</p>`;
       } else {
         optionsHTML = opts.map(o => {
+          // platePos is the physical position on the plate, which is not the
+          // same as the option's index in the raw model-code array (verified
+          // against real photographed plates) — pos is the fallback for
+          // records from before that mapping existed.
           const rawPos = o.platePos != null ? o.platePos : o.pos;
           // Position and character run together — "(11L)". Two of the R32's
           // series markers are digits, so "(11" + "7" would read as position
@@ -1088,6 +1095,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <div style="font-size: 3rem; margin-bottom: 16px;">&#128269;</div>
           <h2 style="color: var(--gtr-red); margin-bottom: 8px;">VIN Not Found in FAST Database</h2>
           <p style="color: var(--text-secondary); margin-bottom: 16px;">
+            <!-- query is raw text the visitor just typed into the search box,
+                 echoed straight back into this page's own innerHTML — escape
+                 it or a typed <script> becomes a self-XSS. -->
             <code style="font-family: monospace; font-size: 1.1rem; color: var(--text-primary);">${this._escapeHtml(query)}</code>
           </p>
           <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 400px; margin: 0 auto 24px;">
@@ -1616,8 +1626,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const hits = JDM_DATABASE.findChassis(value);
 
       if (!hits.length) {
+        // Escape: this is the raw text the visitor just typed, echoed straight
+        // back into innerHTML — same self-XSS class fixed in showVinNotFound.
         box.innerHTML = `<div class="decoder-miss">No record for <span class="mono">${
-          (value || '').toUpperCase()}</span>. Try a number like BNR34-000051 or ECR33-014520.</div>`;
+          this._escapeHtml((value || '').toUpperCase())}</span>. Try a number like BNR34-000051 or ECR33-014520.</div>`;
         this.renderBuildSummary(null);
         return;
       }
@@ -1886,6 +1898,9 @@ document.addEventListener('DOMContentLoaded', () => {
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     },
 
+    // Same table as _escapeHtml, not a separate one — it already turns both
+    // quote characters into entities, which is what makes it safe to drop
+    // into a "..." attribute value too.
     _escapeAttr: function(s) {
       return this._escapeHtml(s);
     },

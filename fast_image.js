@@ -115,6 +115,8 @@ function decodeG4(buf, width, maxRows) {
     let a0 = -1, color = 0;          // 0 = white
     let guard = 0;
     while (a0 < width) {
+      // A corrupt or desynchronised stream can leave a0 stuck instead of
+      // reaching `width`; bail out of the row rather than spin forever.
       if (++guard > width * 4) { errors++; break; }
       // b1 = first changing element on ref line right of a0 with opposite colour of a0's colour run
       let i = 0;
