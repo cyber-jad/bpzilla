@@ -190,12 +190,19 @@ async function describeRoute(pathname, env) {
   if (VIEW_ROUTES[decoded]) {
     const r = VIEW_ROUTES[decoded];
     if (!r.title) return null;                   // homepage keeps its own tags
+    // Read the live total rather than typing it in: a hardcoded count here
+    // was exactly how this page's description went stale before (R31 added
+    // 285,676 records and nothing that said "1,396,771" ever noticed). The
+    // fallback below is only for models.json being unreachable, not a count
+    // to keep in sync by hand.
+    const index = await getModels(env);
+    const total = index && index.total ? n(index.total) : 'over 1.6 million';
     return {
       view: r.view,
       canonical: `${SITE}${decoded}`,
       title: `${r.title} | GTR Registry`,
       description:
-        `${r.title} across 1,396,771 Nissan factory records read from the ` +
+        `${r.title} across ${total} Nissan factory records read from the ` +
         `Nissan FAST microfiche — Skyline, Silvia, Stagea and 300ZX.`
     };
   }
