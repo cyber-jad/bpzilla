@@ -25,15 +25,18 @@ are the authority where the two disagree.
 
 ## Chassis this site holds
 
-R30, R31 and the M35 Stagea are listed here because their data files exist and
-are kept, but they are out of scope for the site and not loaded. The files stay
-in `public/data` — there is no extractor in this repo, so the export is the only
-copy short of re-deriving it from the FAST binaries.
+R30, the M35 Stagea, and the R35 GT-R are listed here because their data
+files exist and are kept, but they are out of scope for the site and not
+loaded. R31 was in that group too until it was integrated (see its own
+section below — the site now serves it). The files stay in `public/data` —
+R31 and R35 have an extractor in this repo now (`extract_vindat.js`); the
+rest predate it, so their export is the only copy short of re-deriving it
+from the FAST binaries.
 
 | chassis | volume | front-matter pages | records | option decode |
 |---|---|---|---|---|
 | R30 Skyline  | 077 | 16 | 437,803 | extracted (8 codes), not loaded |
-| R31 Skyline  | 078 | 36 | 285,676 | extracted (5 codes), not loaded |
+| R31 Skyline  | 078 | 36 | 285,676 | done, from this legend — **loaded** |
 | R32          | 079 | 27 | 295,861 | done, from this legend |
 | R33          | 080 |  2 | 180,398 | done, FASTOP incl. [9710- ] |
 | R34          | 081 | 11 |  67,040 | done, FASTOP incl. [200008- ] |
@@ -48,6 +51,10 @@ copy short of re-deriving it from the FAST binaries.
 | S110 Silvia  | 085 | —  |  73,184 | extracted, not loaded |
 | S12 Silvia   | 086 |  2 |  28,170 | extracted, not loaded |
 | Z31 300ZX    | 131 | —  |  35,381 | extracted, not loaded |
+| R35 GT-R     | 215\* | 12 |  8,046 | structure done (2 pages); options not (10 pages unread) |
+
+\* Volume 215 holds only the option catalog; the per-vehicle records are in
+the `VINDAT3.AA2`/`MDLCODE.AA2` group — see the R35 section below.
 | AM35 (Autech)| 163 |  — |       — | Autech variant of M35 |
 
 Note on S13: volumes 087 and 084 together cover the whole family, 415,946
@@ -367,9 +374,12 @@ serves and change what a plate displays, which is a different job.
 
 ### Held, not served
 
-30 chassis, 918,703 records: R30 437,803 · R31 285,676 · S110 73,184 ·
-M35 58,489 · Z31 35,381 · S12 28,170. Every one is decoded and checkable and
-none is wired into the site. Serving any needs two edits — the prefix in
+26 chassis, 641,073 records (per `audit_chassis.js`, current as of the R35
+extraction): R30 437,803 · S110 73,184 · M35 58,489 · Z31 35,381 ·
+S12 28,170 · R35 8,046. R31 was in this group too until it was integrated —
+see its own section above. Every one of the 26 is decoded and checkable
+(R35's model-code *structure* is; its option codes are not yet, see below)
+and none is wired into the site. Serving any needs two edits — the prefix in
 `database.js` and a `models{}` entry — and that is a scope decision, not a
 data one.
 
@@ -625,16 +635,123 @@ sourced — the same footing as the R33 two-tones 1N3 and 1N4.
 
 **Decode**: 98.8% of records have every option character named.
 
-## R35 GT-R (volume 215) — not extracted; web research notes only
+## R35 GT-R (volume 215) — extracted and verified 2026-09-04; not yet served
 
-Volume 215 is on the discs but nothing has been read from it — no front
-matter rendered, no legend transcribed, no `fast_r35.json`. Unlike every
-other chassis in this file, none of what follows comes from H:. It is
-external research (2026-09-03/04, web search plus Nissan's own JDM sites),
-recorded here as a skeleton to check the volume's own legend against
-whenever it is opened — the same combination of external VIN/date anchors
-plus the disc's own model-code table that cracked the R31 GTS-R
-([[r31-gtsr-identification]]).
+8,046 records, `fast_r35.json`, extracted by `extract_vindat.js --chassis R35
+--write` and checked against `audit_chassis.js` (66/66 in-scope chassis now
+accounted for). Dates run 2007-03 to 2013-02 — the disc's own snapshot date
+(files under `H:\AR-JP\JP\215\` are stamped March 2013) is the ceiling, not a
+real production stop. Held but not wired into the site, same status as R30,
+S110, S12, Z31 and M35 — decode logic, a `models{}` entry and the loader
+prefix are a separate step.
+
+**Where it actually lives, and why it took a scan to find.** Volume 215
+itself (`H:\AR-JP\JP\215\`) is the option/spec catalog only — `CATALOG.215`,
+`PATCODE.215`, `ABBREV.215`, `MAENOTE.215`/`MAEIMG.215` for the front matter —
+and carries no `VINDAT`/`MDLCODE` of its own, unlike every earlier
+single-file volume in this project. The per-vehicle production records
+instead live in `VINDAT3.AA2` / `MDLCODE.AA2`, a file-group ("AA") no other
+chassis here uses (everything else is "AB"). Found by the same method as the
+S110/S12/Z31 discovery: walk every `VINDAT*.*` file for the literal chassis
+string rather than assuming a volume-number correspondence. 0 hits everywhere
+except one file, 8,046 hits in it.
+
+**Record layout is the established L+26 shape, unchanged.** Chassis code
+`"R35"` (L=3), block digit ASCII at `[L]`, 24-bit BE serial at `[L+1..L+3]`,
+16-bit BE date at `[L+4..L+5]`, colour-trim char at `[L+6]` (kept — see
+`KEEPS_COLOR_PREFIX` in `extract_vindat.js`, real non-blank letters on all
+8,046 records: G/W/Z/M/P), 3-char paint at `[L+7..L+9]`, interior char at
+`[L+14]` (constant `M` — one interior across every 2007-2013 grade), pointer
+at `[L+19..L+21]` into `MDLCODE.AA2`. Stride 29 (3+26), confirmed against
+every one of the 8,046 matches with zero exceptions. Four blocks: `0` (7,856),
+`1` (78), `3` (88), `4` (24) — no block `2`, same "not every digit is used"
+pattern as other chassis.
+
+**The model code has its own two-page legend, and it transcribed
+byte-exact.** `MAENOTE.215`/`MAEIMG.215` hold twelve front-matter pages: two
+モデル記号の意味 (drawing `AJDMC10R35` for window `[200711-200901]`, revised
+to `AJDMC20R35` for `[200901- ]`) plus ten pages of オプション記号 (option
+code) tables, not yet read. The structure, 18 significant characters:
+
+```
+[1 ボディタイプ][2-3 エンジン][4 アクスル][5 ハンドル][6 グレード][7 ミッション]
+R35 [11 インテーク][12 仕向地][13 架装仕様][14-18 オプションコード]
+ボディタイプ  G クーペ (constant, only value ever listed)
+エンジン     LR VR38DETT (constant)
+アクスル     N 4WD (constant)
+ハンドル     R 右ハンドル / RHD (constant - this is the JDM-domestic table)
+ミッション    G GR6型デュアルクラッチトランスミッション (constant)
+インテーク    Z ツインターボ (constant)
+仕向地       D 標準地 (7,245) / Z 寒冷地, cold region (801)
+架装仕様     A 標準 (constant)
+```
+
+Position 1 (body type) is dropped by the export, same trap as R31/R32/R33 —
+every stored code starts at position 2 (engine `LR`), confirmed because the
+first two characters of every one of the 8,046 codes read as the engine
+value the legend gives, never as a lone body character. The stored 20-byte
+field also ends with a second, literal `R35` at characters 18-20 on every
+record with zero exceptions — not meaningful, a per-entry tag in this
+table's own layout rather than part of the car's code (`_r35` fields in
+`database.js` should slice `mc.slice(0, 17)` and ignore the tail three).
+
+**Grade (position 6) is date-window-dependent**, exactly the R31/S13/Z32
+pattern — the same letter means something else after 2009-01, so any decode
+function needs the record's own date, not just the letter:
+
+| letter | `[200711-200901]` (jc01) | `[200901- ]` (jc02) | count | date range seen |
+|---|---|---|---|---|
+| Y | GT-R Premium Edition | GT-R Premium Edition (unchanged) | 3,741 | 0703–1302 |
+| R | GT-R Black Edition | GT-R Black Edition (unchanged) | 2,306 | 0703–1302 |
+| W | **GTR** (plain/base) | **GT-R (Pure Edition)** | 1,873 | 0703–1302 |
+| M | *(not defined)* | SPEC-V | 75 | 0803–1106 |
+| V | *(not defined)* | EGOIST *(page annotates "201011-")* | 30 | 1006–1302 |
+| Q | *(not defined in either window)* | *(not defined)* | 21 | 0703–1302 |
+
+`W` is the one letter that genuinely changes meaning and needs the date
+check; `Y` and `R` don't change but should still be read date-aware for
+consistency with the rest of the archive's grade functions.
+
+**Two things not force-fit to the printed dates, on purpose** (per
+[[verification-before-labeling]] — a plausibility argument never confirms a
+mapping, and this cuts the other way too: the *data* is allowed to disagree
+with a summary date without being wrong):
+- SPEC-V's earliest record is 2008-08, five months before its `[200901- ]`
+  window opens and about six months ahead of the car's real February 2009
+  on-sale date. EGOIST's earliest is 2010-06, five months before the page's
+  own "201011-" annotation and the public November 2010 launch date this
+  project's web research independently found. Both read as ordinary
+  pre-production/press-fleet builds — the exact shape of thing this archive
+  has caught before (the four HR31 GTS-R prototypes, built months ahead of
+  the 823 production cars) — not a decoding error.
+- `Q`, 21 records spread across the *entire* 2007-2013 range rather than
+  clustered at the start, is in neither window's grade table. Left
+  undecoded rather than guessed at, same footing as R31's undocumented `X`
+  grade on CA18 cars.
+
+**What's still open, honestly:**
+- The option code (positions 14-18, 5 characters, 122 distinct combinations
+  across the 8,046 records) needs the ten `オプション記号` pages read —
+  not done yet.
+- Four bytes after the `MDLCODE` pointer that the older chassis format
+  leaves at zero are NOT zero here (only 11 of 8,046 records are); values
+  cluster tightly (`0x00000001` is the mode) with a few much larger
+  outliers repeating across otherwise-unrelated records. Unidentified.
+  Not read as a second pointer without evidence — flagged, not decoded.
+- The colour-trim character at `[L+6]` (G/W/Z/M/P) reads as a genuine,
+  populated field by the same measured test used for every other family
+  (never blank across all 8,046 records), so it's kept in the export, but
+  its meaning (paint family? roof colour? something else) isn't confirmed
+  against a legend page yet.
+
+**The web research from 2026-09-03 (kept below) is still useful** as a
+cross-check once the option pages are read — it independently supplied the
+public launch dates the "not force-fit" note above leans on, and the
+CBA/DBA/4BA type-designation and JDM grade timeline are both worth checking
+against whatever the option pages add. Unlike the R31 GTS-R case, nothing
+here required the web research to identify a chassis or a count — this time
+H: alone was sufficient, and the two sources corroborate rather than combine
+to produce an answer neither had alone.
 
 **Why R35 is a different shape of problem than everything else here.** Every
 other chassis in this archive is JDM-only or JDM-majority, so a short chassis

@@ -282,7 +282,7 @@ const served = servedPrefixes();
 // note above. S110 must be tested before S12 and Z31 before Z32, or a
 // longest-suffix code lands in the wrong bucket.
 const GENS = ['R32', 'R33', 'R34', 'S13', 'S14', 'S15', 'Z32',
-              'S110', 'S12', 'Z31', 'R30', 'R31', 'M35'];
+              'S110', 'S12', 'Z31', 'R30', 'R31', 'M35', 'R35'];
 const inScope = (code) =>
   GENS.some(g => code.endsWith(g)) ||
   (code.endsWith('C34') && code.startsWith('W')) ||

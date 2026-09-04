@@ -147,7 +147,25 @@ const LOCATION = {
 
   // M35 Stagea, 2001-2007. The four variant files (NM35, HM35, PM35, PNM35)
   // were extracted; the base M35 code, the largest of the five, was not.
-  M35:    { vindat: 'VINDAT3.AB2', mdlcode: 'MDLCODE.AB2' }
+  M35:    { vindat: 'VINDAT3.AB2', mdlcode: 'MDLCODE.AB2' },
+
+  // R35 GT-R, 2007-. Never touched at all - volume 215 (the option catalog,
+  // no VINDAT of its own) was known about but the per-vehicle group it
+  // actually lives in was not, until a plain substring scan of every
+  // VINDAT*.* file for "R35" turned up 8,046 hits in VINDAT3.AA2, a group no
+  // other chassis in this repo uses. Same L+26 record shape as everything
+  // else (L=3, code "R35", stride 29 - confirmed against all 8,046 matches
+  // with zero exceptions), and the front matter (MAENOTE/MAEIMG.215) gave up
+  // a clean, two-window モデル記号の意味 legend (AJDMC10R35 [200711-200901],
+  // AJDMC20R35 [200901- ]) that verified byte-exact: 100% of records carry
+  // the literal "R35" anchor at model-code offset 6-8 AND a second literal
+  // "R35" at offset 17-19 (a per-entry table tag, not meaningful - see
+  // database.js), and the four single-valued legend fields (engine LR, axle
+  // N, transmission G, intake Z) are constant across all 8,046 rows with
+  // zero exceptions. Grade (offset 4) is date-window-dependent - W means
+  // plain "GTR" before 2009-01 and "Pure Edition" after - so that split lives
+  // in database.js's _decodeR35Grade, not here.
+  R35:    { vindat: 'VINDAT3.AA2', mdlcode: 'MDLCODE.AA2' }
 };
 
 // A shipped file is not always one chassis code.
@@ -243,12 +261,15 @@ const GROUPS = {
 // That the Skylines discard a real character on 240,000+ records is worth
 // knowing and is NOT fixed here: it would rewrite files the site serves and
 // change what the plate shows, which is a different job from this one.
+// R35 measured the same way: [L+6] is G/W/Z/M/P on all 8,046 records, never
+// blank - a real character every time, not the occasional stray letter that
+// would suggest noise. Keep it.
 const KEEPS_COLOR_PREFIX = new Set([
   's13', 'ps13', 'ks13', 'rs13', 'rps13', 's15',
   's110', 'ps110', 'us110',
   's12', 'js12', 'us12',
   'z31', 'gz31', 'hz31', 'pz31', 'hgz31', 'pgz31',
-  'm35'
+  'm35', 'r35'
 ]);
 
 const be24 = (b, o) => (b[o] << 16) | (b[o + 1] << 8) | b[o + 2];
@@ -468,7 +489,11 @@ if (ci >= 0 && args[ci + 1]) {
   console.log(`  serial ${lo} .. ${hi}`);
   if (args.includes('--write')) {
     const file = path.join(OUT_DIR, 'fast_' + code.toLowerCase() + '.json');
-    fs.writeFileSync(file, JSON.stringify(out) + '\n', 'utf8');
+    // _parts is a console-log-only diagnostic (see the --verify/--chassis
+    // output above); no shipped file has ever carried it, so strip it here
+    // rather than let a would-be debug field become part of the format.
+    const { _parts, ...shipped } = out;
+    fs.writeFileSync(file, JSON.stringify(shipped) + '\n', 'utf8');
     console.log(`  wrote ${path.relative(__dirname, file)} (${(fs.statSync(file).size / 1024 / 1024).toFixed(2)} MB)`);
   } else {
     console.log('  (dry run - pass --write to save)');
