@@ -744,6 +744,44 @@ with a summary date without being wrong):
   its meaning (paint family? roof colour? something else) isn't confirmed
   against a legend page yet.
 
+**All 11 paint codes now have real names, and two turned out to be exact
+grade markers** (2026-09-04, found via a Japanese owner's plate-transcription
+blog — みんカラ user よっちゃんパパ's 3-part "備忘録：モデルナンバープレート"
+series — cross-checked against our own extracted records rather than
+trusted on its own):
+
+| code | name | count | grade correlation |
+|---|---|---|---|
+| QX1 | ホワイトパール White Pearl | 1,616 | mixed (Y/R/W) |
+| KAD | ダークメタルグレー Dark Metal Gray | 1,589 | mixed |
+| KAB | アルティメイトメタルシルバー Ultimate Metal Silver | 1,473 | mixed |
+| KH3 | スーパーブラック Super Black | 1,322 | mixed |
+| QAB | ブリリアントホワイトパール Brilliant White Pearl | 692 | mixed |
+| GAG | メテオフレークブラックパール Meteor Flake Black Pearl | 498 | mixed |
+| A54 | バイブラントレッド Vibrant Red | 346 | mixed |
+| KAC | タイタニウムグレー Titanium Gray | 279 | mixed |
+| RAY | オーロラフレアブルーパール Aurora Flare Blue Pearl | 178 | mixed |
+| **LAC** | Ultimate Opal Black | 32 | **100% grade `M` (SPEC-V) — 32/32, zero exceptions** |
+| **QAG** | Ultimate Opal White | 21 | **100% grade `V` (EGOIST) — 21/21, zero exceptions** |
+
+The two exclusive colours check out exactly against a re-count of our own
+8,046 records — not assumed from the source, verified against the data this
+archive actually holds. Consistent with what both cars were known for:
+SPEC-V and EGOIST were the two most bespoke, small-batch grades, each built
+around one signature appearance rather than a colour chart.
+
+**Two loose ends from the same source, flagged rather than reconciled:**
+the blog gives interior codes `G`=black / `W`=gray, but every one of our
+8,046 records reads a constant `M` at the position this project's other
+chassis use for interior colour (`[L+14]`) — the two may not be the same
+field (the blog calls its version a "suffix," which doesn't obviously match
+a fixed single-character slot), or `M` may be a real value the blog's short
+list didn't happen to cover. Left open. The blog also confirms the
+transmission's full internal type (`GR6Z30A`) and rear differential
+(`ZA37`), and the plant-code table (`M` = Tochigi, matching the export VIN
+finding below exactly) — useful corroboration, nothing that changes the
+decode.
+
 **A full export-VIN census past the disc's 2013 ceiling (2026-09-04).**
 Asked directly whether web data can extend R35 coverage past what the disc
 holds — the honest answer is no, not as archive *rows*: the export VIN
