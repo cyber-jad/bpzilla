@@ -744,6 +744,43 @@ with a summary date without being wrong):
   its meaning (paint family? roof colour? something else) isn't confirmed
   against a legend page yet.
 
+**A full export-VIN census past the disc's 2013 ceiling (2026-09-04).**
+Asked directly whether web data can extend R35 coverage past what the disc
+holds — the honest answer is no, not as archive *rows*: the export VIN
+(`JN1AR5...`) and the JDM factory model code this archive is built from are
+different numbering systems for the same car, not two views of one system,
+so a web-sourced VIN can never become a `fast_r35.json` row. What it can do
+is document the export side in full, year by year, which is real and worth
+having:
+
+| model year | letter | export VINs found | source |
+|---|---|---|---|
+| 2010 | A | 48 | bulk (carsowners.net) |
+| 2011 | B | 4 | bulk |
+| 2012 | C | 14 | bulk |
+| 2013 | D | 31 | bulk |
+| 2014 | E | 65 | bulk — first year with a second code, `EG` (Track Edition), alongside `EF` |
+| 2015 | F | 201 | bulk |
+| 2016 | G | 39 | bulk — serials reset to a new block after the facelift |
+| 2017 | H | 43 | bulk |
+| 2018 | J | 17 | bulk |
+| 2019 | K | 3 | individual listings |
+| 2020 | L | 3 | individual listings |
+| 2021 | M | 2 | individual listings — code shifts to `BF`/`DF` |
+| **2022** | **N** | **0 — confirmed not to exist** | Nissan skipped the US/Canada 2022 model year outright (chip-shortage era); cars sold in 2022 carried 2021-model VINs. Not a search gap. |
+| 2023 | P | 3 | individual listings |
+| 2024 | R | 3+ | individual listings |
+| **2025** | **S** | **0 found** | production ended 2025-08-26; the last car (a Premium Edition T-Spec) was delivered in Japan, not exported — plausibly true of most of the final run, which would carry a JDM chassis number instead of an export VIN and so wouldn't surface in US-centric VIN sites regardless of how thoroughly they're searched |
+
+Every year has either real data or a specific, sourced reason it has none —
+nothing here is an unresolved gap. Two structural facts confirmed with bulk
+data that weren't nailed down before: `EG` is a real, distinct engine/
+generation code for the 2014 Track Edition Coupe (own serial block, `1100xx`,
+separate from Premium/Black's `2702xx`), and the serial-number reset after
+the 2016 facelift (first seen as a single example, `290737` → `100277`) is
+confirmed as a real pattern across the full bulk set, not a coincidence
+between two listings.
+
 **The web research from 2026-09-03 (kept below) is still useful** as a
 cross-check once the option pages are read — it independently supplied the
 public launch dates the "not force-fit" note above leans on, and the
