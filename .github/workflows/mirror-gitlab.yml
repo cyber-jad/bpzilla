@@ -1,0 +1,44 @@
+name: Mirror to GitLab
+
+# GitLab's own Pull Mirroring (Settings > Repository > Mirroring repositories)
+# is a paid-tier feature on GitLab.com - the free tier's "Mirror direction"
+# dropdown only offers Push, not Pull. So this repo pushes itself out instead:
+# every commit to master triggers this job, which pushes the same commit to
+# the GitLab mirror straight after GitHub has it. Runs in GitHub's cloud, not
+# on any local machine - see docs/restore-runbook.md for the full backup story.
+#
+# ONE-TIME SETUP (can't be done from a workflow file - needs a real login):
+#   1. GitLab -> jdm-imports-group/gtr-registry -> Settings -> Repository ->
+#      Deploy tokens -> Add token. Name it anything, scope: write_repository.
+#      Copy the token AND the username shown next to it (looks like
+#      gitlab+deploy-token-NNNNNN) - GitLab shows the token exactly once.
+#   2. GitHub -> this repo -> Settings -> Secrets and variables -> Actions ->
+#      New repository secret. Name: GITLAB_MIRROR_URL. Value:
+#        https://<deploy-token-username>:<deploy-token>@gitlab.com/jdm-imports-group/gtr-registry.git
+# Until that secret exists, this job fails loudly (see the check below)
+# instead of silently doing nothing.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push mirror to GitLab
+        env:
+          GITLAB_MIRROR_URL: ${{ secrets.GITLAB_MIRROR_URL }}
+        run: |
+          set -euo pipefail
+          if [ -z "${GITLAB_MIRROR_URL:-}" ]; then
+            echo "::error::GITLAB_MIRROR_URL secret is not set - see the setup steps in this file's header." >&2
+            exit 1
+          fi
+          git push "$GITLAB_MIRROR_URL" HEAD:master
