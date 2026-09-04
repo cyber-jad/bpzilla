@@ -51,7 +51,7 @@ from the FAST binaries.
 | S110 Silvia  | 085 | —  |  73,184 | extracted, not loaded |
 | S12 Silvia   | 086 |  2 |  28,170 | extracted, not loaded |
 | Z31 300ZX    | 131 | —  |  35,381 | extracted, not loaded |
-| R35 GT-R     | 215\* | 12 |  8,046 | structure done (2 pages); options not (10 pages unread) |
+| R35 GT-R     | 215\* | 12 |  8,046 | done, from this legend — 99.84% of option characters named; not loaded |
 
 \* Volume 215 holds only the option catalog; the per-vehicle records are in
 the `VINDAT3.AA2`/`MDLCODE.AA2` group — see the R35 section below.
@@ -658,11 +658,13 @@ except one file, 8,046 hits in it.
 
 **Record layout is the established L+26 shape, unchanged.** Chassis code
 `"R35"` (L=3), block digit ASCII at `[L]`, 24-bit BE serial at `[L+1..L+3]`,
-16-bit BE date at `[L+4..L+5]`, colour-trim char at `[L+6]` (kept — see
-`KEEPS_COLOR_PREFIX` in `extract_vindat.js`, real non-blank letters on all
-8,046 records: G/W/Z/M/P), 3-char paint at `[L+7..L+9]`, interior char at
-`[L+14]` (constant `M` — one interior across every 2007-2013 grade), pointer
-at `[L+19..L+21]` into `MDLCODE.AA2`. Stride 29 (3+26), confirmed against
+16-bit BE date at `[L+4..L+5]`, **the interior colour letter** at `[L+6]`
+(kept as the first character of the 4-character colour field — see
+`KEEPS_COLOR_PREFIX` in `extract_vindat.js`; G/W/Z/M/P on all 8,046 records,
+decoded in the option section below), 3-char paint at `[L+7..L+9]`, a
+constant `M` at `[L+14]` (the slot the older chassis use for interior — here
+it never varies and is NOT the interior colour; unidentified), pointer at
+`[L+19..L+21]` into `MDLCODE.AA2`. Stride 29 (3+26), confirmed against
 every one of the 8,046 matches with zero exceptions. Four blocks: `0` (7,856),
 `1` (78), `3` (88), `4` (24) — no block `2`, same "not every digit is used"
 pattern as other chassis.
@@ -671,7 +673,9 @@ pattern as other chassis.
 byte-exact.** `MAENOTE.215`/`MAEIMG.215` hold twelve front-matter pages: two
 モデル記号の意味 (drawing `AJDMC10R35` for window `[200711-200901]`, revised
 to `AJDMC20R35` for `[200901- ]`) plus ten pages of オプション記号 (option
-code) tables, not yet read. The structure, 18 significant characters:
+code) tables — all twelve are now read; the option pages are transcribed in
+`docs/wip/r35-options.json` and verified below. The structure, 18
+significant characters:
 
 ```
 [1 ボディタイプ][2-3 エンジン][4 アクスル][5 ハンドル][6 グレード][7 ミッション]
@@ -716,9 +720,9 @@ consistency with the rest of the archive's grade functions.
 [[verification-before-labeling]] — a plausibility argument never confirms a
 mapping, and this cuts the other way too: the *data* is allowed to disagree
 with a summary date without being wrong):
-- SPEC-V's earliest record is 2008-08, five months before its `[200901- ]`
-  window opens and about six months ahead of the car's real February 2009
-  on-sale date. EGOIST's earliest is 2010-06, five months before the page's
+- SPEC-V's earliest record is 2008-03, ten months before its `[200901- ]`
+  window opens and eleven months ahead of the car's real February 2009
+  on-sale date (two cars in March 2008, then June, July, November). EGOIST's earliest is 2010-06, five months before the page's
   own "201011-" annotation and the public November 2010 launch date this
   project's web research independently found. Both read as ordinary
   pre-production/press-fleet builds — the exact shape of thing this archive
@@ -727,22 +731,29 @@ with a summary date without being wrong):
 - `Q`, 21 records spread across the *entire* 2007-2013 range rather than
   clustered at the start, is in neither window's grade table. Left
   undecoded rather than guessed at, same footing as R31's undocumented `X`
-  grade on CA18 cars.
+  grade on CA18 cars. What the records themselves say, once the option
+  pages were read: all 21 carry an all-`-----` option code — the only
+  grade with a 0% take rate on everything, airbags included — five of them
+  sit in the 78-car 2007 pre-launch block (`1`, below) and the other 16 in
+  block `3`, the SPEC-V series, from 2010-06 to 2013-02, with ordinary
+  paint and black or gray interiors. The post-2010 dates line up with the
+  Club Track edition (announced 2010-11-17, a circuit-use car sold without
+  road equipment). That is an observation, not a label: nothing on the disc
+  names it.
 
-**What's still open, honestly:**
-- The option code (positions 14-18, 5 characters, 122 distinct combinations
-  across the 8,046 records) needs the ten `オプション記号` pages read —
-  not done yet.
+**What's still open, honestly** (the option code and the `[L+6]` letter
+were on this list and are now resolved — see the option section):
 - Four bytes after the `MDLCODE` pointer that the older chassis format
   leaves at zero are NOT zero here (only 11 of 8,046 records are); values
   cluster tightly (`0x00000001` is the mode) with a few much larger
   outliers repeating across otherwise-unrelated records. Unidentified.
   Not read as a second pointer without evidence — flagged, not decoded.
-- The colour-trim character at `[L+6]` (G/W/Z/M/P) reads as a genuine,
-  populated field by the same measured test used for every other family
-  (never blank across all 8,046 records), so it's kept in the export, but
-  its meaning (paint family? roof colour? something else) isn't confirmed
-  against a legend page yet.
+- Position 16 `B` on 7 records, all 2010-06/07, Black and Premium Editions,
+  is defined in none of the four option windows. The only option letter in
+  the whole chassis that is.
+- The constant `M` at `[L+14]`. Every other chassis reads interior colour
+  there; R35 keeps the interior at `[L+6]` instead and this byte never
+  moves. Unidentified.
 
 **All 11 paint codes now have real names, and two turned out to be exact
 grade markers** (2026-09-04, found via a Japanese owner's plate-transcription
@@ -770,17 +781,84 @@ archive actually holds. Consistent with what both cars were known for:
 SPEC-V and EGOIST were the two most bespoke, small-batch grades, each built
 around one signature appearance rather than a colour chart.
 
-**Two loose ends from the same source, flagged rather than reconciled:**
-the blog gives interior codes `G`=black / `W`=gray, but every one of our
-8,046 records reads a constant `M` at the position this project's other
-chassis use for interior colour (`[L+14]`) — the two may not be the same
-field (the blog calls its version a "suffix," which doesn't obviously match
-a fixed single-character slot), or `M` may be a real value the blog's short
-list didn't happen to cover. Left open. The blog also confirms the
-transmission's full internal type (`GR6Z30A`) and rear differential
-(`ZA37`), and the plant-code table (`M` = Tochigi, matching the export VIN
-finding below exactly) — useful corroboration, nothing that changes the
-decode.
+**The interior letter, resolved — it is the `[L+6]` character.** The blog's
+`G`=black / `W`=gray was right; it just isn't the byte this project calls
+"interior" on the older chassis. Nissan's own 2018-model catalogue page
+uses the same single letters — ブラック〈G〉, アンバーレッド〈P〉,
+アイボリー〈C〉, タン〈Z〉, アーバンブラック〈X〉 — and the letter at `[L+6]`
+matches them against the records exactly:
+
+| letter | interior | count | what the records say |
+|---|---|---|---|
+| G | Black | 7,232 | every Black Edition (2,306 of 2,306) — the grade never had another interior |
+| W | Gray | 669 | Premium and plain GT-R only, 2007-03 to 2012-10; never on a Black Edition |
+| P | Amber Red, the Premium Edition "fashionable interior" | 40 | 40 of 40 are Premium Editions, 2012-07 to 2013-02; 37 also carry the `CLASA` option below, the three that don't are the earliest |
+| Z | SPEC-V | 75 | 75 of 75 SPEC-V, zero exceptions (Nissan reuses `Z` for Tan from the 2017 facelift — a later window, not this data) |
+| M | EGOIST bespoke | 30 | 30 of 30 EGOIST, zero exceptions |
+
+So `[L+6]` is kept for the same reason it is kept on the Silvia and Z
+families, and `database.js`'s existing split (`dict.c` → paint code + trim
+character on length 4) already puts it where it belongs. The constant `M`
+at `[L+14]` is something else and stays on the open list. The same blog
+gives the transmission's full internal type (`GR6Z30A`), the rear
+differential (`ZA37`) and the plant-code table (`M` = Tochigi, matching the
+export VIN finding below exactly).
+
+**The block digit is a production series, each with its own serial run.**
+
+| block | records | dates | serials | grades |
+|---|---|---|---|---|
+| `1` | 78 | 2007-03 .. 2007-07 | 1 .. 78 | W 33 / Y 30 / R 10 / Q 5 |
+| `0` | 7,856 | 2007-09 .. 2013-02 | 1 .. 50,202 | catalogue production: Y 3,711 / R 2,296 / W 1,840, plus 2 M, 6 V and 1 Q strays |
+| `3` | 88 | 2008-06 .. 2013-02 | 1 .. 37,002 | M 73 (SPEC-V) + Q 15 — exactly |
+| `4` | 24 | 2010-11 .. 2013-02 | 30,002 .. 41,004 | V 24 (EGOIST) — exactly |
+
+Block `1` is the pre-launch series: 78 cars built March to July 2007, five
+to seven months before the December 2007 launch, numbered 1-78 in a
+sequence of their own, already wearing production option codes (airbags,
+BOSE, RAYS wheels, Thatcham). Production proper starts at block `0` serial
+1 in 2007-09. SPEC-V and EGOIST each got a series of their own; the two
+SPEC-V and six EGOIST cars sitting in block `0` are the pre-production ones
+— the same cars whose dates run ahead of their windows above.
+
+**The option code (positions 14-18), read from all ten pages and verified
+against every record.** Four windows — `[200711-200812]`, `[200812-200912]`,
+`[200912-201011]`, `[201011- ]` — drawings `AJDMD10R35` through
+`AJDMDA0R35`, 45 spec codes, transcribed in `docs/wip/r35-options.json`
+with the Japanese text and an English gloss for each. The same letter means
+different things in different windows (position 14 `A` is the SPEC-V marker
+in 2008-09 and BOSE in 2009-10), so the decode is date first, letter second,
+exactly as for the Z32 and 180SX.
+
+Against the 8,046 records: **40,167 of 40,230 option characters (99.84%)
+resolve in the window that owns the build month.** 56 resolve only in an
+adjacent window, and every one of those is a pre-release adoption within
+months of a boundary — SPEC-V cars from 2008-03 already carrying `ETCTR`
+nine months before the code is printed, EGOIST cars from 2010-06 already
+carrying EGOIST interior codes, the 2008-12 model-year change marker
+`YEARA` on twelve November-2008 cars. 7 characters are defined nowhere (the
+position-16 `B` on the open list). Nothing is guessed.
+
+What the options say, by grade:
+- `ABAGS` (curtain + side airbags) is the most-taken option, 2,041 cars:
+  37% of Premium Editions, 19% of Black, 12% of plain GT-R — and 1% of
+  SPEC-V, 0% of EGOIST, where it was either built in or not offered.
+- `ETCTR`, the SPEC-V specification marker, is on **75 of 75 SPEC-V** cars,
+  the 11 built before its window opens included; and on 5 of 30 EGOIST once
+  its wording widened to "SPEC-V／EGOIST 仕様" in 2010-11.
+- `YEARA`, the 2008-12 partial-specification change, marks 411 cars of the
+  MY2009 update: 221 Premium, 112 plain, 90 Black Edition.
+- A typical SPEC-V reads `ETCTR CLAS2 SPKRB+ETCS2`, with `TYR08` (Dunlop
+  high-grip) on the 2009 cars and `DWHLD` from 2010.
+- EGOIST cars read as complete four-part bespoke interiors — instrument
+  upper (`RFTM2/3/4`), instrument spec (`WHST3`), lower (`BLTR2`–`BLTRA`,
+  nine colours from GT Black to Sakura) and seat stitch (`STCV2`–`STCV6`) —
+  and each car's four parts agree: `-PLLL` is GT Black throughout, `-QLTP`
+  is R Red / Shadow Gray / Shadow Gray. The page's own footnote (position 15
+  `P` or `Q` forces position 16 to `L` or `N`) holds on every EGOIST record.
+- The Premium Edition's Amber Red interior (`CLASA`, from 2012-09) is the
+  last option introduced before the disc's snapshot: 37 cars, every one of
+  them an interior-letter `P` car above.
 
 **A full export-VIN census past the disc's 2013 ceiling (2026-09-04).**
 Asked directly whether web data can extend R35 coverage past what the disc
@@ -808,7 +886,7 @@ having:
 | **2022** | **N** | **0 — confirmed not to exist** | Nissan skipped the US/Canada 2022 model year outright (chip-shortage era); cars sold in 2022 carried 2021-model VINs. Not a search gap. |
 | 2023 | P | 3 | individual listings |
 | 2024 | R | 3+ | individual listings |
-| **2025** | **S** | **0 found** | production ended 2025-08-26; the last car (a Premium Edition T-Spec) was delivered in Japan, not exported — plausibly true of most of the final run, which would carry a JDM chassis number instead of an export VIN and so wouldn't surface in US-centric VIN sites regardless of how thoroughly they're searched |
+| **2025** | **S** | **0 — confirmed not to exist** | the US 2024 model year was the last; Nissan ended US sales after MY2024, so no `S` VIN was ever issued. Japan alone continued to the 2025-08-26 line-off, on JDM chassis numbers. The same kind of fact as 2022, not a search gap. |
 
 Every year has either real data or a specific, sourced reason it has none —
 nothing here is an unresolved gap. Two structural facts confirmed with bulk
@@ -819,14 +897,71 @@ the 2016 facelift (first seen as a single example, `290737` → `100277`) is
 confirmed as a real pattern across the full bulk set, not a coincidence
 between two listings.
 
-**The web research from 2026-09-03 (kept below) is still useful** as a
-cross-check once the option pages are read — it independently supplied the
-public launch dates the "not force-fit" note above leans on, and the
-CBA/DBA/4BA type-designation and JDM grade timeline are both worth checking
-against whatever the option pages add. Unlike the R31 GTS-R case, nothing
-here required the web research to identify a chassis or a count — this time
-H: alone was sufficient, and the two sources corroborate rather than combine
-to produce an answer neither had alone.
+**2025, and how the line actually ended (web, 2026-09-04).** What exists
+past the disc, sourced rather than assumed:
+
+- **Japan got a 2025 model year; the United States did not.** The JDM
+  MY2025 was announced 2024-03-14 and went on sale June 2024: Pure edition
+  ¥14,443,000, Premium edition ¥15,587,000, Premium edition T-spec
+  ¥20,350,000, Track edition engineered by NISMO T-spec ¥22,891,000, NISMO
+  ¥30,085,000, NISMO Special edition ¥30,613,000. New for the year: a blue
+  ブルーヘブン (Blue Heaven) interior on the Premium edition, and on the two
+  T-spec grades a red-lettered aluminium nameplate carrying the engine
+  builder's (匠) name and a **gold model number plate** in the engine bay —
+  the final year's plates are visually distinct from every earlier car's.
+  T-spec exclusive colours: Midnight Purple on the Premium T-spec,
+  Millennium Jade on the Track edition T-spec. Nissan's release said
+  production was limited and orders might not be accepted.
+- In the US the 2024 model year was the last (Skyline Edition $132,985,
+  T-Spec Takumi Edition $152,985), so an `S`-letter export VIN was never
+  issued — the 2025 gap in the census table is the same kind of fact as the
+  2022 gap, not a search miss.
+- **The last R35 left the Tochigi line on 2025-08-26**: a Premium edition
+  T-spec in Midnight Purple, delivered to a customer in Japan. Roughly
+  48,000 built over 18 years, about 17,000 of them sold in Japan. No chassis
+  number was published for it.
+- Japan also had a real 2022 model year (the US skipped it): the Premium
+  edition T-spec was sold by lottery, 100 cars, in Midnight Purple and
+  Millennium Jade.
+
+**Paint codes past the disc**, with both market names where they differ —
+the same code is sold under a different name in Japan and the US:
+
+| code | Japan | US | years / notes |
+|---|---|---|---|
+| QX1 | ホワイトパール | Ivory Pearl | 2007-2009 |
+| KH3 | スーパーブラック | Black Obsidian | 2007-2010 |
+| KAC | タイタニウムグレー | Titanium | 2007-2009 |
+| KAB | アルティメイトメタルシルバー | Super Silver | throughout |
+| KAD | ダークメタルグレー | Gun Metallic | throughout |
+| A54 | バイブラントレッド | Solid Red | throughout |
+| QAB | ブリリアントホワイトパール | Pearl White Tricoat | 2009 on |
+| GAG | メテオフレークブラックパール | Jet Black Pearl | 2010 on |
+| RAY | オーロラフレアブルーパール | Deep Blue Pearl | 2010-2019 |
+| LAC | Ultimate Opal Black | — | SPEC-V only, 2008-2011 |
+| QAG | Ultimate Opal White | — | EGOIST only, 2010-2013 |
+| LAG | — | Midnight Opal | 2014 (US) |
+| NAS | — | Regal Red | 2015-2016 (US) |
+| KBL | — | Matte Gray | 2015 (US) |
+| EBG | アルティメイトシャイニーオレンジ | Blaze Metallic | 2017-2018 |
+| RCB | ワンガンブルー | Bayside Blue | 2020 on, 50th Anniversary — an homage to the R34's Bayside Blue, not the same paint |
+| KBY | ステルスグレー | Stealth Gray | 2021 |
+| KCE | NISMOステルスグレー | NISMO Stealth Gray | NISMO Special edition, 2022 on — a bluer, darker relative of KBY |
+| JW0 | ミレニアムジェイド | Millennium Jade | T-spec, 2022 on |
+| DAP | ミッドナイトパープル | Midnight Purple | T-spec, 2022 on; the last car's colour |
+
+Sources: Nissan Japan's own model-year catalogue pages (2014-11, 2016-07,
+2017-11), ImportArchive's US brochure index, a Nissan touch-up paint
+supplier for KBY/KCE. One source attributed `XLV` to NISMO Stealth Gray;
+that code belongs to the X-Trail NISMO and is not used here. カツラオレンジ /
+Katsura Orange (sometimes given as `EBB`) is confirmed by none of them and
+is left out.
+
+**The web research from 2026-09-03 (kept below)** supplied the public
+launch dates the "not force-fit" note above leans on, and its CBA/DBA/4BA
+and grade timelines agree with the option pages. Unlike the R31 GTS-R case,
+nothing here required the web to identify a chassis or a count — H: alone
+was sufficient; the two sources corroborate rather than combine.
 
 **Why R35 is a different shape of problem than everything else here.** Every
 other chassis in this archive is JDM-only or JDM-majority, so a short chassis
