@@ -624,3 +624,81 @@ say Aqua Silver), so it is in OVERRIDES marked as corroborated rather than
 sourced — the same footing as the R33 two-tones 1N3 and 1N4.
 
 **Decode**: 98.8% of records have every option character named.
+
+## R35 GT-R (volume 215) — not extracted; web research notes only
+
+Volume 215 is on the discs but nothing has been read from it — no front
+matter rendered, no legend transcribed, no `fast_r35.json`. Unlike every
+other chassis in this file, none of what follows comes from H:. It is
+external research (2026-09-03/04, web search plus Nissan's own JDM sites),
+recorded here as a skeleton to check the volume's own legend against
+whenever it is opened — the same combination of external VIN/date anchors
+plus the disc's own model-code table that cracked the R31 GTS-R
+([[r31-gtsr-identification]]).
+
+**Why R35 is a different shape of problem than everything else here.** Every
+other chassis in this archive is JDM-only or JDM-majority, so a short chassis
+number (`HR31-103105`) is the norm and a 17-character export VIN is the
+exception (see `src/index.js`'s routing note on this). The R35 is the
+reverse: it is a heavily-exported global model (~48,000 built worldwide
+against **16,831 sold in Japan** through Oct 2024), so most of what is
+findable on the open web is the 17-character NHTSA-style export VIN, not the
+JDM chassis number FAST would actually store. That gap matters for anything
+extracted from volume 215 later: a JDM-market SpecV or Club Track edition car
+almost certainly carries the short chassis-number format this archive
+already knows how to parse, not the export VIN below.
+
+**Export VIN structure** (confirmed against real listings, not assumed):
+`JN1AR5EF4GM290737` (2016 Premium) —
+
+| pos | meaning | observed values |
+|---|---|---|
+| 1-3 | WMI: `JN1` = Nissan, Japan, passenger vehicle | constant |
+| 4-6 | `AR5`, the GT-R body/model descriptor | constant across every trim and year seen |
+| 7-8 | engine/generation code | `EF` (Premium *and* Black Edition, 2012-2016) · `DF` (NISMO, 2023) · `BF` (T-spec 2021, Premium 2023) — **not a trim code**, it tracks a generation/engine revision shared across trims in a window |
+| 9 | check digit | varies, as expected |
+| 10 | model year letter, standard NHTSA table | `G`=2016 `H`=2017 `L`=2020 `M`=2021 `P`=2023 |
+| 11 | plant code | `M` (Tochigi) on every example seen, no exception |
+| 12-17 | serial | see below |
+
+**Serials cluster by model year and reset after the 2016 facelift**:
+250xxx (2012) → 261xxx (2013) → 270-271xxx (2014) → 280-281xxx (2015) →
+290-300xxx (2016), then a reset to 100xxx (2020) → 200xxx (2023, Premium
+*and* NISMO share the 200xxx block that year — serials are not per-trim).
+
+**型式 (type-designation) timeline**, sources disagree on one point:
+
+| code | years |
+|---|---|
+| CBA-R35 | 2007–2010 (launch) |
+| DBA-R35 | 2011–2016 (facelift) |
+| 4BA-R35 | 2016/2017–2025 (final facelift generation) |
+
+One source names the late-2010s code `EBA-R35` instead of `4BA-R35`. Not
+resolved — flagged rather than guessed at, the same policy as the R31's
+undocumented CA18 grade character.
+
+**Grade/trim timeline** (Japan market, from Japanese Wikipedia — the
+JDM-only, low-volume grades are the ones worth checking against volume 215's
+legend first, same reasoning as why the R31 GTS-R was findable at all):
+
+| grade | introduced | notes |
+|---|---|---|
+| Premium edition | 2007-12-06 | launch |
+| Black edition | 2007-12-06 | launch |
+| SpecV | 2009-02-02 | discontinued 2011-11 · **JDM-only, ~110 units** |
+| Club Track edition | 2010-11-17 | ~100 unit target |
+| EGOIST | 2010-11-17 | discontinued 2013 |
+| Pure edition | 2016-07-27 | renamed from base "GT-R" |
+| Track edition engineered by NISMO | 2014-11-25 | 2015 model year |
+| NISMO | 2014-02 | |
+| NISMO Special Edition | announced 2021-04/08 | 2022 model |
+| Premium edition T-spec | 2021-09-29 | limited, 120 units |
+| GT-R50 by Italdesign | 2021-08+ | 50 units, built in Italy |
+
+**Next step, if this is ever picked up**: render volume 215's front matter
+with `fast_image.js` the same way every other volume here was read, and
+check its モデル記号の意味 legend against this table — the JDM-only grades
+above (SpecV, Club Track edition, GT-R50) are the ones an export-VIN-only
+web search will never surface, so they are the actual test of whether the
+legend and this list agree.
