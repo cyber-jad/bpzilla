@@ -8,12 +8,18 @@ it names the traps that already cost real time once.
 
 Two things now run in the cloud with no local machine or manual step needed:
 
-- **GitLab stays in sync with GitHub on its own**, via GitLab's native Pull
-  Mirroring (Settings → Repository → Mirroring repositories on the
-  `jdm-imports-group/gtr-registry` project, pulling from
-  `https://github.com/cyber-jad/bpzilla.git`). No token is needed — the
-  GitHub repo is public. GitLab polls it periodically; a manual "Update now"
-  is always available in that same settings panel if you don't want to wait.
+- **GitLab stays in sync with GitHub on its own**, via
+  `.github/workflows/mirror-gitlab.yml` — every push to `master` triggers a
+  GitHub Actions job that pushes the same commit straight to the GitLab
+  mirror. (GitLab's own native Pull Mirroring, the simpler option that needs
+  no token, turned out to be a paid-tier-only feature on GitLab.com — the
+  free tier's mirror-direction dropdown only offers Push, not Pull — so this
+  push-based workaround is the one actually in place.) It needs one
+  one-time credential, documented in that workflow file's header: a GitLab
+  deploy token (scope `write_repository`) stored as the GitHub repo secret
+  `GITLAB_MIRROR_URL`. That secret has to be created by someone logged into
+  both accounts — it's the one piece of this that can't be automated away
+  entirely.
 - **A weekly verifiable backup publishes itself as a GitHub Release**, via
   `.github/workflows/backup.yml`. Every Sunday 03:00 UTC (and on-demand from
   the Actions tab → "Weekly archive backup" → "Run workflow"), it bundles the
