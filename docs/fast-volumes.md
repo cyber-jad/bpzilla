@@ -924,20 +924,66 @@ past the disc, sourced rather than assumed:
   edition T-spec was sold by lottery, 100 cars, in Midnight Purple and
   Millennium Jade.
 
-**EPC sites, tried (2026-09-04), for the post-2013 model codes.** The
-public parts catalogues are built from the same FAST model-code data as
-this archive, so a catalogue that lists R35 models from 2014 on would hand
-over the NISMO / Track edition / T-spec grade letters directly. What was
-found: **Amayama's Nissan EPC has exactly that catalogue** — "GT-R with
-R35-RHD frame, 12.2014 – 04.2019", `/genuine-catalogs/epc/nissan-general/
-gt-r/r35-rhd/510-vr38dett`, with NISMO in its grade list — but it is gated
-behind a CAPTCHA that has to be cleared by a person; once it is, that page
-is the thing to read. PartSouq's Nissan VIN decode is switched off
-("temporarily Toyota only"). 7zap's Japan catalogues (2007-09, 2010-15,
-2016-17) no longer expose the model list, and its VIN decoder's free tier
-returns make/model/year only — model codes are paid. `epc-data.com` is
-unreachable. Local `JDM_EPC` is the Mazda discs (`docs/mazda-epc.md`),
-nothing Nissan.
+**EPC sites (2026-09-04): Amayama's Japan catalogue is a live copy of
+FAST, and it runs past our disc.** The public parts catalogues are built
+from the same FAST data as this archive. PartSouq's Nissan VIN decode is
+switched off, 7zap hides its model lists and paywalls its decoder,
+`epc-data.com` is unreachable, and the local `JDM_EPC` folder is the Mazda
+discs (`docs/mazda-epc.md`). Amayama is the one that matters, and it is
+CAPTCHA-gated on every catalogue page load — a person has to clear it; a
+same-origin `fetch` from an already-cleared page then passes.
+
+Its Japan catalogue, `/en/genuine-catalogs/epc/nissan-japan/gt-r/R35`,
+lists thirteen specifications — the FAST grade abbreviations with their
+production periods, which is the first sight of the grades this disc never
+reached:
+
+| grade (as listed) | period | note |
+|---|---|---|
+| GTR (-201011) | 11.2007 – 11.2010 | the plain car; renamed PURE at 2010-11 — a precise date for the `W` letter's change of meaning |
+| PURE | 11.2010 – 11.2013 · 11.2013 – 11.2014 · 11.2014 – … | |
+| BLACK | 11.2007 – 11.2013 · 11.2013 – … | |
+| PREMIUM | 11.2007 – 11.2013 · 11.2013 – … | |
+| SPECV | 01.2009 – 11.2011 | matches our records' 0803–1106 (pre-production from 2008-03) |
+| EGOIST | 11.2010 – 11.2013 | matches 1006–1302 (pre-production from 2010-06) |
+| **NISMO** | **02.2014 – …** | not on our disc |
+| **NPKG** (Track edition engineered by NISMO) | **11.2014 – 07.2016 · 07.2016 – …** | not on our disc |
+
+No T-spec, 50th Anniversary or NISMO Special edition, so Amayama's snapshot
+stops somewhere before 2020. The modification pages show grade, engine,
+body and transmission only, and the part schemas' applicability column
+carries `C` / `C.NISMO` / 標準 and a period — **the Nissan model code is
+not exposed anywhere**, so the NISMO/NPKG grade *letters* are still unknown.
+
+**What is exposed is better for per-car purposes: a frame-number search
+that returns the FAST record.** `search_frame?frame_no=R35-050202` — the
+JDM chassis number in exactly this site's folded block+serial form —
+returns the specification's period, grade, manufacturing month, interior
+trim letter and paint code. Checked against our own extract, byte for byte:
+
+| frame | Amayama | our record (block 0, serial 50202) |
+|---|---|---|
+| R35-050202 | PREMIUM · made 02.2013 · trim G · colour KAD | grade Y (Premium) · 2013-02 · `GKAD` |
+
+Exact on all four fields, from a source that never saw our extraction.
+Then two frames the disc does not hold:
+
+| frame | Amayama |
+|---|---|
+| R35-050203 | PURE · made 03.2013 · G · GAG — the very next car, one month past the snapshot |
+| R35-050500 | BLACK · made 08.2013 · G · A54 |
+
+So Amayama's copy of FAST continues where ours stops. Two caveats before
+anyone reaches for it as a source of rows. The R35-0xxxxx serial sequence is
+sparse for JDM cars — 7,856 of ours sit in serials 1–50,202, about one
+number in six, the rest being RHD export builds that never enter FAST JP —
+so random probes mostly miss (52,000 through 100,000 in steps of 5,000 all
+came back empty, which says nothing about the range's end). Enumerating the
+2013–2019 JDM run would mean tens of thousands of requests against a
+commercial site that CAPTCHA-gates automation; that is a scope decision to
+make in the open, not a script to run quietly. Option codes and the model
+code are not in the frame result either — a car found this way carries
+grade, month, interior and paint, and no more.
 
 **Paint codes past the disc**, with both market names where they differ —
 the same code is sold under a different name in Japan and the US:
