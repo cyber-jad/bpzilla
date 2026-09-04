@@ -1,5 +1,22 @@
 Add-Type -AssemblyName System.Drawing
 
+# Stats are read from models.json rather than typed in, because typed-in was
+# exactly how these went stale before: this file, index.html and src/index.js
+# all hardcoded the same three numbers separately, R31 added 285,676 records
+# and 5 chassis, and none of the three updated. "Chassis" here is the count of
+# distinct `stamp` values (the real chassis-code prefix, e.g. BNR34, HR31) -
+# document the definition because there's more than one plausible one (a
+# grade-split model like ER34_GT/ER34_GTT/HR34 all share one stamp, ER34).
+$modelsPath = Join-Path $PSScriptRoot '..\public\data\models.json'
+$modelsJson = Get-Content $modelsPath -Raw | ConvertFrom-Json
+$total = $modelsJson.total
+$modelObjs = $modelsJson.models.PSObject.Properties.Value
+$chassisCount = ($modelObjs | ForEach-Object { $_.stamp } | Where-Object { $_ } | Select-Object -Unique).Count
+$yearNums = $modelObjs | ForEach-Object { $_.years } | Where-Object { $_ } |
+  ForEach-Object { [regex]::Matches($_, '\d{4}') } | ForEach-Object { [int]$_.Value }
+$dateRange = "$(($yearNums | Measure-Object -Minimum).Minimum)-$(($yearNums | Measure-Object -Maximum).Maximum)"
+$recordsFormatted = '{0:N0}' -f $total
+
 $W = 1200; $H = 630
 $bmp = New-Object System.Drawing.Bitmap($W, $H)
 $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -79,9 +96,9 @@ $g.DrawString('model code held in the Nissan FAST microfiche.', $fSub, (SB $mute
 $fNum = New-Object System.Drawing.Font('Consolas', 42, [System.Drawing.FontStyle]::Bold, [System.Drawing.GraphicsUnit]::Pixel)
 $fLab = New-Object System.Drawing.Font('Arial', 17, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
 $stats = @(
-  @{ n = '1,396,771'; l = 'RECORDS' },
-  @{ n = '34';        l = 'CHASSIS' },
-  @{ n = '1987-2002'; l = 'BUILD DATES' }
+  @{ n = $recordsFormatted; l = 'RECORDS' },
+  @{ n = "$chassisCount";   l = 'CHASSIS' },
+  @{ n = $dateRange;        l = 'BUILD DATES' }
 )
 $sx = 80.0
 foreach ($s in $stats) {
