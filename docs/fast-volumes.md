@@ -924,6 +924,21 @@ past the disc, sourced rather than assumed:
   edition T-spec was sold by lottery, 100 cars, in Midnight Purple and
   Millennium Jade.
 
+**EPC sites, tried (2026-09-04), for the post-2013 model codes.** The
+public parts catalogues are built from the same FAST model-code data as
+this archive, so a catalogue that lists R35 models from 2014 on would hand
+over the NISMO / Track edition / T-spec grade letters directly. What was
+found: **Amayama's Nissan EPC has exactly that catalogue** — "GT-R with
+R35-RHD frame, 12.2014 – 04.2019", `/genuine-catalogs/epc/nissan-general/
+gt-r/r35-rhd/510-vr38dett`, with NISMO in its grade list — but it is gated
+behind a CAPTCHA that has to be cleared by a person; once it is, that page
+is the thing to read. PartSouq's Nissan VIN decode is switched off
+("temporarily Toyota only"). 7zap's Japan catalogues (2007-09, 2010-15,
+2016-17) no longer expose the model list, and its VIN decoder's free tier
+returns make/model/year only — model codes are paid. `epc-data.com` is
+unreachable. Local `JDM_EPC` is the Mazda discs (`docs/mazda-epc.md`),
+nothing Nissan.
+
 **Paint codes past the disc**, with both market names where they differ —
 the same code is sold under a different name in Japan and the US:
 
@@ -993,17 +1008,20 @@ already knows how to parse, not the export VIN below.
 290-300xxx (2016), then a reset to 100xxx (2020) → 200xxx (2023, Premium
 *and* NISMO share the 200xxx block that year — serials are not per-trim).
 
-**型式 (type-designation) timeline**, sources disagree on one point:
+**型式 (type-designation) timeline** — resolved 2026-09-04 against the
+official type list (kurumaerabi's per-型式 catalogue) and Nissan's own
+環境仕様書 for the 2025 model:
 
 | code | years |
 |---|---|
 | CBA-R35 | 2007–2010 (launch) |
-| DBA-R35 | 2011–2016 (facelift) |
-| 4BA-R35 | 2016/2017–2025 (final facelift generation) |
+| DBA-R35 | 2010–2019, including the 2017 facelift |
+| 4BA-R35 | 2020 model year to the end (平成30年 emissions base, WLTC) — the 2025 sheet reads `4BA-R35` |
 
-One source names the late-2010s code `EBA-R35` instead of `4BA-R35`. Not
-resolved — flagged rather than guessed at, the same policy as the R31's
-undocumented CA18 grade character.
+`EBA-R35` does not exist as a Nissan type code. The official list has only
+the three above; "EBA" is aftermarket shorthand for the MY2017+ facelift
+cars, which stayed DBA-R35. The earlier note here that flagged it as an
+unresolved conflict is superseded.
 
 **Grade/trim timeline** (Japan market, from Japanese Wikipedia — the
 JDM-only, low-volume grades are the ones worth checking against volume 215's
