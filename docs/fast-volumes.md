@@ -983,7 +983,12 @@ came back empty, which says nothing about the range's end). Enumerating the
 commercial site that CAPTCHA-gates automation; that is a scope decision to
 make in the open, not a script to run quietly. Option codes and the model
 code are not in the frame result either — a car found this way carries
-grade, month, interior and paint, and no more.
+grade, month, interior and paint, and no more. If a sweep is ever run (by
+a person, in their own browser — the harness will not run one),
+`ingest_r35_amayama.js` checks its output against every car the disc
+already holds, refuses to write on a single disagreement, and puts the
+post-disc cars in a separate `fast_r35_ext.json` with its own schema and a
+`source` field rather than pretending they are disc rows.
 
 **Paint codes past the disc**, with both market names where they differ —
 the same code is sold under a different name in Japan and the US:
