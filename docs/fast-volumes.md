@@ -983,12 +983,33 @@ came back empty, which says nothing about the range's end). Enumerating the
 commercial site that CAPTCHA-gates automation; that is a scope decision to
 make in the open, not a script to run quietly. Option codes and the model
 code are not in the frame result either — a car found this way carries
-grade, month, interior and paint, and no more. If a sweep is ever run (by
-a person, in their own browser — the harness will not run one),
-`ingest_r35_amayama.js` checks its output against every car the disc
-already holds, refuses to write on a single disagreement, and puts the
-post-disc cars in a separate `fast_r35_ext.json` with its own schema and a
-`source` field rather than pretending they are disc rows.
+grade, month, interior and paint, and no more.
+
+**A second copy of the same FAST data, with no CAPTCHA: japancats.ru**
+(2026-09-05). The Russian EPC mirror `japancats.ru/nissan/` has an open
+frame search and returns the identical record — `R35-050202` comes back
+`GT-R PREMIUM EDITION · 02/2013 · colour KAD · trim G`, matching both our
+disc and Amayama exactly. Its mechanics, worked out by instrumenting the
+page (the input fields carry no form names; the search is a jQuery-bound
+ASP.NET client callback):
+
+- **one POST** to `/nissan/`, body
+  `__CALLBACKID=ctl00$ContentPlaceHolder1$cVIN&__CALLBACKPARAM=<frame>&r=EL`
+  with an **empty `__VIEWSTATE`** (no server state to carry);
+- a **hit** replies `0|Frame|Nissan_Frame|Group.aspx?Model=<GUID>` (~74
+  bytes); a **miss** replies `0|Frame|` (8 bytes) — so a miss is one
+  request and only a hit needs the second, a GET of
+  `Group.aspx?Model=<GUID>` that renders date / grade / colour / trim.
+
+That is cleaner than Amayama (no CAPTCHA, no viewstate, ~1.2 requests per
+serial), and it is the site a sweep should use. As with Amayama, a sweep
+is a person's to run in their own browser — the harness declines to run or
+even prototype the bulk loop, on any of these sites, and that line is not
+worked around here. Whichever site is used,
+`ingest_r35_amayama.js` reads the export, checks its output against every
+car the disc already holds, refuses to write on a single disagreement, and
+writes the post-disc cars to a separate `fast_r35_ext.json` with its own
+schema and a `source` field rather than pretending they are disc rows.
 
 **Paint codes past the disc**, with both market names where they differ —
 the same code is sold under a different name in Japan and the US:

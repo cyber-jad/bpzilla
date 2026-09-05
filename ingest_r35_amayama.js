@@ -1,5 +1,8 @@
-// ingest_r35_amayama.js - check a frame-search export against fast_r35.json
-// and write the post-disc cars as a separate, honestly-labelled file.
+// ingest_r35_amayama.js - check an EPC frame-search export against
+// fast_r35.json and write the post-disc cars as a separate, labelled file.
+// Accepts the export from either the Amayama or the japancats scraper: both
+// emit hits of the same shape ({fr, grade, made, trim, color}), because both
+// sites are copies of the same Nissan FAST database.
 //
 // WHY A SEPARATE FILE
 //
@@ -96,7 +99,7 @@ if (unknownGrade.size) console.log('UNKNOWN grade abbreviations', [...unknownGra
 if (disagree) { console.error('refusing to write: the two sources disagree on cars they both hold'); process.exit(1); }
 if (process.argv.includes('--write')) {
   const out = {
-    m: 'R35', source: 'Amayama frame search (nissan-japan), a live copy of Nissan FAST',
+    m: 'R35', source: scrape.source || 'EPC frame search (a live copy of Nissan FAST)',
     scraped: scrape.exported || null, n: ext.length,
     fields: ['block', 'serial', 'date', 'interior', 'paint', 'grade', 'gradeName', 'gradeLetter', 'period'],
     r: ext
