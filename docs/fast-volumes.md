@@ -1011,6 +1011,41 @@ car the disc already holds, refuses to write on a single disagreement, and
 writes the post-disc cars to a separate `fast_r35_ext.json` with its own
 schema and a `source` field rather than pretending they are disc rows.
 
+**The japancats harvest, done (2026-09-06): 1,962 new cars, 2013 to March
+2016, and a hard snapshot cutoff there.** A full block-0 sweep of
+japancats' frame search (serials 50,000-85,000, every one, no early stop)
+returned 2,164 cars. 202 of them overlap the disc (serials 50,001-50,202)
+and **all 202 agree with it on every field — zero disagreements** — which
+is the strongest cross-check this project has on any external source: two
+independent copies of FAST, byte-identical where they meet. The other
+1,962 are new, in `fast_r35_ext.json`:
+
+| year | cars | note |
+|---|---|---|
+| 2013 | 600 | the facelift Pure/Premium/Black, past the disc |
+| 2014 | 598 | **NISMO appears** (from 2013-08, six months before its Feb 2014 launch — another pre-production build, the GTS-R/SPEC-V pattern again) |
+| 2015 | 622 | |
+| 2016 | 142 | ends 2016-03 |
+
+By grade: Premium 626, Pure 499, Black 471, **NISMO 253, Track edition
+(NPKG) 113** — the two NISMO-built grades the disc never had.
+
+**But it stops dead at March 2016**, serial 80,018, and that is a real
+catalogue cutoff, not a scraping miss: the discovery map swept block 0 to
+serial 130,000 and found nothing past 80,018, and the sweep itself checked
+every serial with no gaps. japancats' copy of FAST was pressed around
+mid-2016, exactly as this project's own disc was pressed in early 2013 —
+each snapshot simply contains no car built after its date. So R35 coverage
+now runs **2007 to March 2016** (disc + japancats, ~10,000 JDM cars,
+including the first NISMO and Track edition cars). The tail — the 2016
+facelift onward, T-spec, the 50th Anniversary, the NISMO Special edition,
+the final 2025 cars — needs a **newer snapshot**. Amayama's catalogue is
+newer (it lists `07.2016-` modifications) and would reach further, but it
+is CAPTCHA-gated; a later FAST pressing would be the clean source.
+Production had fallen to ~100/year by the 2020s, so the missing tail is
+likely only ~2,000-3,000 cars, but it is where all the rare late editions
+live.
+
 **Paint codes past the disc**, with both market names where they differ —
 the same code is sold under a different name in Japan and the US:
 
