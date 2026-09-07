@@ -522,6 +522,35 @@ const JDM_DATABASE = {
       description: 'The R35 GT-R, JDM factory records - the Premium, Black Edition and Pure/GT-R grades plus the low-volume SPEC-V and EGOIST specials. 8,046 cars, factory-stamped 2007-03 to 2013-02 (the disc snapshot); the later NISMO/facelift cars are held separately.'
     },
 
+    'R35_EXPORT': {
+      id: 'R35_EXPORT', chassisPrefix: 'R35EXPORT',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35) — Export Markets',
+      shortName: 'R35 Export',
+      chassisCode: 'CBA/DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2007 – 2013',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The export R35 GT-R, read VIN-by-VIN from the Nissan FAST export microfiche for every market outside Japan - US, Canada, Europe (LHD & RHD), the general LHD/RHD markets and Australia/NZ/India. 16,351 real factory VINs, 56 destinations, 2007-2013.'
+    },
+    'R35_EXT': {
+      id: 'R35_EXT', chassisPrefix: 'R35EXT', chassisStamp: 'R35',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35) — 2013–2016 (post-disc)',
+      shortName: 'R35 2013–2016',
+      chassisCode: 'DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2013 – 2016',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The JDM R35 cars built after this archive\'s own disc snapshot ends (2013), recovered from a second, later Nissan FAST catalogue (japancats.ru) and cross-checked byte-for-byte against the disc on their overlap. 1,962 cars, 2013 to March 2016, including the GT-R NISMO and Track edition the disc never held.'
+    },
+
     // R30 (DR30) is intentionally not included — see the file header note.
 
     // =========================================================
@@ -1068,6 +1097,28 @@ const JDM_DATABASE = {
     '549': { name: 'Silver', hex: '#C7CBCF' }
   },
 
+  // R35 paint names, kept SEPARATE from the disc colour master (paint.json /
+  // colorNames) on purpose: the R35's own factory colour table is not on this
+  // archive's disc (the disc ABBREV names only the generic shared codes). These
+  // names are WEB-SOURCED - a Japanese owner's plate-transcription blog (みんカラ
+  // user よっちゃんパパ) for the disc-era codes, cross-checked against our own
+  // 8,046 records (LAC = 100% SPEC-V, QAG = 100% EGOIST, both exact), plus the
+  // later US/JP market names from ImportArchive/Nissan sources for the post-2013
+  // codes. They apply only to R35* models so a code shared with an older chassis
+  // (KH3, QX1) keeps its disc name everywhere else. See docs/fast-volumes.md.
+  _r35PaintNames: {
+    QX1: 'White Pearl', KAD: 'Dark Metal Gray', KAB: 'Ultimate Metal Silver',
+    KH3: 'Super Black', QAB: 'Brilliant White Pearl', GAG: 'Meteor Flake Black Pearl',
+    A54: 'Vibrant Red', KAC: 'Titanium Gray', RAY: 'Aurora Flare Blue Pearl',
+    LAC: 'Ultimate Opal Black', QAG: 'Ultimate Opal White',
+    // post-disc (japancats tail), market names
+    LAG: 'Midnight Opal', NAS: 'Regal Red', KBL: 'Matte Gray',
+    EBG: 'Ultimate Shiny Orange (Blaze Metallic)'
+  },
+  _isR35Model: function(modelId) {
+    return modelId === 'R35' || modelId === 'R35_EXPORT' || modelId === 'R35_EXT';
+  },
+
   // ---- Sanitize raw FAST import artifacts ----
   // The FAST microfiche binaries use fixed-width fields left-padded with NUL
   // bytes, and that padding survived the H:\AR-JP\JP import into these JSON
@@ -1328,6 +1379,10 @@ const JDM_DATABASE = {
       // R35 (2007-2013), the JDM disc data, brought in scope 2026-09-06. 8,046
       // cars from VINDAT3.AA2 - see _decodeR35Grade and the r35-extraction note.
       'r35',
+      // R35 export markets (16,351 cars, all regions, VIN-keyed) and the
+      // japancats post-disc JDM tail (1,962 cars, 2013-2016). Built into the
+      // loader schema by build_r35_site_data.js from the raw extraction files.
+      'r35export', 'r35ext',
       'z32','gz32','cz32','hz32','gcz32',
       'z32_us','gz32_us','z32_ca','gz32_ca','gz32_el','gz32_er'
     ];
@@ -1395,6 +1450,21 @@ const JDM_DATABASE = {
           for (let i = 0; i < n; i++) col.vinIndex.set(doc.vin[i], i);
         }
         if (doc.exportInfo) col.exportInfo = doc.exportInfo;
+
+        // Per-record destination for a single file that itself spans many
+        // markets (the merged R35 export), the same shape _mergeExportGroups
+        // builds for the Z32 export: a sourceInfo table plus a per-row index.
+        if (Array.isArray(doc.sourceInfo) && Array.isArray(doc.rowSource) && doc.rowSource.length === n) {
+          col.sourceInfo = doc.sourceInfo;
+          col.rowSource = Uint16Array.from(doc.rowSource);
+        }
+        // A file that carries its grade pre-decoded (japancats has grade text
+        // but no model code, so _decodeGrade has nothing to read). Used in
+        // place of the model-code decode when present.
+        if (Array.isArray(doc.grade) && doc.grade.length === n) col.gradeStr = doc.grade;
+        // Source/verification wording for a whole non-disc file (japancats),
+        // so its records don't claim the disc-microfiche provenance.
+        if (doc.provenance) col.provenance = doc.provenance;
 
         // Each row is a fixed-position tuple, not a keyed object — this is the
         // one place the shape is spelled out: [block, serial, dateDictIdx,
@@ -1566,7 +1636,8 @@ const JDM_DATABASE = {
     // these letters, so decoding one would be a guess.
     const colorTrim = col.dict.ctr ? (col.dict.ctr[col.ci[i]] || '') : '';
     const date = col.dict.d[col.di[i]] || '';
-    const name = this._paint[code] || (this.colorNames[code] || {}).name || code;
+    const name = (this._isR35Model(modelId) && this._r35PaintNames[code])
+      || this._paint[code] || (this.colorNames[code] || {}).name || code;
     const hex = (this.colorNames[code] || {}).hex || this._swatchFor(code, name);
 
     // Export-market records (US/CA/EL/ER) carry a real reconstructed VIN in
@@ -1588,21 +1659,27 @@ const JDM_DATABASE = {
         marketName = (model || {}).destination || info.region || 'export market';
         confirmed = info.vinConfirmedTotal > 0 && info.vinConfirmedCount === info.vinConfirmedTotal;
       }
+      // The R35 export carries a real model code (with the GR35 grade marker),
+      // so its grade decodes exactly as the JDM does; the Z32 export has no
+      // usable grade field and stays blank.
+      const exMc = col.dict.mc[col.mci[i]] || '';
+      const exGrade = modelId === 'R35_EXPORT'
+        ? (this._decodeGrade(modelId, exMc, date) || '') : '';
       return {
         chassisNumber: vin,
         plateNumber: vin,
         modelId: modelId,
         seriesBlock: block,
-        modelCode: '',
+        modelCode: modelId === 'R35_EXPORT' ? exMc : '',
         modelName: model ? model.name : modelId,
         series: model ? model.shortName : '',
-        grade: '',
+        grade: exGrade,
         buildDate: date,
         colorCode: code,
         colorTrimCode: colorTrim,
         colorName: name,
         colorHex: hex,
-        interiorCode: '',
+        interiorCode: modelId === 'R35_EXPORT' ? colorTrim : '',
         transmission: model ? model.transmission : '',
         destination: marketName,
         status: confirmed ? '✅ VIN Validated (NHTSA Check Digit)' : '⚠️ Reconstructed Identifier — Not Publicly VIN-Verifiable',
@@ -1646,8 +1723,11 @@ const JDM_DATABASE = {
       modelCode: col.dict.mc[col.mci[i]] || '',
       modelName: model ? model.name : modelId,
       series: this._decodeSeries(physicalId, block, date, serial),
-      grade: this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)
-        || this._decodeR32EngineGrade(physicalId, this._engineCharAt(col, i)),
+      // A file with a pre-decoded grade (japancats: grade text, no model code)
+      // uses it directly; everything else decodes from the model code as usual.
+      grade: col.gradeStr ? (col.gradeStr[i] || '')
+        : (this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)
+          || this._decodeR32EngineGrade(physicalId, this._engineCharAt(col, i))),
       // Standard-for-grade equipment, which is deliberately absent from the
       // plate — see _bnr32GradeStandard.
       gradeStandard: this.gradeStandard(physicalId, this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date)),
@@ -1657,7 +1737,7 @@ const JDM_DATABASE = {
       colorTrimCode: colorTrim,
       colorName: name,
       colorHex: hex,
-      interiorCode: col.dict.t[col.ti[i]] || '',
+      interiorCode: (col.dict.t[col.ti[i]] || '') || colorTrim,
       transmission: this._decodeTransmission(physicalId, col.dict.mc[col.mci[i]] || '') || (model ? model.transmission : ''),
       bodyStyle: this._decodeBody(physicalId, col.dict.mc[col.mci[i]] || '',
         (col.bdi && col.dict.bd) ? col.dict.bd[col.bdi[i]] : ''),
@@ -1669,8 +1749,9 @@ const JDM_DATABASE = {
         this._decodeGrade(physicalId, col.dict.mc[col.mci[i]] || '', date),
         this._engineCharAt(col, i)),
       destination: 'Japan Domestic Market (JDM)',
-      status: '✅ Genuine FAST Record',
-      notes: `Nissan FAST microfiche verified. Factory stamped ${date}.`
+      status: col.provenance ? col.provenance.status : '✅ Genuine FAST Record',
+      notes: col.provenance ? col.provenance.note
+        : `Nissan FAST microfiche verified. Factory stamped ${date}.`
     };
   },
 
@@ -1726,13 +1807,19 @@ const JDM_DATABASE = {
       const model = this.models[key];
       const physicalId = model.chassisPrefix || key;
       const stamp = model.chassisStamp || physicalId;
-      if (!byStamp[stamp]) byStamp[stamp] = { physicalId, filters: [] };
+      // One stamp can front more than one physical column: an R35 car is
+      // stamped "R35-######" whether it is in the disc column (serials to
+      // 50,202) or the post-disc japancats column (50,203 on), and the two
+      // sequences don't overlap, so a number resolves to exactly one of them.
+      if (!byStamp[stamp]) byStamp[stamp] = { physicalId, physicalIds: [], filters: [] };
+      if (!byStamp[stamp].physicalIds.includes(physicalId)) byStamp[stamp].physicalIds.push(physicalId);
       byStamp[stamp].filters.push(model.gradeFilter || null);
       (stampsPerCol[physicalId] = stampsPerCol[physicalId] || new Set()).add(stamp);
     }
     for (const stamp of Object.keys(byStamp)) {
       const e = byStamp[stamp];
-      if (stampsPerCol[e.physicalId].size < 2) e.filters = null;
+      // Row filters only distinguish stamps that share ONE column (PS13/KPS13).
+      if (!e.physicalIds.some(pid => stampsPerCol[pid].size >= 2)) e.filters = null;
     }
     this._chassisStampIndex = byStamp;
     return byStamp;
@@ -1757,17 +1844,20 @@ const JDM_DATABASE = {
     // cars that happen to carry the same serial.
     const entry = this._stampIndex()[m[1]];
     if (!entry) return [];
-    const { physicalId, filters } = entry;
-    const col = this._cols[physicalId];
-    if (!col) return [];
+    const { physicalIds, filters } = entry;
+    if (!physicalIds.some(pid => this._cols[pid])) return [];
 
-    const rowBelongs = i => {
-      if (!filters) return true;
-      const mc = col.dict.mc[col.mci[i]] || '';
-      return filters.some(f => !f || this._matchesFilter(mc, f));
-    };
-
-    const search = (block, serial) => {
+    // Search one physical column. A stamp shared across columns (R35 disc +
+    // post-disc) runs this for each; their serial ranges don't overlap, so at
+    // most one column answers for any given number.
+    const searchCol = (physicalId, block, serial) => {
+      const col = this._cols[physicalId];
+      if (!col) return [];
+      const rowBelongs = i => {
+        if (!filters) return true;
+        const mc = col.dict.mc[col.mci[i]] || '';
+        return filters.some(f => !f || this._matchesFilter(mc, f));
+      };
       const found = [];
       for (const b of Object.keys(col.ranges)) {
         const blockChar = col.dict.b[b] || '0';
@@ -1788,6 +1878,12 @@ const JDM_DATABASE = {
           found.push(this._materialize(this._virtualModelFor(physicalId, mc, this._engineCharAt(col, k)), k));
         }
       }
+      return found;
+    };
+
+    const search = (block, serial) => {
+      const found = [];
+      for (const pid of physicalIds) found.push(...searchCol(pid, block, serial));
       return found;
     };
 
@@ -2449,7 +2545,7 @@ const JDM_DATABASE = {
   // apparent Club Track builds) is left undecoded rather than guessed, so the
   // model's range stands in. See the r35-extraction note for the byte-level work.
   _decodeR35Grade: function(modelId, mc, date) {
-    if (modelId !== 'R35') return null;
+    if (!this._isR35Model(modelId)) return null;
     const c = String(mc || '');
     const k = c.indexOf('GR35');
     if (k < 1) return '';
