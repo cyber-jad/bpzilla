@@ -645,6 +645,49 @@ real production stop. Held but not wired into the site, same status as R30,
 S110, S12, Z31 and M35 — decode logic, a `models{}` entry and the loader
 prefix are a separate step.
 
+**The export R35 was on the disc all along — 16,351 more cars (2026-09-06).**
+The whole archive, R35 included, had been built from `H:\AR-JP\JP` (Japan)
+only. `H:\NISSAN\` holds the *export* FAST for every other region, never
+touched: US, Canada, Europe-LHD, Europe-RHD, General-LHD, General-RHD, plus
+Australia/NZ/India in the `AR-JP\AR` volume. Extracted by
+`extract_r35_export.js` to `public/data/fast_r35_export.json`:
+
+| region | GT-R | file |
+|---|---|---|
+| US | 8,485 | `NISSAN/US/VINDAT8.GA1` |
+| Europe LHD | 3,661 | `NISSAN/EL/VINDAT8.BA2` |
+| Europe RHD | 2,509 | `NISSAN/ER/VINDAT8.CA1` — GB 2,287, plus South Africa, Singapore, Brunei, Cyprus |
+| Australia/NZ/India | 595 | `AR-JP/AR/VINDAT8.IA1` |
+| Canada | 626 | `NISSAN/CA/VINDAT8.HA1` |
+| General LHD | 297 | Taiwan, Dubai, Kuwait, Lebanon… |
+| General RHD | 178 | South Africa, Hong Kong… |
+
+**16,351 cars, 56 destinations, 2007-04 to 2013-04, zero duplicate VINs.**
+That is the FAST V6.15 (~2013) pressing, the same vintage as the JDM disc, so
+it adds the global export *dimension* for 2007-2013 rather than newer years.
+
+The export format is different and worth recording: VIN-indexed, not
+frame-indexed. `VINDAT8.<vol>` is a flat 37-byte grid, one record per car,
+keyed on the 17-char VIN. Layout (see `extract_r35_export.js` for the byte
+map): 12-char VIN prefix, 24-bit serial, 16-bit `YYMM` date, the same
+colour-trim char + 3-char paint as the JDM records, a 4-char destination code
+(`USEM`, `EGBM` = GB, `ASRM` = Australia…), then a 24-bit pointer into
+`MDLCODE.<vol>` where the 20-char export model code lives. The model code
+carries the drive character the JDM one does not vary: `L` = LHD (US, Europe
+LHD), `R` = RHD (GB, Australia), against the JDM's constant `R`. A record is a
+GT-R iff that model code contains `GR35` — the definitive, region-independent
+test, verified on ER to agree exactly with a VIN-marker filter (2,509 =
+2,509, zero missed).
+
+**Two findings from the export data.** The grade character decodes as it does
+for the JDM (`W` base / `R` Black / `Y` Premium / `M` SPEC-V / `V` EGOIST),
+and export is overwhelmingly the base car — W 9,385, R 3,500, Y 3,424 — but it
+also carries **33 SPEC-V and 8 EGOIST** built for export, the JDM-special
+grades sold abroad in tiny numbers, including a European SPEC-V in Ultimate
+Opal Black (`LAC`). And the paint vocabulary is identical to the JDM set
+(QAB, KH3, KAD, GAG, KAB, A54, RAY, QX1, KAC, LAC), so the two datasets share
+one colour dictionary. Held, not served — same staging as the JDM R35.
+
 **Where it actually lives, and why it took a scan to find.** Volume 215
 itself (`H:\AR-JP\JP\215\`) is the option/spec catalog only — `CATALOG.215`,
 `PATCODE.215`, `ABBREV.215`, `MAENOTE.215`/`MAEIMG.215` for the front matter —
