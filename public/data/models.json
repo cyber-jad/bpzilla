@@ -1,6 +1,6 @@
 {
- "generated": "2026-08-29",
- "total": 1682447,
+ "generated": "2026-09-07",
+ "total": 1690493,
  "models": {
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
@@ -265,6 +265,17 @@
    "stamp": "WFJR31",
    "legend": false,
    "count": 14921
+  },
+  "R35": {
+   "name": "Nissan GT-R (R35)",
+   "short": "R35 GT-R",
+   "code": "CBA/DBA-R35",
+   "years": "2007 – 2013",
+   "engine": "VR38DETT 3.8L Twin-Turbo V6",
+   "body": "2-Door Coupe",
+   "stamp": "R35",
+   "legend": false,
+   "count": 8046
   },
   "S13": {
    "name": "Nissan Silvia (S13)",

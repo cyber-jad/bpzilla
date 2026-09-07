@@ -507,6 +507,21 @@ const JDM_DATABASE = {
       description: 'The four-cylinder CA18 R31 estate.'
     },
 
+    'R35': {
+      id: 'R35', chassisPrefix: 'R35',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35)',
+      shortName: 'R35 GT-R',
+      chassisCode: 'CBA/DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2007 – 2013',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The R35 GT-R, JDM factory records - the Premium, Black Edition and Pure/GT-R grades plus the low-volume SPEC-V and EGOIST specials. 8,046 cars, factory-stamped 2007-03 to 2013-02 (the disc snapshot); the later NISMO/facelift cars are held separately.'
+    },
+
     // R30 (DR30) is intentionally not included — see the file header note.
 
     // =========================================================
@@ -1310,6 +1325,9 @@ const JDM_DATABASE = {
       // exactly - see _decodeR31Grade). HR31 is the single largest chassis in
       // the archive at 182,351 records.
       'hr31','sr31','fjr31','wfjr31','whjr31',
+      // R35 (2007-2013), the JDM disc data, brought in scope 2026-09-06. 8,046
+      // cars from VINDAT3.AA2 - see _decodeR35Grade and the r35-extraction note.
+      'r35',
       'z32','gz32','cz32','hz32','gcz32',
       'z32_us','gz32_us','z32_ca','gz32_ca','gz32_el','gz32_er'
     ];
@@ -2421,7 +2439,33 @@ const JDM_DATABASE = {
     return '';                                        // engine char truly unavailable
   },
 
+  // R35 grade sits in the character immediately before the "GR35" chassis
+  // fragment (Y = Premium, R = Black Edition, M = SPEC-V, V = EGOIST). 'W' is
+  // date-windowed the same way R31/S13/Z32 grades are: the plain launch car was
+  // "GT-R" and became "Pure Edition" at the MY2009 revision (2009-01). This is
+  // region-independent - it reads the same on the export codes (which carry a
+  // leading drive char L/R the JDM codes share) because it anchors on GR35, not
+  // a fixed offset. 'Q' (21 cars, all-blank options - the pre-launch and
+  // apparent Club Track builds) is left undecoded rather than guessed, so the
+  // model's range stands in. See the r35-extraction note for the byte-level work.
+  _decodeR35Grade: function(modelId, mc, date) {
+    if (modelId !== 'R35') return null;
+    const c = String(mc || '');
+    const k = c.indexOf('GR35');
+    if (k < 1) return '';
+    switch (c[k - 1]) {
+      case 'Y': return 'Premium';
+      case 'R': return 'Black Edition';
+      case 'W': return (date && date >= '2009-01') ? 'Pure Edition' : 'GT-R';
+      case 'M': return 'SPEC-V';
+      case 'V': return 'EGOIST';
+      default:  return '';           // Q and anything else: not in the legend
+    }
+  },
+
   _decodeGrade: function(modelId, mc, date) {
+    const r35 = this._decodeR35Grade(modelId, mc, date);
+    if (r35 !== null) return r35;
     const r31 = this._decodeR31Grade(modelId, mc, date);
     if (r31 !== null) return r31;
     const r32 = this._decodeR32Grade(modelId, mc);
@@ -2670,6 +2714,9 @@ const JDM_DATABASE = {
   _decodeBody: function(modelId, mc, bodyChar) {
     if (bodyChar === 'G') return this._bodyNameForDoors(modelId, '2-Door');
     if (bodyChar === 'B') return this._bodyNameForDoors(modelId, '4-Door');
+    // R35 is a single body: every car in the table is the 2-door coupe (the
+    // JDM colour-prefix format carries no body character to read).
+    if (modelId === 'R35') return '2-Door Coupe';
     // R31: the wagons are their own files; HR31/FJR31/SR31 carry the door
     // marker ('R' right after the R31 fragment) for the 2-door coupe, and are
     // otherwise a 4-door. Volume 078 distinguishes sedan from hardtop with a
