@@ -100,6 +100,55 @@ const JDM_DATABASE = {
   models: {
 
     // =========================================================
+    // R35 GENERATION (2007 – 2016) — the standalone GT-R, kept at the head of
+    // the GT-R generations (newest first, above R34) rather than with the
+    // Nissan Legends. Three browsable entries: the JDM disc data, the export
+    // markets, and the post-disc japancats tail.
+    // =========================================================
+    'R35': {
+      id: 'R35', chassisPrefix: 'R35',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35)',
+      shortName: 'R35 GT-R',
+      chassisCode: 'CBA/DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2007 – 2013',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The R35 GT-R, JDM factory records - the Premium, Black Edition and Pure/GT-R grades plus the low-volume SPEC-V and EGOIST specials. 8,046 cars, factory-stamped 2007-03 to 2013-02 (the disc snapshot); the later NISMO/facelift cars are held separately.'
+    },
+    'R35_EXPORT': {
+      id: 'R35_EXPORT', chassisPrefix: 'R35EXPORT',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35) — Export Markets',
+      shortName: 'R35 Export',
+      chassisCode: 'CBA/DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2007 – 2013',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The export R35 GT-R, read VIN-by-VIN from the Nissan FAST export microfiche for every market outside Japan - US, Canada, Europe (LHD & RHD), the general LHD/RHD markets and Australia/NZ/India. 16,351 real factory VINs, 56 destinations, 2007-2013.'
+    },
+    'R35_EXT': {
+      id: 'R35_EXT', chassisPrefix: 'R35EXT', chassisStamp: 'R35',
+      generation: 'R35 (GT-R)',
+      name: 'Nissan GT-R (R35) — 2013–2016 (post-disc)',
+      shortName: 'R35 2013–2016',
+      chassisCode: 'DBA-R35',
+      bodyStyle: '2-Door Coupe',
+      years: '2013 – 2016',
+      engine: 'VR38DETT 3.8L Twin-Turbo V6',
+      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
+      drivetrain: 'ATTESA E-TS AWD',
+      badgeClass: 'badge-nissan',
+      description: 'The JDM R35 cars built after this archive\'s own disc snapshot ends (2013), recovered from a second, later Nissan FAST catalogue (japancats.ru) and cross-checked byte-for-byte against the disc on their overlap. 1,962 cars, 2013 to March 2016, including the GT-R NISMO and Track edition the disc never held.'
+    },
+
+    // =========================================================
     // R34 GENERATION (1998 – 2002)
     // =========================================================
     'BNR34': {
@@ -505,50 +554,6 @@ const JDM_DATABASE = {
       drivetrain: 'RWD',
       badgeClass: 'badge-nissan',
       description: 'The four-cylinder CA18 R31 estate.'
-    },
-
-    'R35': {
-      id: 'R35', chassisPrefix: 'R35',
-      generation: 'R35 (GT-R)',
-      name: 'Nissan GT-R (R35)',
-      shortName: 'R35 GT-R',
-      chassisCode: 'CBA/DBA-R35',
-      bodyStyle: '2-Door Coupe',
-      years: '2007 – 2013',
-      engine: 'VR38DETT 3.8L Twin-Turbo V6',
-      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
-      drivetrain: 'ATTESA E-TS AWD',
-      badgeClass: 'badge-nissan',
-      description: 'The R35 GT-R, JDM factory records - the Premium, Black Edition and Pure/GT-R grades plus the low-volume SPEC-V and EGOIST specials. 8,046 cars, factory-stamped 2007-03 to 2013-02 (the disc snapshot); the later NISMO/facelift cars are held separately.'
-    },
-
-    'R35_EXPORT': {
-      id: 'R35_EXPORT', chassisPrefix: 'R35EXPORT',
-      generation: 'R35 (GT-R)',
-      name: 'Nissan GT-R (R35) — Export Markets',
-      shortName: 'R35 Export',
-      chassisCode: 'CBA/DBA-R35',
-      bodyStyle: '2-Door Coupe',
-      years: '2007 – 2013',
-      engine: 'VR38DETT 3.8L Twin-Turbo V6',
-      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
-      drivetrain: 'ATTESA E-TS AWD',
-      badgeClass: 'badge-nissan',
-      description: 'The export R35 GT-R, read VIN-by-VIN from the Nissan FAST export microfiche for every market outside Japan - US, Canada, Europe (LHD & RHD), the general LHD/RHD markets and Australia/NZ/India. 16,351 real factory VINs, 56 destinations, 2007-2013.'
-    },
-    'R35_EXT': {
-      id: 'R35_EXT', chassisPrefix: 'R35EXT', chassisStamp: 'R35',
-      generation: 'R35 (GT-R)',
-      name: 'Nissan GT-R (R35) — 2013–2016 (post-disc)',
-      shortName: 'R35 2013–2016',
-      chassisCode: 'DBA-R35',
-      bodyStyle: '2-Door Coupe',
-      years: '2013 – 2016',
-      engine: 'VR38DETT 3.8L Twin-Turbo V6',
-      transmission: '6-Speed Dual-Clutch (GR6 DCT)',
-      drivetrain: 'ATTESA E-TS AWD',
-      badgeClass: 'badge-nissan',
-      description: 'The JDM R35 cars built after this archive\'s own disc snapshot ends (2013), recovered from a second, later Nissan FAST catalogue (japancats.ru) and cross-checked byte-for-byte against the disc on their overlap. 1,962 cars, 2013 to March 2016, including the GT-R NISMO and Track edition the disc never held.'
     },
 
     // R30 (DR30) is intentionally not included — see the file header note.
