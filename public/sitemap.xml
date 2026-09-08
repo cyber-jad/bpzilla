@@ -157,6 +157,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://gtr-registry.org/model/R35</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://gtr-registry.org/model/ER34_GTT</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>yearly</changefreq>
@@ -182,12 +188,6 @@
   </url>
   <url>
     <loc>https://gtr-registry.org/model/HNR32</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://gtr-registry.org/model/R35_EXPORT</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
@@ -259,12 +259,6 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://gtr-registry.org/model/R35</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://gtr-registry.org/model/ENR33</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>yearly</changefreq>
@@ -308,12 +302,6 @@
   </url>
   <url>
     <loc>https://gtr-registry.org/model/ER32</loc>
-    <lastmod>2026-09-08</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://gtr-registry.org/model/R35_EXT</loc>
     <lastmod>2026-09-08</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.7</priority>
