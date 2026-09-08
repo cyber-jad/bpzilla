@@ -6,34 +6,12 @@
    "name": "Nissan GT-R (R35)",
    "short": "R35 GT-R",
    "code": "CBA/DBA-R35",
-   "years": "2007 – 2013",
+   "years": "2007 – 2016",
    "engine": "VR38DETT 3.8L Twin-Turbo V6",
    "body": "2-Door Coupe",
    "stamp": "R35",
    "legend": false,
-   "count": 8046
-  },
-  "R35_EXPORT": {
-   "name": "Nissan GT-R (R35) — Export Markets",
-   "short": "R35 Export",
-   "code": "CBA/DBA-R35",
-   "years": "2007 – 2013",
-   "engine": "VR38DETT 3.8L Twin-Turbo V6",
-   "body": "2-Door Coupe",
-   "stamp": "R35EXPORT",
-   "legend": false,
-   "count": 17315
-  },
-  "R35_EXT": {
-   "name": "Nissan GT-R (R35) — 2013–2016 (post-disc)",
-   "short": "R35 2013–2016",
-   "code": "DBA-R35",
-   "years": "2013 – 2016",
-   "engine": "VR38DETT 3.8L Twin-Turbo V6",
-   "body": "2-Door Coupe",
-   "stamp": "R35",
-   "legend": false,
-   "count": 1962
+   "count": 27323
   },
   "BNR34": {
    "name": "Nissan Skyline GT-R (BNR34)",
