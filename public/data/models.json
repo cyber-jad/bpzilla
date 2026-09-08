@@ -1,6 +1,6 @@
 {
- "generated": "2026-09-07",
- "total": 1708806,
+ "generated": "2026-09-08",
+ "total": 1709770,
  "models": {
   "R35": {
    "name": "Nissan GT-R (R35)",
@@ -22,7 +22,7 @@
    "body": "2-Door Coupe",
    "stamp": "R35EXPORT",
    "legend": false,
-   "count": 16351
+   "count": 17315
   },
   "R35_EXT": {
    "name": "Nissan GT-R (R35) — 2013–2016 (post-disc)",
