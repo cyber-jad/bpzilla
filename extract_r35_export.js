@@ -45,13 +45,18 @@ const be16 = (b, o) => (b[o] << 8) | b[o + 1];
 const ascii = (b, o, n) => b.subarray(o, o + n).toString('latin1');
 const yearOf = (ymm) => '20' + String(Math.floor(ymm / 100)).padStart(2, '0'); // export runs 2007-2013
 
+// Sourced from I:\Nissan_02.19 (a later, Feb-2019 pressing of the export FAST)
+// for the six regions it carries - it is a strict superset of the H:\NISSAN
+// pressing for the same 2007-2013 era (US 9,124 vs 8,485, every H: car present
+// plus more; ~+369 cars net across all regions), so it is the fuller source.
+// It has no Australia/NZ/India folder, so AR stays on the H:\AR-JP pressing.
 const REGIONS = [
-  { region: 'US', vindat: 'H:/NISSAN/US/VINDAT8.GA1', mdlcode: 'H:/NISSAN/US/MDLCODE.GA1' },
-  { region: 'CA', vindat: 'H:/NISSAN/CA/VINDAT8.HA1', mdlcode: 'H:/NISSAN/CA/MDLCODE.HA1' },
-  { region: 'EL', vindat: 'H:/NISSAN/EL/VINDAT8.BA2', mdlcode: 'H:/NISSAN/EL/MDLCODE.BA2' },
-  { region: 'ER', vindat: 'H:/NISSAN/ER/VINDAT8.CA1', mdlcode: 'H:/NISSAN/ER/MDLCODE.CA1' },
-  { region: 'GL', vindat: 'H:/NISSAN/GL/VINDAT8.DA2', mdlcode: 'H:/NISSAN/GL/MDLCODE.DA2' },
-  { region: 'GR', vindat: 'H:/NISSAN/GR/VINDAT8.EA1', mdlcode: 'H:/NISSAN/GR/MDLCODE.EA1' },
+  { region: 'US', vindat: 'I:/Nissan_02.19/US/VINDAT8.GA1', mdlcode: 'I:/Nissan_02.19/US/MDLCODE.GA1' },
+  { region: 'CA', vindat: 'I:/Nissan_02.19/CA/VINDAT8.HA1', mdlcode: 'I:/Nissan_02.19/CA/MDLCODE.HA1' },
+  { region: 'EL', vindat: 'I:/Nissan_02.19/EL/VINDAT8.BA2', mdlcode: 'I:/Nissan_02.19/EL/MDLCODE.BA2' },
+  { region: 'ER', vindat: 'I:/Nissan_02.19/ER/VINDAT8.CA1', mdlcode: 'I:/Nissan_02.19/ER/MDLCODE.CA1' },
+  { region: 'GL', vindat: 'I:/Nissan_02.19/GL/VINDAT8.DA2', mdlcode: 'I:/Nissan_02.19/GL/MDLCODE.DA2' },
+  { region: 'GR', vindat: 'I:/Nissan_02.19/GR/VINDAT8.EA1', mdlcode: 'I:/Nissan_02.19/GR/MDLCODE.EA1' },
   { region: 'AR', vindat: 'H:/AR-JP/AR/VINDAT8.IA1', mdlcode: 'H:/AR-JP/AR/MDLCODE.IA1' }
 ];
 
@@ -112,7 +117,7 @@ if (!process.argv.includes('--dry')) {
   const rows = all.map(x => [R.fn(x.region), D.fn(x.dest), x.vin, x.date, C.fn(x.colour), M.fn(x.mc)]);
   const out = {
     m: 'R35_EXPORT',
-    source: 'H:\\NISSAN\\<region>\\VINDAT8 (FAST V6.15, ~2013 pressing) - export markets, all regions',
+    source: 'I:\\Nissan_02.19\\<region>\\VINDAT8 (later Feb-2019 export FAST pressing; AR from H:\\AR-JP) - export markets, all regions, 2007-2013',
     n: rows.length,
     regions: perRegion,
     cols: ['regionIdx', 'destIdx', 'vin', 'date', 'colourIdx', 'mcIdx'],
