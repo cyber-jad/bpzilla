@@ -173,6 +173,38 @@ async function getModels(env) {
   return modelIndex;
 }
 
+let colorIndex = null;     // cached per isolate; the file is ~35 KB
+                            // see extract_color_breakdown.js for how it's built
+
+async function getColorBreakdown(env) {
+  if (colorIndex) return colorIndex;
+  try {
+    const res = await env.ASSETS.fetch(new Request(`${SITE}/data/colorBreakdown.json`));
+    if (!res.ok) return null;
+    colorIndex = await res.json();
+  } catch {
+    colorIndex = null;
+  }
+  return colorIndex;
+}
+
+// Turns a model's real color/grade breakdown into a sentence worth indexing
+// -- the top factory colors by production count, spelled out with real
+// numbers rather than left to a client-side chart a crawler never sees.
+function breakdownSentence(entry) {
+  if (!entry) return '';
+  const parts = [];
+  if (entry.colors && entry.colors.length) {
+    const list = entry.colors.map((c) => `${c.name} (${n(c.count)} cars, ${c.percent}%)`).join(', ');
+    parts.push(`Factory colors on record: ${list}.`);
+  }
+  if (entry.grades && entry.grades.length) {
+    const list = entry.grades.map((g) => `${g.grade} (${n(g.count)}, ${g.percent}%)`).join(', ');
+    parts.push(`Grade breakdown: ${list}.`);
+  }
+  return parts.length ? ' ' + parts.join(' ') : '';
+}
+
 const esc = (s) => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   .replace(/"/g, '&quot;');
@@ -213,6 +245,19 @@ async function describeRoute(pathname, env) {
     const key = model[1].toUpperCase();
     const m = index && index.models[key];
     if (!m) return null;
+    const colors = await getColorBreakdown(env);
+    // description stays short — it is what withMetadata puts straight into
+    // <meta name="description">, and a search snippet gets cut off past
+    // ~154 characters (see the "shorten meta description" fix this already
+    // needed once). The real color/grade numbers are worth indexing, just
+    // not in the one field with a hard display budget — datasetDescription
+    // carries them instead, read only by structuredData() below, which
+    // schema.org Dataset descriptions have no such limit on.
+    const shortDescription =
+      `${n(m.count)} ${m.name} records from the Nissan FAST microfiche` +
+      `${m.years ? `, built ${m.years}` : ''}. ` +
+      `${m.engine ? m.engine + '. ' : ''}` +
+      `Chassis numbers, build dates, factory paint codes and grade breakdowns.`;
     return {
       view: m.legend ? 'legends-view' : 'database-view',
       model: key,
@@ -223,11 +268,9 @@ async function describeRoute(pathname, env) {
       body: m.body,
       canonical: `${SITE}/model/${key}`,
       title: `${m.name} — ${n(m.count)} factory records | GTR Registry`,
-      description:
-        `${n(m.count)} ${m.name} records from the Nissan FAST microfiche` +
-        `${m.years ? `, built ${m.years}` : ''}. ` +
-        `${m.engine ? m.engine + '. ' : ''}` +
-        `Chassis numbers, build dates, factory paint codes and grade breakdowns.`
+      description: shortDescription,
+      datasetDescription: shortDescription + breakdownSentence(colors && colors.models[key]),
+      colorNames: (colors && colors.models[key] && colors.models[key].colors || []).map((c) => c.name)
     };
   }
 
@@ -325,12 +368,15 @@ function structuredData(route) {
       '@type': 'Dataset',
       '@id': `${route.canonical}#dataset`,
       name: `${route.modelName} — factory records`,
-      description: route.description,
+      description: route.datasetDescription || route.description,
       url: route.canonical,
       isPartOf: { '@id': `${SITE}/#dataset` },
       ...(route.count ? { size: `${n(route.count)} factory records` } : {}),
       ...(route.years ? { temporalCoverage: String(route.years).replace(/\s*–\s*/, '/') } : {}),
       ...(about ? { about } : {}),
+      // Real factory color names a buyer actually searches for ("BNR34
+      // Bayside Blue"), not invented — straight from colorBreakdown.json.
+      ...(route.colorNames && route.colorNames.length ? { keywords: route.colorNames } : {}),
       variableMeasured: ['chassis number', 'build date', 'factory paint code',
                          'grade', 'factory options']
     });

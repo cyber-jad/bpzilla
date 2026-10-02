@@ -1,0 +1,2117 @@
+{
+ "generated": "2026-10-02",
+ "models": {
+  "R35": {
+   "totalCount": 27323,
+   "colors": [
+    {
+     "code": "QAB",
+     "name": "Brilliant White Pearl",
+     "count": 5053,
+     "percent": "18.5"
+    },
+    {
+     "code": "KAD",
+     "name": "Dark Metal Gray",
+     "count": 4674,
+     "percent": "17.1"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 4172,
+     "percent": "15.3"
+    },
+    {
+     "code": "KAB",
+     "name": "Ultimate Metal Silver",
+     "count": 3792,
+     "percent": "13.9"
+    },
+    {
+     "code": "GAG",
+     "name": "Meteor Flake Black Pearl",
+     "count": 3447,
+     "percent": "12.6"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Premium",
+     "count": 8260,
+     "percent": "30.2"
+    },
+    {
+     "grade": "Pure Edition",
+     "count": 7201,
+     "percent": "26.4"
+    },
+    {
+     "grade": "Black Edition",
+     "count": 6627,
+     "percent": "24.3"
+    },
+    {
+     "grade": "GT-R",
+     "count": 4699,
+     "percent": "17.2"
+    },
+    {
+     "grade": "NISMO",
+     "count": 253,
+     "percent": "0.9"
+    }
+   ]
+  },
+  "BNR34": {
+   "totalCount": 11474,
+   "colors": [
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 2981,
+     "percent": "26.0"
+    },
+    {
+     "code": "TV2",
+     "name": "Bayside Blue",
+     "count": 2844,
+     "percent": "24.8"
+    },
+    {
+     "code": "GV1",
+     "name": "Black Pearl",
+     "count": 1361,
+     "percent": "11.9"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 927,
+     "percent": "8.1"
+    },
+    {
+     "code": "WV2",
+     "name": "Sparkling Silver",
+     "count": 890,
+     "percent": "7.8"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "V-Spec",
+     "count": 4215,
+     "percent": "36.7"
+    },
+    {
+     "grade": "Standard GT-R",
+     "count": 3975,
+     "percent": "34.6"
+    },
+    {
+     "grade": "V-Spec II",
+     "count": 1861,
+     "percent": "16.2"
+    },
+    {
+     "grade": "V-Spec II Nür",
+     "count": 718,
+     "percent": "6.3"
+    },
+    {
+     "grade": "M-Spec",
+     "count": 366,
+     "percent": "3.2"
+    }
+   ]
+  },
+  "ER34_GT": {
+   "totalCount": 12155,
+   "colors": [
+    {
+     "code": "KV2",
+     "name": "Athlete Silver",
+     "count": 3611,
+     "percent": "29.7"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 2295,
+     "percent": "18.9"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 1659,
+     "percent": "13.6"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 1590,
+     "percent": "13.1"
+    },
+    {
+     "code": "GV1",
+     "name": "Black Pearl",
+     "count": 1386,
+     "percent": "11.4"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GT (NA)",
+     "count": 12155,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ER34_GTT": {
+   "totalCount": 25111,
+   "colors": [
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 6194,
+     "percent": "24.7"
+    },
+    {
+     "code": "GV1",
+     "name": "Black Pearl",
+     "count": 5167,
+     "percent": "20.6"
+    },
+    {
+     "code": "KV2",
+     "name": "Athlete Silver",
+     "count": 4074,
+     "percent": "16.2"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 2956,
+     "percent": "11.8"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 2291,
+     "percent": "9.1"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GT-T (Turbo)",
+     "count": 25111,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ENR34": {
+   "totalCount": 3383,
+   "colors": [
+    {
+     "code": "KV2",
+     "name": "Athlete Silver",
+     "count": 714,
+     "percent": "21.1"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 605,
+     "percent": "17.9"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 528,
+     "percent": "15.6"
+    },
+    {
+     "code": "GV1",
+     "name": "Black Pearl",
+     "count": 503,
+     "percent": "14.9"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 476,
+     "percent": "14.1"
+    }
+   ],
+   "grades": []
+  },
+  "HR34": {
+   "totalCount": 14917,
+   "colors": [
+    {
+     "code": "KV2",
+     "name": "Athlete Silver",
+     "count": 4116,
+     "percent": "27.6"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 3063,
+     "percent": "20.5"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 2112,
+     "percent": "14.2"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 1929,
+     "percent": "12.9"
+    },
+    {
+     "code": "WV2",
+     "name": "Sparkling Silver",
+     "count": 1634,
+     "percent": "11.0"
+    }
+   ],
+   "grades": []
+  },
+  "BCNR33": {
+   "totalCount": 16560,
+   "colors": [
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 6581,
+     "percent": "39.7"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 2508,
+     "percent": "15.1"
+    },
+    {
+     "code": "LP2",
+     "name": "Midnight Purple",
+     "count": 2497,
+     "percent": "15.1"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 1994,
+     "percent": "12.0"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 1155,
+     "percent": "7.0"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Standard GT-R",
+     "count": 9385,
+     "percent": "56.7"
+    },
+    {
+     "grade": "V-Spec",
+     "count": 6571,
+     "percent": "39.7"
+    },
+    {
+     "grade": "Autech GT-R",
+     "count": 416,
+     "percent": "2.5"
+    },
+    {
+     "grade": "V-Spec LM",
+     "count": 102,
+     "percent": "0.6"
+    },
+    {
+     "grade": "V-Spec N1",
+     "count": 86,
+     "percent": "0.5"
+    }
+   ]
+  },
+  "ECR33": {
+   "totalCount": 63099,
+   "colors": [
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 18289,
+     "percent": "29.0"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 11442,
+     "percent": "18.1"
+    },
+    {
+     "code": "AN0",
+     "name": "Super Clear Red",
+     "count": 7232,
+     "percent": "11.5"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 6517,
+     "percent": "10.3"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 6400,
+     "percent": "10.1"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS25-t",
+     "count": 63099,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ECR33_V": {
+   "totalCount": 1157,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 284,
+     "percent": "24.5"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 281,
+     "percent": "24.3"
+    },
+    {
+     "code": "AN0",
+     "name": "Super Clear Red",
+     "count": 161,
+     "percent": "13.9"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 156,
+     "percent": "13.5"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 112,
+     "percent": "9.7"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS25-t (Type V)",
+     "count": 1157,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ER33": {
+   "totalCount": 28380,
+   "colors": [
+    {
+     "code": "1N4",
+     "name": "Two-Tone Silver / Grey (#KL0 / #KM1)",
+     "count": 6753,
+     "percent": "23.8"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 5294,
+     "percent": "18.7"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 3481,
+     "percent": "12.3"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 3074,
+     "percent": "10.8"
+    },
+    {
+     "code": "WK1",
+     "name": "Silky Snow Pearl",
+     "count": 2383,
+     "percent": "8.4"
+    }
+   ],
+   "grades": []
+  },
+  "ENR33": {
+   "totalCount": 7476,
+   "colors": [
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 1070,
+     "percent": "14.3"
+    },
+    {
+     "code": "1N4",
+     "name": "Two-Tone Silver / Grey (#KL0 / #KM1)",
+     "count": 1055,
+     "percent": "14.1"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 1043,
+     "percent": "14.0"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 998,
+     "percent": "13.3"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 946,
+     "percent": "12.7"
+    }
+   ],
+   "grades": []
+  },
+  "HR33": {
+   "totalCount": 63726,
+   "colors": [
+    {
+     "code": "1N4",
+     "name": "Two-Tone Silver / Grey (#KL0 / #KM1)",
+     "count": 11694,
+     "percent": "18.4"
+    },
+    {
+     "code": "QM1",
+     "name": "White",
+     "count": 10894,
+     "percent": "17.1"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 10179,
+     "percent": "16.0"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 8849,
+     "percent": "13.9"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 5274,
+     "percent": "8.3"
+    }
+   ],
+   "grades": []
+  },
+  "BNR32": {
+   "totalCount": 43895,
+   "colors": [
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 19729,
+     "percent": "44.9"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 8055,
+     "percent": "18.4"
+    },
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 5666,
+     "percent": "12.9"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 5161,
+     "percent": "11.8"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 2364,
+     "percent": "5.4"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Standard GT-R",
+     "count": 40933,
+     "percent": "93.3"
+    },
+    {
+     "grade": "V-Spec",
+     "count": 1395,
+     "percent": "3.2"
+    },
+    {
+     "grade": "V-Spec II",
+     "count": 1306,
+     "percent": "3.0"
+    },
+    {
+     "grade": "GT-R N1",
+     "count": 118,
+     "percent": "0.3"
+    },
+    {
+     "grade": "V-Spec N1",
+     "count": 64,
+     "percent": "0.1"
+    }
+   ]
+  },
+  "HCR32": {
+   "totalCount": 144097,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 52030,
+     "percent": "36.1"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 17953,
+     "percent": "12.5"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 15380,
+     "percent": "10.7"
+    },
+    {
+     "code": "TG0",
+     "name": "Light Grey Metallic",
+     "count": 13116,
+     "percent": "9.1"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 13105,
+     "percent": "9.1"
+    }
+   ],
+   "grades": []
+  },
+  "HNR32": {
+   "totalCount": 17667,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 6027,
+     "percent": "34.1"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 2276,
+     "percent": "12.9"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 1778,
+     "percent": "10.1"
+    },
+    {
+     "code": "TG0",
+     "name": "Light Grey Metallic",
+     "count": 1758,
+     "percent": "10.0"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 1436,
+     "percent": "8.1"
+    }
+   ],
+   "grades": []
+  },
+  "HR32": {
+   "totalCount": 41400,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 9235,
+     "percent": "22.3"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 8777,
+     "percent": "21.2"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 5699,
+     "percent": "13.8"
+    },
+    {
+     "code": "TG0",
+     "name": "Light Grey Metallic",
+     "count": 4526,
+     "percent": "10.9"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 3505,
+     "percent": "8.5"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS",
+     "count": 41400,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "HR32_GTE": {
+   "totalCount": 31921,
+   "colors": [
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 6808,
+     "percent": "21.3"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 5239,
+     "percent": "16.4"
+    },
+    {
+     "code": "TG0",
+     "name": "Light Grey Metallic",
+     "count": 4894,
+     "percent": "15.3"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 4711,
+     "percent": "14.8"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 2649,
+     "percent": "8.3"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTE",
+     "count": 31921,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ECR32": {
+   "totalCount": 15475,
+   "colors": [
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 6690,
+     "percent": "43.2"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 2883,
+     "percent": "18.6"
+    },
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 2278,
+     "percent": "14.7"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 850,
+     "percent": "5.5"
+    },
+    {
+     "code": "BL0",
+     "name": "Pewter Blue Pearl",
+     "count": 838,
+     "percent": "5.4"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS25",
+     "count": 15475,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "ER32": {
+   "totalCount": 2011,
+   "colors": [
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 1016,
+     "percent": "50.5"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 357,
+     "percent": "17.8"
+    },
+    {
+     "code": "BL0",
+     "name": "Pewter Blue Pearl",
+     "count": 164,
+     "percent": "8.2"
+    },
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 139,
+     "percent": "6.9"
+    },
+    {
+     "code": "JK0",
+     "name": "Yellowish Green Metallic",
+     "count": 83,
+     "percent": "4.1"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS25",
+     "count": 2011,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "FR32": {
+   "totalCount": 16881,
+   "colors": [
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 4685,
+     "percent": "27.8"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 4485,
+     "percent": "26.6"
+    },
+    {
+     "code": "TG0",
+     "name": "Light Grey Metallic",
+     "count": 3027,
+     "percent": "17.9"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 1306,
+     "percent": "7.7"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 807,
+     "percent": "4.8"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GXi",
+     "count": 16881,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "HR31": {
+   "totalCount": 182351,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 105740,
+     "percent": "58.0"
+    },
+    {
+     "code": "543",
+     "name": "Black Two-Tone (#532 / #463)",
+     "count": 33756,
+     "percent": "18.5"
+    },
+    {
+     "code": "463",
+     "name": "Grey Metallic",
+     "count": 17152,
+     "percent": "9.4"
+    },
+    {
+     "code": "047",
+     "name": "White Two-Tone",
+     "count": 5140,
+     "percent": "2.8"
+    },
+    {
+     "code": "210",
+     "name": "Brownish Silver Metallic",
+     "count": 3734,
+     "percent": "2.0"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS-X",
+     "count": 87418,
+     "percent": "47.9"
+    },
+    {
+     "grade": "GTS-X Turbo",
+     "count": 42943,
+     "percent": "23.5"
+    },
+    {
+     "grade": "GTS",
+     "count": 35399,
+     "percent": "19.4"
+    },
+    {
+     "grade": "GTS Turbo",
+     "count": 15768,
+     "percent": "8.6"
+    },
+    {
+     "grade": "GTS-R",
+     "count": 819,
+     "percent": "0.4"
+    }
+   ]
+  },
+  "FJR31": {
+   "totalCount": 73692,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 54950,
+     "percent": "74.6"
+    },
+    {
+     "code": "463",
+     "name": "Grey Metallic",
+     "count": 6976,
+     "percent": "9.5"
+    },
+    {
+     "code": "210",
+     "name": "Brownish Silver Metallic",
+     "count": 4245,
+     "percent": "5.8"
+    },
+    {
+     "code": "2F0",
+     "name": "Grey / Silver (#463 / #549)",
+     "count": 2211,
+     "percent": "3.0"
+    },
+    {
+     "code": "549",
+     "name": "Silver Metallic",
+     "count": 2136,
+     "percent": "2.9"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Excel",
+     "count": 57752,
+     "percent": "78.4"
+    }
+   ]
+  },
+  "SR31": {
+   "totalCount": 12524,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 9210,
+     "percent": "73.5"
+    },
+    {
+     "code": "463",
+     "name": "Grey Metallic",
+     "count": 1853,
+     "percent": "14.8"
+    },
+    {
+     "code": "047",
+     "name": "White Two-Tone",
+     "count": 371,
+     "percent": "3.0"
+    },
+    {
+     "code": "210",
+     "name": "Brownish Silver Metallic",
+     "count": 323,
+     "percent": "2.6"
+    },
+    {
+     "code": "549",
+     "name": "Silver Metallic",
+     "count": 178,
+     "percent": "1.4"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS-X",
+     "count": 10408,
+     "percent": "83.1"
+    },
+    {
+     "grade": "GTS",
+     "count": 2116,
+     "percent": "16.9"
+    }
+   ]
+  },
+  "WHJR31": {
+   "totalCount": 2188,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 1254,
+     "percent": "57.3"
+    },
+    {
+     "code": "047",
+     "name": "White Two-Tone",
+     "count": 300,
+     "percent": "13.7"
+    },
+    {
+     "code": "463",
+     "name": "Grey Metallic",
+     "count": 236,
+     "percent": "10.8"
+    },
+    {
+     "code": "629",
+     "name": "Silver / Grey (#549 / #463)",
+     "count": 168,
+     "percent": "7.7"
+    },
+    {
+     "code": "210",
+     "name": "Brownish Silver Metallic",
+     "count": 89,
+     "percent": "4.1"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "GTS-X Turbo",
+     "count": 2188,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "WFJR31": {
+   "totalCount": 14921,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 10087,
+     "percent": "67.6"
+    },
+    {
+     "code": "210",
+     "name": "Brownish Silver Metallic",
+     "count": 1318,
+     "percent": "8.8"
+    },
+    {
+     "code": "463",
+     "name": "Grey Metallic",
+     "count": 1314,
+     "percent": "8.8"
+    },
+    {
+     "code": "549",
+     "name": "Silver Metallic",
+     "count": 1043,
+     "percent": "7.0"
+    },
+    {
+     "code": "629",
+     "name": "Silver / Grey (#549 / #463)",
+     "count": 385,
+     "percent": "2.6"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Excel",
+     "count": 14921,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "S13": {
+   "totalCount": 165866,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 47039,
+     "percent": "28.4"
+    },
+    {
+     "code": "5H6",
+     "name": "White / Gold (#KG5 / #656)",
+     "count": 36258,
+     "percent": "21.9"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 36256,
+     "percent": "21.9"
+    },
+    {
+     "code": "6G0",
+     "name": "Blueish Silver / Grey Metallic",
+     "count": 15839,
+     "percent": "9.5"
+    },
+    {
+     "code": "5G7",
+     "name": "Green Two-Tone (#FG0 / #463)",
+     "count": 14489,
+     "percent": "8.7"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Q's",
+     "count": 130079,
+     "percent": "78.4"
+    },
+    {
+     "grade": "K's",
+     "count": 35200,
+     "percent": "21.2"
+    },
+    {
+     "grade": "J's",
+     "count": 574,
+     "percent": "0.3"
+    }
+   ]
+  },
+  "PS13": {
+   "totalCount": 100115,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 35988,
+     "percent": "35.9"
+    },
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 16911,
+     "percent": "16.9"
+    },
+    {
+     "code": "1K4",
+     "name": "Purplish Silver Two-Tone",
+     "count": 10187,
+     "percent": "10.2"
+    },
+    {
+     "code": "1K5",
+     "name": "Yellowish Silver Two-Tone",
+     "count": 10074,
+     "percent": "10.1"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 9734,
+     "percent": "9.7"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Q's",
+     "count": 46782,
+     "percent": "46.7"
+    },
+    {
+     "grade": "Q's Club",
+     "count": 26472,
+     "percent": "26.4"
+    },
+    {
+     "grade": "K's",
+     "count": 15377,
+     "percent": "15.4"
+    },
+    {
+     "grade": "K's Club",
+     "count": 8175,
+     "percent": "8.2"
+    },
+    {
+     "grade": "J's",
+     "count": 3269,
+     "percent": "3.3"
+    }
+   ]
+  },
+  "KPS13": {
+   "totalCount": 12197,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 4303,
+     "percent": "35.3"
+    },
+    {
+     "code": "1K4",
+     "name": "Purplish Silver Two-Tone",
+     "count": 1856,
+     "percent": "15.2"
+    },
+    {
+     "code": "1K5",
+     "name": "Yellowish Silver Two-Tone",
+     "count": 1763,
+     "percent": "14.5"
+    },
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 1145,
+     "percent": "9.4"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 978,
+     "percent": "8.0"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Q's",
+     "count": 5016,
+     "percent": "41.1"
+    },
+    {
+     "grade": "K's",
+     "count": 4218,
+     "percent": "34.6"
+    },
+    {
+     "grade": "Q's Club",
+     "count": 1549,
+     "percent": "12.7"
+    },
+    {
+     "grade": "K's Club",
+     "count": 1409,
+     "percent": "11.6"
+    },
+    {
+     "grade": "J's",
+     "count": 5,
+     "percent": "0.0"
+    }
+   ]
+  },
+  "KS13": {
+   "totalCount": 24465,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 6059,
+     "percent": "24.8"
+    },
+    {
+     "code": "5H6",
+     "name": "White / Gold (#KG5 / #656)",
+     "count": 5580,
+     "percent": "22.8"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 5259,
+     "percent": "21.5"
+    },
+    {
+     "code": "5G7",
+     "name": "Green Two-Tone (#FG0 / #463)",
+     "count": 3310,
+     "percent": "13.5"
+    },
+    {
+     "code": "6G0",
+     "name": "Blueish Silver / Grey Metallic",
+     "count": 2891,
+     "percent": "11.8"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Q's",
+     "count": 12776,
+     "percent": "52.2"
+    },
+    {
+     "grade": "K's",
+     "count": 11663,
+     "percent": "47.7"
+    },
+    {
+     "grade": "J's",
+     "count": 26,
+     "percent": "0.1"
+    }
+   ]
+  },
+  "RS13": {
+   "totalCount": 19478,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 7254,
+     "percent": "37.2"
+    },
+    {
+     "code": "KG2",
+     "name": "Dark Grey Metallic",
+     "count": 4616,
+     "percent": "23.7"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 3277,
+     "percent": "16.8"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 1831,
+     "percent": "9.4"
+    },
+    {
+     "code": "KG5",
+     "name": "Yellowish White",
+     "count": 1142,
+     "percent": "5.9"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Type II",
+     "count": 19266,
+     "percent": "98.9"
+    },
+    {
+     "grade": "Type I",
+     "count": 212,
+     "percent": "1.1"
+    }
+   ]
+  },
+  "KRS13": {
+   "totalCount": 7262,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 2872,
+     "percent": "39.5"
+    },
+    {
+     "code": "KG2",
+     "name": "Dark Grey Metallic",
+     "count": 1810,
+     "percent": "24.9"
+    },
+    {
+     "code": "TH1",
+     "name": "Dark Blue Pearl",
+     "count": 1171,
+     "percent": "16.1"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 607,
+     "percent": "8.4"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 415,
+     "percent": "5.7"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Type II",
+     "count": 7262,
+     "percent": "100.0"
+    }
+   ]
+  },
+  "RPS13": {
+   "totalCount": 74910,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 23338,
+     "percent": "31.2"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 19484,
+     "percent": "26.0"
+    },
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 6695,
+     "percent": "8.9"
+    },
+    {
+     "code": "KG4",
+     "name": "Yellowish Silver Metallic",
+     "count": 5979,
+     "percent": "8.0"
+    },
+    {
+     "code": "KL0",
+     "name": "Spark Silver Metallic",
+     "count": 3765,
+     "percent": "5.0"
+    }
+   ],
+   "grades": []
+  },
+  "KRPS13": {
+   "totalCount": 11655,
+   "colors": [
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 4079,
+     "percent": "35.0"
+    },
+    {
+     "code": "KG4",
+     "name": "Yellowish Silver Metallic",
+     "count": 1726,
+     "percent": "14.8"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 1435,
+     "percent": "12.3"
+    },
+    {
+     "code": "KG2",
+     "name": "Dark Grey Metallic",
+     "count": 890,
+     "percent": "7.6"
+    },
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 782,
+     "percent": "6.7"
+    }
+   ],
+   "grades": []
+  },
+  "S15": {
+   "totalCount": 39138,
+   "colors": [
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 15601,
+     "percent": "39.9"
+    },
+    {
+     "code": "WV2",
+     "name": "Sparkling Silver",
+     "count": 11243,
+     "percent": "28.7"
+    },
+    {
+     "code": "TV3",
+     "name": "Blue",
+     "count": 6397,
+     "percent": "16.3"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 2819,
+     "percent": "7.2"
+    },
+    {
+     "code": "AJ4",
+     "name": "Red",
+     "count": 1007,
+     "percent": "2.6"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Spec-R",
+     "count": 10203,
+     "percent": "26.1"
+    },
+    {
+     "grade": "Spec-S package (G/b/L/V)",
+     "count": 8781,
+     "percent": "22.4"
+    },
+    {
+     "grade": "Spec-R Aero",
+     "count": 6032,
+     "percent": "15.4"
+    },
+    {
+     "grade": "Spec-S Aero",
+     "count": 4689,
+     "percent": "12.0"
+    },
+    {
+     "grade": "Spec-R package (G/b/L/V)",
+     "count": 4649,
+     "percent": "11.9"
+    }
+   ]
+  },
+  "S14": {
+   "totalCount": 81023,
+   "colors": [
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 34950,
+     "percent": "43.1"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 21740,
+     "percent": "26.8"
+    },
+    {
+     "code": "FN2",
+     "name": "Blue Emerald",
+     "count": 9875,
+     "percent": "12.2"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 6932,
+     "percent": "8.6"
+    },
+    {
+     "code": "AN0",
+     "name": "Super Clear Red",
+     "count": 3992,
+     "percent": "4.9"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Q's",
+     "count": 50585,
+     "percent": "62.4"
+    },
+    {
+     "grade": "K's",
+     "count": 30082,
+     "percent": "37.1"
+    },
+    {
+     "grade": "Autech Version K's MF-T",
+     "count": 272,
+     "percent": "0.3"
+    },
+    {
+     "grade": "Autech special build",
+     "count": 30,
+     "percent": "0.0"
+    }
+   ]
+  },
+  "CS14": {
+   "totalCount": 3803,
+   "colors": [
+    {
+     "code": "WK0",
+     "name": "Aspen White Pearl",
+     "count": 1283,
+     "percent": "33.7"
+    },
+    {
+     "code": "KH3",
+     "name": "Super Black",
+     "count": 1085,
+     "percent": "28.5"
+    },
+    {
+     "code": "FN2",
+     "name": "Blue Emerald",
+     "count": 648,
+     "percent": "17.0"
+    },
+    {
+     "code": "AN0",
+     "name": "Super Clear Red",
+     "count": 383,
+     "percent": "10.1"
+    },
+    {
+     "code": "KG1",
+     "name": "Jet Silver Metallic",
+     "count": 210,
+     "percent": "5.5"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "K's",
+     "count": 2399,
+     "percent": "63.1"
+    },
+    {
+     "grade": "Q's",
+     "count": 1404,
+     "percent": "36.9"
+    }
+   ]
+  },
+  "WGC34": {
+   "totalCount": 55298,
+   "colors": [
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 18887,
+     "percent": "34.2"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 9919,
+     "percent": "17.9"
+    },
+    {
+     "code": "WK1",
+     "name": "Silky Snow Pearl",
+     "count": 9832,
+     "percent": "17.8"
+    },
+    {
+     "code": "DR2",
+     "name": "Green (Pearl)",
+     "count": 4850,
+     "percent": "8.8"
+    },
+    {
+     "code": "BP9",
+     "name": "Blue",
+     "count": 2851,
+     "percent": "5.2"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "Stagea X",
+     "count": 29792,
+     "percent": "53.9"
+    },
+    {
+     "grade": "RB25 NEO",
+     "count": 22155,
+     "percent": "40.1"
+    },
+    {
+     "grade": "RB25 (Pre-NEO)",
+     "count": 3351,
+     "percent": "6.1"
+    }
+   ]
+  },
+  "WHC34": {
+   "totalCount": 14674,
+   "colors": [
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 5863,
+     "percent": "40.0"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 2254,
+     "percent": "15.4"
+    },
+    {
+     "code": "WK1",
+     "name": "Silky Snow Pearl",
+     "count": 1863,
+     "percent": "12.7"
+    },
+    {
+     "code": "DR2",
+     "name": "Green (Pearl)",
+     "count": 1538,
+     "percent": "10.5"
+    },
+    {
+     "code": "BP9",
+     "name": "Blue",
+     "count": 979,
+     "percent": "6.7"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "RB20 (Pre-NEO)",
+     "count": 7097,
+     "percent": "48.4"
+    },
+    {
+     "grade": "Stagea X",
+     "count": 5807,
+     "percent": "39.6"
+    },
+    {
+     "grade": "RB20 NEO",
+     "count": 1770,
+     "percent": "12.1"
+    }
+   ]
+  },
+  "WGNC34": {
+   "totalCount": 61702,
+   "colors": [
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 23273,
+     "percent": "37.7"
+    },
+    {
+     "code": "WK1",
+     "name": "Silky Snow Pearl",
+     "count": 10843,
+     "percent": "17.6"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 10330,
+     "percent": "16.7"
+    },
+    {
+     "code": "DR2",
+     "name": "Green (Pearl)",
+     "count": 4206,
+     "percent": "6.8"
+    },
+    {
+     "code": "BP9",
+     "name": "Blue",
+     "count": 3295,
+     "percent": "5.3"
+    }
+   ],
+   "grades": [
+    {
+     "grade": "RB25 NEO",
+     "count": 37126,
+     "percent": "60.2"
+    },
+    {
+     "grade": "Stagea X",
+     "count": 19914,
+     "percent": "32.3"
+    },
+    {
+     "grade": "RB25 (Pre-NEO)",
+     "count": 4662,
+     "percent": "7.6"
+    }
+   ]
+  },
+  "WGNC34_260RS": {
+   "totalCount": 1734,
+   "colors": [
+    {
+     "code": "WK1",
+     "name": "Silky Snow Pearl",
+     "count": 652,
+     "percent": "37.6"
+    },
+    {
+     "code": "QT1",
+     "name": "White (3-Stage Pearl)",
+     "count": 434,
+     "percent": "25.0"
+    },
+    {
+     "code": "KR4",
+     "name": "Sonic Silver",
+     "count": 330,
+     "percent": "19.0"
+    },
+    {
+     "code": "KJ6",
+     "name": "Black",
+     "count": 196,
+     "percent": "11.3"
+    },
+    {
+     "code": "GV1",
+     "name": "Black Pearl",
+     "count": 122,
+     "percent": "7.0"
+    }
+   ],
+   "grades": []
+  },
+  "Z32": {
+   "totalCount": 5010,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 1086,
+     "percent": "21.7"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 879,
+     "percent": "17.5"
+    },
+    {
+     "code": "673",
+     "name": "Silver Metallic",
+     "count": 841,
+     "percent": "16.8"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 470,
+     "percent": "9.4"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 314,
+     "percent": "6.3"
+    }
+   ],
+   "grades": []
+  },
+  "GZ32": {
+   "totalCount": 23502,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 4706,
+     "percent": "20.0"
+    },
+    {
+     "code": "673",
+     "name": "Silver Metallic",
+     "count": 3901,
+     "percent": "16.6"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 2880,
+     "percent": "12.3"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 2807,
+     "percent": "11.9"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 1537,
+     "percent": "6.5"
+    }
+   ],
+   "grades": []
+  },
+  "CZ32": {
+   "totalCount": 6559,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 1751,
+     "percent": "26.7"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 1431,
+     "percent": "21.8"
+    },
+    {
+     "code": "673",
+     "name": "Silver Metallic",
+     "count": 863,
+     "percent": "13.2"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 657,
+     "percent": "10.0"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 426,
+     "percent": "6.5"
+    }
+   ],
+   "grades": []
+  },
+  "HZ32": {
+   "totalCount": 541,
+   "colors": [
+    {
+     "code": "CK2",
+     "name": "Brown Pearl Graphite",
+     "count": 139,
+     "percent": "25.7"
+    },
+    {
+     "code": "AJ4",
+     "name": "Red",
+     "count": 92,
+     "percent": "17.0"
+    },
+    {
+     "code": "TK3",
+     "name": "Blue",
+     "count": 68,
+     "percent": "12.6"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 63,
+     "percent": "11.6"
+    },
+    {
+     "code": "GL1",
+     "name": "Black",
+     "count": 53,
+     "percent": "9.8"
+    }
+   ],
+   "grades": []
+  },
+  "GCZ32": {
+   "totalCount": 29254,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 7513,
+     "percent": "25.7"
+    },
+    {
+     "code": "673",
+     "name": "Silver Metallic",
+     "count": 4509,
+     "percent": "15.4"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 4295,
+     "percent": "14.7"
+    },
+    {
+     "code": "KH2",
+     "name": "Gun Grey Metallic",
+     "count": 4044,
+     "percent": "13.8"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 2049,
+     "percent": "7.0"
+    }
+   ],
+   "grades": []
+  },
+  "Z32_EXPORT": {
+   "totalCount": 60775,
+   "colors": [
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 7970,
+     "percent": "13.1"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 7659,
+     "percent": "12.6"
+    },
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 7655,
+     "percent": "12.6"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 6777,
+     "percent": "11.2"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 6716,
+     "percent": "11.1"
+    }
+   ],
+   "grades": []
+  },
+  "GZ32_EXPORT": {
+   "totalCount": 37025,
+   "colors": [
+    {
+     "code": "732",
+     "name": "Black Pearl Metallic",
+     "count": 5863,
+     "percent": "15.8"
+    },
+    {
+     "code": "AG2",
+     "name": "Aztec Red",
+     "count": 4956,
+     "percent": "13.4"
+    },
+    {
+     "code": "326",
+     "name": "Crystal White",
+     "count": 4663,
+     "percent": "12.6"
+    },
+    {
+     "code": "KH6",
+     "name": "Pearl White",
+     "count": 4389,
+     "percent": "11.9"
+    },
+    {
+     "code": "AH3",
+     "name": "Cherry Red Pearl",
+     "count": 2819,
+     "percent": "7.6"
+    }
+   ],
+   "grades": []
+  }
+ }
+}
