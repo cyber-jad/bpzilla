@@ -51,7 +51,7 @@ from the FAST binaries.
 | S110 Silvia  | 085 | —  |  73,184 | extracted, not loaded |
 | S12 Silvia   | 086 |  2 |  28,170 | extracted, not loaded |
 | Z31 300ZX    | 131 | —  |  35,381 | extracted, not loaded |
-| R35 GT-R     | 215\* | 12 |  8,046 | done, from this legend — 99.84% of option characters named; not loaded |
+| R35 GT-R     | 215\* | 12 |  8,046 | done, from this legend — 99.84% of option characters named; loaded 2026-10-03 (data/r35Options.json, _decodeR35Options) |
 
 \* Volume 215 holds only the option catalog; the per-vehicle records are in
 the `VINDAT3.AA2`/`MDLCODE.AA2` group — see the R35 section below.

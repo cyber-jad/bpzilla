@@ -1378,6 +1378,13 @@ const JDM_DATABASE = {
     }
 
     try {
+      const res = await fetch('/data/r35Options.json');
+      if (res.ok) this._r35Options = JSON.parse((await res.text()).replace(/^\ufeff/, ''));
+    } catch (e) {
+      // R35 option decode is additive; cars still display without it
+    }
+
+    try {
       const res = await fetch('/data/factoryOptions.json');
       if (res.ok) this._factoryOptions = JSON.parse((await res.text()).replace(/^﻿/, ''));
     } catch (e) {
@@ -4681,6 +4688,7 @@ const JDM_DATABASE = {
     // S15 is its own shape: five option positions, each with its own alphabet,
     // rather than a VS run followed by a pack code.
     if (modelId === 'S15') return this._decodeS15Plate(modelId, mc, date);
+    if (this._isR35Model(modelId)) return this._decodeR35Options(mc, date);
     // A coachbuilt S14 carries one identifier across all five option slots,
     // so it is answered as one field before the per-position tables are asked
     // anything — see _s14Autech.
@@ -4743,6 +4751,52 @@ const JDM_DATABASE = {
                        text: null, undecoded: true });
     }
     return opts;
+  },
+  // ---- R35 option letters ----------------------------------------------------
+  //
+  // The JDM R35 model code ends in five option letters (plate positions 14-18, stored characters
+  // 12-16), and which equipment a letter means depends on the build month: Nissan redrew the legend
+  // four times (data/r35Options.json, from volume 215). A boundary month belongs to the newer window.
+  // A letter the owning window does not define is looked up in the nearest other window and flagged
+  // `reported`, never presented as confirmed. Export and post-2013 cars carry no JDM-shaped code and
+  // so get no options rather than a guess.
+  _r35Options: null,
+  _decodeR35Options: function(mc, date) {
+    const t = this._r35Options;
+    const code = String(mc || '');
+    if (!t || code.length !== 20 || code.slice(0, 3) !== 'LRN' || code.slice(17) !== 'R35') return [];
+    const month = String(date || '').slice(0, 7);
+    const wins = t.windows;
+    const idx = (w) => wins.indexOf(w);
+    // the window that owns the month: the newest one that has started (the first, for earlier dates)
+    let owner = wins[0];
+    if (month) for (const w of wins) if (w.from <= month) owner = w;
+    const monthNum = (m) => parseInt(m.slice(0, 4), 10) * 12 + parseInt(m.slice(5, 7), 10);
+    const distance = (w) => {
+      if (!month) return idx(w);
+      const a = monthNum(w.from), b = w.to ? monthNum(w.to) : Infinity, m = monthNum(month);
+      return m < a ? a - m : (m > b ? m - b : 0);
+    };
+    const out = [];
+    for (let p = 0; p < 5; p++) {
+      const ch = code[12 + p];
+      if (!ch || ch === '-' || ch === ' ') continue;
+      const pos = String(14 + p);
+      let codes = owner.positions[pos] && owner.positions[pos][ch], confirmed = !!codes;
+      if (!codes) {
+        let best = null, bestD = Infinity;
+        for (const w of wins) {
+          if (w === owner || !(w.positions[pos] && w.positions[pos][ch])) continue;
+          const d = distance(w);
+          if (d < bestD) { bestD = d; best = w; }
+        }
+        if (best) codes = best.positions[pos][ch];
+      }
+      if (codes) out.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch,
+        text: codes.map(c => t.specs[c] || c).join(' + '), verified: confirmed, reported: !confirmed });
+      else out.push({ pos: 12 + p, platePos: this.platePos(12 + p), char: ch, text: null, undecoded: true });
+    }
+    return out;
   },
   layoutOf: function(mc) {
     const layouts = (window.MODEL_DECODER || {}).LAYOUTS || {};
