@@ -565,8 +565,13 @@ document.addEventListener('DOMContentLoaded', () => {
         // and Z32 owner who pressed "View Color & Trim Statistics" on their
         // car's page was shown a Skyline GT-R's statistics instead, usually
         // BCNR33, because that is what currentModel still happened to hold.
-        this.renderStatsView(fromTab === 'legends-view' ? this.currentLegendsModel
-                                                        : this.currentModel);
+        // switchCurrentModel already syncs the stats dropdown whenever a model
+        // page hands off to this tab, so the dropdown is the source of truth.
+        // Re-deriving from currentModel here reset a picked chassis (S14) back
+        // to BCNR33 on every return to the tab while the dropdown still said S14.
+        const picked = document.getElementById('stats-model-selector')?.value;
+        this.renderStatsView(JDM_DATABASE.models[picked] ? picked
+          : (fromTab === 'legends-view' ? this.currentLegendsModel : this.currentModel));
       }
 
       // Hero banner reflects whichever model was synced last, Skyline or
