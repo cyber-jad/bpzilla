@@ -1175,9 +1175,10 @@ h1, h2, h3, h4, .font-display {
   }
 
   /* Brand wordmark: the plate badge alone is a complete mark, so on a phone
-     the "SKYLINE FACTORY RECORDS" line stays to one line instead of wrapping
-     across three, and the long microfiche subtitle drops rather than
-     wrapping across five.
+     the title shortens to "NISSAN RECORDS" so it stays on one line (the full
+     "NISSAN FACTORY RECORDS" needs ~192px and only ~128px is left beside the
+     badge, so it was being clipped), and the long microfiche subtitle drops
+     rather than wrapping across five.
 
      The line used to be capped at 46vw, which on a 375px screen reserved 172px
      for it — but the avatar, the badge and the two gaps had already spent 208px
@@ -1195,9 +1196,10 @@ h1, h2, h3, h4, .font-display {
   .brand-text-group h1 {
     font-size: 0.92rem;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     max-width: 100%;
+  }
+  .brand-factory {
+    display: none;
   }
   .brand-text-group .brand-sub {
     display: none;
