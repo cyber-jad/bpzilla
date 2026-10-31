@@ -1076,6 +1076,36 @@ h1, h2, h3, h4, .font-display {
   color: var(--gtr-red);
 }
 
+.sponsor-strip {
+  text-align: center;
+  padding: 6px 16px;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  background: var(--bg-secondary, rgba(255, 255, 255, 0.03));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.sponsor-strip a,
+.footer-sponsor a {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sponsor-strip a:hover,
+.footer-sponsor a:hover {
+  color: var(--gtr-red);
+}
+.sponsor-strip-sep {
+  margin: 0 6px;
+  opacity: 0.5;
+}
+.footer-sponsor {
+  flex-basis: 100%;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  text-align: center;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 1024px) {
   .header-search-wrap {

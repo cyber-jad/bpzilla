@@ -122,6 +122,21 @@
 </head>
 <body>
 
+  <!-- Sponsor strip -->
+  <div class="sponsor-strip">
+    Sponsored by <a href="https://jdmhunter.net/?utm_source=bpzilla&amp;utm_medium=sponsor&amp;utm_campaign=header" target="_blank" rel="sponsored noopener" data-sponsor>JDMHunter.net</a>
+    <span class="sponsor-strip-sep">&middot;</span> find JDM cars for sale
+  </div>
+
+  <script>
+    /* One deployment, two domains: tag the sponsor links with whichever the visitor is on. */
+    document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('a[data-sponsor]').forEach(function (a) {
+      a.href = a.href.replace('utm_source=bpzilla', 'utm_source=' + (/gtr-registry/.test(location.hostname) ? 'gtr-registry' : 'bpzilla'));
+    });
+    });
+  </script>
+
   <!-- Site Header -->
   <header class="site-header">
     <div class="header-top-bar">
@@ -1355,6 +1370,9 @@
         <li><a href="#" class="tab-link" data-tab="tools-view">Tools</a></li>
         <li><a href="#" class="tab-link" data-tab="legends-view">Nissan Legends</a></li>
       </ul>
+      <div class="footer-sponsor">
+        Sponsored by <a href="https://jdmhunter.net/?utm_source=bpzilla&amp;utm_medium=sponsor&amp;utm_campaign=footer" target="_blank" rel="sponsored noopener" data-sponsor>JDMHunter.net</a> &mdash; looking to buy one? Search JDM cars for sale.
+      </div>
     </div>
   </footer>
 
