@@ -1082,8 +1082,6 @@ h1, h2, h3, h4, .font-display {
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   color: var(--text-muted);
-  background: var(--bg-secondary, rgba(255, 255, 255, 0.03));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 .sponsor-strip a,
 .footer-sponsor a {
